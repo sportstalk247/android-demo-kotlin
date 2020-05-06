@@ -1,0 +1,2 @@
+rootProject.name='Sportstalk SDK Demo'
+include ':app'
