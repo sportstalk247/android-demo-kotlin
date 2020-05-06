@@ -7,5 +7,23 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme" />
+        android:theme="@style/AppTheme" >
+
+        <activity android:name=".presentation.MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <meta-data
+            android:name="sportstalk.api.auth_token"
+            android:value="TrPMs1y3rkyENTT72L2zjQ7E7DkBT3uEu6u48hxwMnsQ"/>
+
+        <meta-data
+            android:name="sportstalk.api.app_id"
+            android:value="5eac106838a2830e84f57a7a"/>
+
+    </application>
 </manifest>
