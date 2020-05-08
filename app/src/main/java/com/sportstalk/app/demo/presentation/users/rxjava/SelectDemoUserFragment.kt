@@ -1,4 +1,4 @@
-package com.sportstalk.app.demo.presentation.users
+package com.sportstalk.app.demo.presentation.users.rxjava
 
 import android.os.Bundle
 import android.view.LayoutInflater

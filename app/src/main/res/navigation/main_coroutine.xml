@@ -9,7 +9,7 @@
 
     <fragment
         android:id="@+id/fragmentSelectRoom"
-        android:name="com.sportstalk.app.demo.presentation.rooms.rxjava.SelectRoomFragment"
+        android:name="com.sportstalk.app.demo.presentation.rooms.coroutine.SelectRoomFragment"
         tools:layout="@layout/fragment_select_room"
         >
         <action
@@ -20,7 +20,7 @@
 
     <fragment
         android:id="@+id/fragmentSelectDemoUser"
-        android:name="com.sportstalk.app.demo.presentation.users.SelectDemoUserFragment"
+        android:name="com.sportstalk.app.demo.presentation.users.coroutine.SelectDemoUserFragment"
         tools:layout="@layout/fragment_select_demo_user"
         >
         <action
@@ -31,7 +31,7 @@
 
     <fragment
         android:id="@+id/fragmentChatRoom"
-        android:name="com.sportstalk.app.demo.presentation.chatroom.ChatRoomFragment"
+        android:name="com.sportstalk.app.demo.presentation.chatroom.coroutine.ChatRoomFragment"
         tools:layout="@layout/fragment_chat_room"
         />
 

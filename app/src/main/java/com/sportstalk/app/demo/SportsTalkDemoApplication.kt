@@ -4,7 +4,8 @@ import android.app.Application
 import com.sportstalk.SportsTalkManager
 import com.sportstalk.api.ChatApiService
 import com.sportstalk.api.UsersApiService
-import com.sportstalk.app.demo.presentation.rooms.rxjava.SelectRoomViewModel
+import com.sportstalk.app.demo.presentation.rooms.rxjava.SelectRoomViewModel as SelectRoomViewModelRx
+import com.sportstalk.app.demo.presentation.rooms.coroutine.SelectRoomViewModel as SelectRoomViewModelCoroutine
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.core.context.startKoin
@@ -28,7 +29,12 @@ class SportsTalkDemoApplication: Application() {
                 },
                 module {
                     viewModel {
-                        SelectRoomViewModel(
+                        SelectRoomViewModelRx(
+                            chatApiService = get()
+                        )
+                    }
+                    viewModel {
+                        SelectRoomViewModelCoroutine(
                             chatApiService = get()
                         )
                     }

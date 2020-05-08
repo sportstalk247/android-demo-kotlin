@@ -3,6 +3,7 @@ package com.sportstalk.app.demo.presentation.rooms.rxjava
 import androidx.lifecycle.ViewModel
 import com.sportstalk.api.ChatApiService
 import com.sportstalk.models.chat.ChatRoom
+import com.sportstalk.models.chat.ListRoomsResponse
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import io.reactivex.Single
@@ -97,7 +98,7 @@ class SelectRoomViewModel(
                                 err = err
                             )
                         )
-                        SingleSource { _state.value ?: ViewState() }
+                        SingleSource { e -> e.onSuccess(ListRoomsResponse()) /*_state.value ?: ViewState()*/ }
                     }
                     .toObservable()
             }
