@@ -34,6 +34,11 @@ android {
     // * Change the Target JVM version to 1.8, then Apply
     kotlinOptions {
         jvmTarget = "1.8"
+        freeCompilerArgs += [
+                "-Xuse-experimental=kotlinx.coroutines.ExperimentalCoroutinesApi",
+                "-Xuse-experimental=kotlinx.coroutines.FlowPreview",
+                "-Xuse-experimental=kotlinx.coroutines.ObsoleteCoroutinesApi"
+        ]
     }
 
     viewBinding {
@@ -41,8 +46,8 @@ android {
     }
 
     compileOptions {
-        targetCompatibility 1.8
-        sourceCompatibility 1.8
+        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_1_8
     }
 
     packagingOptions {
@@ -56,12 +61,16 @@ android {
         }
     }
 
+// To inline the bytecode built with JVM target 1.8 into
+// bytecode that is being built with JVM target 1.6. (e.g. navArgs)
+
 }
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    implementation 'com.gitlab.sportstalk247:sdk-android-kotlin:develop-SNAPSHOT'
+    /*implementation 'com.gitlab.sportstalk247:sdk-android-kotlin:develop-SNAPSHOT'*/
+    implementation 'com.gitlab.dev-lcc:sdk-android-kotlin:d674ff51b8'
 
     // Jetbrains Kotlin Dependencies
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
@@ -70,6 +79,11 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-runtime:$kotlinx_serialization_version"
 
     // Dependencies for local unit tests
+    implementation 'androidx.appcompat:appcompat:1.1.0'
+    implementation 'com.google.android.material:material:1.1.0'
+    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
+    implementation 'androidx.navigation:navigation-fragment-ktx:2.2.2'
+    implementation 'androidx.navigation:navigation-ui-ktx:2.2.2'
     testImplementation "junit:junit:$junitVersion"
     testImplementation "androidx.arch.core:core-testing:$androidXCoreTesting"
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
@@ -136,11 +150,12 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-rx2:$coroutinesVersion"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$coroutinesVersion"
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion"
 
     // Rx3Java
-    implementation "io.reactivex.rxjava3:rxjava:$rxAndroidVersion"
-    implementation "io.reactivex.rxjava3:rxkotlin:$rxkotlinVersion"
+    implementation "io.reactivex.rxjava2:rxjava:$rxAndroidVersion"
+    implementation "io.reactivex.rxjava2:rxkotlin:$rxkotlinVersion"
     // RxAndroid Binding
     implementation "com.jakewharton.rxbinding3:rxbinding:$rxBindingVersion"
     implementation "com.jakewharton.rxbinding3:rxbinding-core:$rxBindingVersion"
@@ -155,5 +170,9 @@ dependencies {
 
     // RxPermission
     implementation "com.github.tbruyelle:rxpermissions:$rxPermissionVersion"
+
+    // Square Cycler(More convenient recyclerview adapter)
+    implementation "com.github.square:cycler:$squareCycler"
+
 
 }

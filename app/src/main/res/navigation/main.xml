@@ -9,7 +9,7 @@
 
     <fragment
         android:id="@+id/fragmentSelectRoom"
-        android:name="com.sportstalk.app.demo.presentation.rooms.SelectRoomFragment"
+        android:name="com.sportstalk.app.demo.presentation.rooms.rxjava.SelectRoomFragment"
         tools:layout="@layout/fragment_select_room"
         >
         <action
