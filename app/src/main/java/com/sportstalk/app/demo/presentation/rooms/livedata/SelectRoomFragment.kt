@@ -40,32 +40,19 @@ class SelectRoomFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.swipeRefresh.setOnRefreshListener {
-            Log.d(TAG, "binding.swipeRefresh")
-            recycler.clear()
-            viewModel.fetch(cursor = null)
-        }
-
-        // Scroll Bottom Attempt Fetch More
-        onScrollFetchNext
-            .distinctUntilChanged()
-            .observe(viewLifecycleOwner, Observer {
-                    val _cursor = cursor.value!!
-                    viewModel.fetch(
-                        cursor = if (_cursor.isPresent) _cursor.get()
-                        else null
-                    )
-                }
-            )
-
-
+        /**
+         * Subscribe to and apply ViewState changes(ex. List of Room Updates, Progress indicator, etc.).
+         */
         viewModel.state.observe(viewLifecycleOwner, Observer { state ->
             takeProgressFetchRooms(state.progressFetchRooms)
             takeRooms(state.rooms)
-            Log.d(TAG, "viewModel.state.cursor = state.cursor")
+            Log.d(TAG, "viewModel.state.cursor = ${state.cursor}")
             cursor.postValue(Optional.ofNullable(state.cursor))
         })
 
+        /**
+         * Subscribe to View Effects(ex. Prompt navigate to chat room, Fetch error, etc.)
+         */
         viewModel.effect.observe(viewLifecycleOwner, Observer { effect ->
             when (effect) {
                 is SelectRoomViewModel.ViewEffect.NavigateToChatRoom -> {
@@ -80,13 +67,35 @@ class SelectRoomFragment : Fragment() {
                     // TODO::
                     Toast.makeText(
                         requireContext(),
-                        "Click Room: `${effect.err.message}`",
+                        "Fetch error: `${effect.err.message}`",
                         Toast.LENGTH_SHORT
                     ).show()
                 }
             }
         })
 
+        // Perform fetch on refresh
+        binding.swipeRefresh.setOnRefreshListener {
+            Log.d(TAG, "binding.swipeRefresh")
+            recycler.clear()
+            viewModel.fetch(cursor = null)
+        }
+
+        // Scroll Bottom Attempt Fetch More
+        onScrollFetchNext
+            .distinctUntilChanged()
+            .observe(
+                viewLifecycleOwner,
+                Observer {
+                    val _cursor = cursor.value!!
+                    viewModel.fetch(
+                        cursor = if (_cursor.isPresent) _cursor.get()
+                        else null
+                    )
+                }
+            )
+
+        // On click Create Chat Room action
         binding.fabAdd.setOnClickListener {
             Log.d(TAG, "binding.fabAdd.setOnClickListener")
         }

@@ -43,38 +43,21 @@ class SelectRoomFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.swipeRefresh.setOnRefreshListener {
-            Log.d(TAG, "binding.swipeRefresh")
-            recycler.clear()
-            viewModel.fetch(cursor = null)
-        }
-
-        // Scroll Bottom Attempt Fetch More
-        cursor
-            .filter { it.orElse("").isNotEmpty() }
-            .compose { obsCursor ->
-                onScrollFetchNext
-                    .distinctUntilChanged()
-                    .withLatestFrom(obsCursor) { _, _cursor -> _cursor }
-            }
-            .throttleFirst(500, TimeUnit.MILLISECONDS)
-            .distinctUntilChanged()
-            .subscribe { _cursor ->
-                viewModel.fetch(
-                    cursor = if (_cursor.isPresent) _cursor.get()
-                    else null
-                )
-            }
-            .addTo(rxDisposeBag)
-
+        /**
+         * Subscribe to and apply ViewState changes(ex. List of Room Updates, Progress indicator, etc.).
+         */
         viewModel.state
             .subscribe { state ->
                 takeProgressFetchRooms(state.progressFetchRooms)
                 takeRooms(state.rooms)
+                Log.d(TAG, "viewModel.state.cursor = ${state.cursor}")
                 cursor.onNext(Optional.ofNullable(state.cursor))
             }
             .addTo(rxDisposeBag)
 
+        /**
+         * Subscribe to View Effects(ex. Prompt navigate to chat room, Fetch error, etc.)
+         */
         viewModel.effect
             .subscribe { effect ->
                 when (effect) {
@@ -90,7 +73,7 @@ class SelectRoomFragment : Fragment() {
                         // TODO::
                         Toast.makeText(
                             requireContext(),
-                            "Click Room: `${effect.err.message}`",
+                            "Fetch error: `${effect.err.message}`",
                             Toast.LENGTH_SHORT
                         ).show()
                     }
@@ -98,6 +81,28 @@ class SelectRoomFragment : Fragment() {
             }
             .addTo(rxDisposeBag)
 
+        // Perform fetch on refresh
+        binding.swipeRefresh.setOnRefreshListener {
+            Log.d(TAG, "binding.swipeRefresh")
+            // Clear item list
+            recycler.clear()
+            viewModel.fetch(cursor = null)
+        }
+
+        // Scroll Bottom Attempt Fetch More
+        onScrollFetchNext
+            .distinctUntilChanged()
+            .throttleFirst(500, TimeUnit.MILLISECONDS)
+            .subscribe { _cursor ->
+                val _cursor = cursor.value ?: Optional.empty()
+                viewModel.fetch(
+                    cursor = if (_cursor.isPresent) _cursor.get()
+                    else null
+                )
+            }
+            .addTo(rxDisposeBag)
+
+        // On click Create Chat Room action
         binding.fabAdd.setOnClickListener {
             Log.d(TAG, "binding.fabAdd.setOnClickListener")
         }
@@ -108,6 +113,7 @@ class SelectRoomFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        // Dispose subscribed observables
         rxDisposeBag.dispose()
     }
 

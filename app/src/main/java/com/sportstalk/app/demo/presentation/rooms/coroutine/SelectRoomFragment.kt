@@ -44,8 +44,48 @@ class SelectRoomFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        /**
+         * Subscribe to and apply ViewState changes(ex. List of Room Updates, Progress indicator, etc.).
+         */
+        viewModel.state
+            .onEach { state ->
+                takeProgressFetchRooms(state.progressFetchRooms)
+                takeRooms(state.rooms)
+                Log.d(TAG, "viewModel.state.cursor = ${state.cursor}")
+                cursor.send(Optional.ofNullable(state.cursor))
+            }
+            .launchIn(lifecycleScope)
+
+        /**
+         * Subscribe to View Effects(ex. Prompt navigate to chat room, Fetch error, etc.)
+         */
+        viewModel.effect
+            .onEach { effect ->
+                when (effect) {
+                    is SelectRoomViewModel.ViewEffect.NavigateToChatRoom -> {
+                        // TODO::
+                        Toast.makeText(
+                            requireContext(),
+                            "Click Room: `${effect.which.slug}`",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                    is SelectRoomViewModel.ViewEffect.ErrorFetchRoom -> {
+                        // TODO::
+                        Toast.makeText(
+                            requireContext(),
+                            "Fetch error: `${effect.err.message}`",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            }
+            .launchIn(lifecycleScope)
+
+        // Perform fetch on refresh
         binding.swipeRefresh.setOnRefreshListener {
             Log.d(TAG, "binding.swipeRefresh")
+            // Clear item list
             recycler.clear()
             viewModel.fetch(cursor = null)
         }
@@ -64,39 +104,7 @@ class SelectRoomFragment : Fragment() {
             }
             .launchIn(lifecycleScope)
 
-
-        viewModel.state
-            .onEach { state ->
-                takeProgressFetchRooms(state.progressFetchRooms)
-                takeRooms(state.rooms)
-                Log.d(TAG, "viewModel.state.cursor = state.cursor")
-                cursor.send(Optional.ofNullable(state.cursor))
-            }
-            .launchIn(lifecycleScope)
-
-        viewModel.effect
-            .onEach { effect ->
-                when (effect) {
-                    is SelectRoomViewModel.ViewEffect.NavigateToChatRoom -> {
-                        // TODO::
-                        Toast.makeText(
-                            requireContext(),
-                            "Click Room: `${effect.which.slug}`",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                    is SelectRoomViewModel.ViewEffect.ErrorFetchRoom -> {
-                        // TODO::
-                        Toast.makeText(
-                            requireContext(),
-                            "Click Room: `${effect.err.message}`",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                }
-            }
-            .launchIn(lifecycleScope)
-
+        // On click Create Chat Room action
         binding.fabAdd.setOnClickListener {
             Log.d(TAG, "binding.fabAdd.setOnClickListener")
         }
