@@ -146,6 +146,7 @@ dependencies {
     /*kapt "androidx.lifecycle:lifecycle-compiler:$androidXLifecycleVersion"*/
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$androidXLifecycleVersion"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:$androidXLifecycleVersion"
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:$androidXLifecycleVersion"
 
     // Coroutine
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion"
