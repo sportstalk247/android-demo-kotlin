@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.sportstalk.api.ChatApiService
 import com.sportstalk.app.demo.extensions.throttleFirst
 import com.sportstalk.models.chat.ChatRoom
-import com.sportstalk.models.chat.ListRoomsResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
@@ -62,38 +61,43 @@ class SelectRoomViewModel(
         this.cursor.sendBlocking(cursor ?: "")
 
         // Attempt fetch
-        flow {
-            emit(
-                chatApiService.listRooms(
-                    cursor = cursor,
-                    limit = LIMIT_FETCH_ROOMS
-                )
-                    .await()
-            )
-        }
+        viewModelScope.launch {
             // Emit DISPLAY Progress indicator
-            .onStart { progressFetchRooms.send(true) }
-            .map { response ->
+            progressFetchRooms.send(true)
+
+            try {
+////////////////////////////////////////////////////////
+//////////////// CompletableFuture -> Coroutine
+////////////////////////////////////////////////////////
+                val response = withContext(Dispatchers.IO) { /* Switch to IO Context(i.e. Background Thread) */
+                    chatApiService.listRooms(
+                        cursor = cursor,
+                        limit = LIMIT_FETCH_ROOMS
+                    )
+                        .await()
+                }
+
                 // Map out `data` from response
-                if (response.code in 200..299) {
+                val listRoomsResponse = if (response.code in 200..299) {
                     response.data!!
                 } else {
                     // "error"
                     throw Throwable(response.message)
                 }
-            }
-            .catch { err ->
+                // Emit update room list
+                rooms.send((listRoomsResponse.rooms + rooms.value).distinct())
+                // Emit new cursor
+                this@SelectRoomViewModel.cursor.send(listRoomsResponse.cursor ?: "")
+
+            } catch (err: Throwable) {
                 // Emit error if encountered
                 _effect.send(ViewEffect.ErrorFetchRoom(err = err))
-                emit(ListRoomsResponse())
+            } finally {
+                // Emit HIDE Progress indicator
+                progressFetchRooms.send(false)
             }
-            .onEach { listResponse ->
-                rooms.send((listResponse.rooms + rooms.value).distinct())
-                this@SelectRoomViewModel.cursor.send(listResponse.cursor ?: "")
-            }
-            // Emit HIDE Progress indicator
-            .onCompletion { progressFetchRooms.send(false) }
-            .launchIn(viewModelScope)
+
+        }
     }
 
 

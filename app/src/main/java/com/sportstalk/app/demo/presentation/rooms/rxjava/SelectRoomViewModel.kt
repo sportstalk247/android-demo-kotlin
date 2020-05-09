@@ -119,6 +119,8 @@ class SelectRoomViewModel(
     fun fetch(cursor: String? = null) {
         // Clear list if fetching without cursor(ex. swipe refresh)
         if (cursor == null || cursor.isEmpty()) rooms.onNext(listOf())
+        this.cursor.onNext(cursor ?: "")
+
         // Attempt fetch
         performFetch.onNext(cursor ?: "")
     }
