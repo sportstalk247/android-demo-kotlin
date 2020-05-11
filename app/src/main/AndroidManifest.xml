@@ -13,7 +13,6 @@
         >
         <activity
             android:name=".presentation.MainActivity"
-            android:launchMode="singleTask"
             >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -24,10 +23,10 @@
 
         <meta-data
             android:name="sportstalk.api.auth_token"
-            android:value="TrPMs1y3rkyENTT72L2zjQ7E7DkBT3uEu6u48hxwMnsQ" />
+            android:value="3HJB5kH3WEOyjHjQ1fypSQ4X-gMGq_jEuAeuKw5sbsVA" />
         <meta-data
             android:name="sportstalk.api.app_id"
-            android:value="5eac106838a2830e84f57a7a" />
+            android:value="5eb7cf9386c29618e00f855b" />
     </application>
 
 </manifest>
