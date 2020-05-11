@@ -4,6 +4,7 @@ import android.app.Application
 import com.sportstalk.SportsTalkManager
 import com.sportstalk.api.ChatApiService
 import com.sportstalk.api.UsersApiService
+import com.sportstalk.app.demo.presentation.users.coroutine.SelectDemoUserViewModel as SelectDemoUserViewModelCoroutine
 import com.sportstalk.app.demo.presentation.rooms.rxjava.SelectRoomViewModel as SelectRoomViewModelRx
 import com.sportstalk.app.demo.presentation.rooms.coroutine.SelectRoomViewModel as SelectRoomViewModelCoroutine
 import com.sportstalk.app.demo.presentation.rooms.livedata.SelectRoomViewModel as SelectRoomViewModelLiveData
@@ -29,6 +30,9 @@ class SportsTalkDemoApplication: Application() {
                     single<ChatApiService> { get<SportsTalkManager>().chatApiService }
                 },
                 module {
+                    /*
+                    * Select Chat Room
+                    */
                     viewModel {
                         SelectRoomViewModelRx(
                             chatApiService = get()
@@ -41,6 +45,14 @@ class SportsTalkDemoApplication: Application() {
                     }
                     viewModel {
                         SelectRoomViewModelLiveData(
+                            chatApiService = get()
+                        )
+                    }
+                    /*
+                    * Select Demo User
+                    */
+                    viewModel {
+                        SelectDemoUserViewModelCoroutine(
                             chatApiService = get()
                         )
                     }

@@ -10,6 +10,7 @@
     <string name="hello_first_fragment">Hello first fragment</string>
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
     <string name="select_a_room">Select a Room</string>
+    <string name="select_a_demo_user">Select a Demo User</string>
     <string name="actions">Actions</string>
     <string name="enter_exit">Enter/Exit</string>
     <string name="open">Open</string>

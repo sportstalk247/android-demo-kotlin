@@ -15,7 +15,7 @@
         <action
             android:id="@+id/action_fragmentSelectRoom_to_fragmentSelectDemoUser"
             app:destination="@id/fragmentSelectDemoUser"
-            app:popUpTo="@id/fragmentSelectRoom" />
+            />
     </fragment>
 
     <fragment
@@ -26,7 +26,7 @@
         <action
             android:id="@+id/action_fragmentSelectDemoUser_to_fragmentChatRoom"
             app:destination="@id/fragmentChatRoom"
-            app:popUpTo="@id/fragmentSelectDemoUser" />
+            />
     </fragment>
 
     <fragment
