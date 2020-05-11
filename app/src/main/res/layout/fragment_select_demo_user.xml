@@ -20,7 +20,7 @@
             app:title="@string/select_a_demo_user"
             app:navigationIcon="?attr/homeAsUpIndicator"
             app:popupTheme="@style/AppTheme.PopupOverlay"
-            app:menu="@menu/select_room"
+            app:menu="@menu/select_demo_user"
             />
 
     </com.google.android.material.appbar.AppBarLayout>

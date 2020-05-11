@@ -15,4 +15,5 @@
     <string name="enter_exit">Enter/Exit</string>
     <string name="open">Open</string>
     <string name="profanity_filter">Profanity Filter</string>
+    <string name="send_a_message">Send a message…</string>
 </resources>

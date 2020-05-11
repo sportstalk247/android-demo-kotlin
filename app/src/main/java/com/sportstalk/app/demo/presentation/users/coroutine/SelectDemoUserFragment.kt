@@ -64,7 +64,7 @@ class SelectDemoUserFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         binding = FragmentSelectDemoUserBinding.inflate(inflater)
-        appNavController = Navigation.findNavController(requireActivity(), R.id.navHostFragmentApp)
+        appNavController = findNavController()
 
         recycler = ItemSelectDemoUserRecycler.adopt(
             recyclerView = binding.recyclerView,
@@ -117,12 +117,12 @@ class SelectDemoUserFragment : Fragment() {
                 Log.d(TAG, "viewModel.effect -> ${effect::class.java.simpleName}")
                 when (effect) {
                     is SelectDemoUserViewModel.ViewEffect.NavigateToChatRoom -> {
-                        // TODO::
-                        Toast.makeText(
-                            requireContext(),
-                            "Click User: `${effect.which.handle}`",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        // Navigate to ChatRoom screen
+                        if (appNavController.currentDestination?.id == R.id.fragmentSelectDemoUser) {
+                            appNavController.navigate(
+                                R.id.action_fragmentSelectDemoUser_to_fragmentChatRoom
+                            )
+                        }
                     }
                     is SelectDemoUserViewModel.ViewEffect.ErrorFetchParticipants -> {
                         // TODO::
