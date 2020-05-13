@@ -31,7 +31,7 @@ object ItemSelectDemoUserRecycler {
                                     RequestOptions.centerCropTransform()
                                 )
                                 .into(binding.civProfile)
-                        }
+                        } ?: binding.civProfile.setImageResource(0)
 
                         binding.actvDisplayName.text = item.user?.displayname
                         binding.actvHandle.text = "@${item.user?.handle}"

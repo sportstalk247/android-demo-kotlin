@@ -107,7 +107,7 @@ class SelectRoomFragment : Fragment() {
                             appNavController.navigate(
                                 R.id.action_fragmentSelectRoom_to_fragmentSelectDemoUser,
                                 bundleOf(
-                                    SelectDemoUserFragment.INPUT_ARG_ROOM_ID to effect.which.id!!
+                                    SelectDemoUserFragment.INPUT_ARG_ROOM to effect.which
                                 )
                             )
                         }

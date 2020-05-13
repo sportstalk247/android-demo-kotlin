@@ -8,17 +8,17 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
-import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.FragmentSelectDemoUserBinding
-import com.sportstalk.app.demo.extensions.sharedGraphViewModel
 import com.sportstalk.app.demo.extensions.throttleFirst
+import com.sportstalk.app.demo.presentation.chatroom.coroutine.ChatRoomFragment
 import com.sportstalk.app.demo.presentation.users.adapter.ItemSelectDemoUserRecycler
+import com.sportstalk.models.chat.ChatRoom
 import com.sportstalk.models.chat.ChatRoomParticipant
 import com.squareup.cycler.Recycler
 import com.squareup.cycler.toDataSource
@@ -28,7 +28,6 @@ import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.util.*
 
@@ -38,7 +37,7 @@ class SelectDemoUserFragment : Fragment() {
 
     private lateinit var binding: FragmentSelectDemoUserBinding
     private val viewModel: SelectDemoUserViewModel by viewModel()
-    private lateinit var argRoomId: String
+    private lateinit var argRoom: ChatRoom
 
     private val cursor = ConflatedBroadcastChannel<Optional<String>>()
     private val onScrollFetchNext = ConflatedBroadcastChannel<String>()
@@ -50,12 +49,7 @@ class SelectDemoUserFragment : Fragment() {
 
         setHasOptionsMenu(true)
 
-        argRoomId = requireArguments().getString(INPUT_ARG_ROOM_ID, "")
-        if (argRoomId.isEmpty()) {
-            Toast.makeText(requireContext(), "Invalid Chat Room", Toast.LENGTH_SHORT).show()
-            appNavController.popBackStack()
-            return
-        }
+        argRoom = requireArguments().getParcelable(INPUT_ARG_ROOM)!!
     }
 
     override fun onCreateView(
@@ -120,7 +114,11 @@ class SelectDemoUserFragment : Fragment() {
                         // Navigate to ChatRoom screen
                         if (appNavController.currentDestination?.id == R.id.fragmentSelectDemoUser) {
                             appNavController.navigate(
-                                R.id.action_fragmentSelectDemoUser_to_fragmentChatRoom
+                                R.id.action_fragmentSelectDemoUser_to_fragmentChatRoom,
+                                bundleOf(
+                                    ChatRoomFragment.INPUT_ARG_USER to effect.which,
+                                    ChatRoomFragment.INPUT_ARG_ROOM to argRoom
+                                )
                             )
                         }
                     }
@@ -139,7 +137,7 @@ class SelectDemoUserFragment : Fragment() {
         // Perform fetch on refresh
         binding.swipeRefresh.setOnRefreshListener {
             Log.d(TAG, "binding.swipeRefresh")
-            viewModel.fetch(roomId = argRoomId, cursor = null)
+            viewModel.fetch(roomId = argRoom.id!!, cursor = null)
         }
 
         // Scroll Bottom Attempt Fetch More
@@ -150,7 +148,7 @@ class SelectDemoUserFragment : Fragment() {
             .onEach {
                 val _cursor = cursor.value
                 viewModel.fetch(
-                    roomId = argRoomId,
+                    roomId = argRoom.id!!,
                     cursor = if (_cursor.isPresent) _cursor.get()
                     else null
                 )
@@ -164,7 +162,7 @@ class SelectDemoUserFragment : Fragment() {
 
         // On view created, Perform fetch
         Log.d(TAG, "onViewCreated() -> viewModel.fetch()")
-        viewModel.fetch(roomId = argRoomId, cursor = null)
+        viewModel.fetch(roomId = argRoom.id!!, cursor = null)
     }
 
     private fun takeProgressFetchParticipants(inProgress: Boolean) {
@@ -184,7 +182,7 @@ class SelectDemoUserFragment : Fragment() {
     companion object {
         val TAG = SelectDemoUserFragment::class.java.simpleName
 
-        const val INPUT_ARG_ROOM_ID = "input-arg-room-id"
+        const val INPUT_ARG_ROOM = "input-arg-room"
     }
 
 }
