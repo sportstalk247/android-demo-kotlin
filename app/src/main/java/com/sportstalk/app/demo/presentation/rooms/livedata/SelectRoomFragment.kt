@@ -59,7 +59,7 @@ class SelectRoomFragment : Fragment() {
                     // TODO::
                     Toast.makeText(
                         requireContext(),
-                        "Click Room: `${effect.which.slug}`",
+                        "Click Room: `${effect.which.name}`",
                         Toast.LENGTH_SHORT
                     ).show()
                 }

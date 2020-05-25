@@ -1,7 +1,8 @@
 package com.sportstalk.app.demo.presentation.rooms.rxjava
 
 import androidx.lifecycle.ViewModel
-import com.sportstalk.api.ChatApiService
+import com.sportstalk.api.ChatClient
+import com.sportstalk.models.SportsTalkException
 import com.sportstalk.models.chat.ChatRoom
 import com.sportstalk.models.chat.ListRoomsResponse
 import io.reactivex.BackpressureStrategy
@@ -24,7 +25,7 @@ class SelectRoomViewModel(
     *   // Access singleton instance
     *   val chatApiService = SportsTalkManager.instance.chatApiService
     */
-    private val chatApiService: ChatApiService
+    private val chatClient: ChatClient
 ) : ViewModel() {
 
     private val rxDisposable = CompositeDisposable()
@@ -72,7 +73,7 @@ class SelectRoomViewModel(
 //////////////// CompletableFuture -> RxJava Single
 ////////////////////////////////////////////////////////
                 Single.fromFuture(
-                    chatApiService.listRooms(
+                    chatClient.listRooms(
                         cursor = _fetchWithCursor.takeIf { it.isNotEmpty() },
                         limit = LIMIT_FETCH_ROOMS
                     ),
@@ -81,21 +82,11 @@ class SelectRoomViewModel(
                 )
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .flatMap { response ->
-                        // Map out `data` from response
-                        if (response.code in 200..299) {
-                            // "success"
-                            Single.just(response.data!!)
-                        } else {
-                            // "error"
-                            Single.error(Throwable(response.message))
-                        }
-                    }
                     .onErrorResumeNext { err ->
                         // Emit error if encountered
                         _effect.onNext(
                             ViewEffect.ErrorFetchRoom(
-                                err = err
+                                err = err as SportsTalkException
                             )
                         )
                         SingleSource { e -> e.onSuccess(ListRoomsResponse()) /*_state.value ?: ViewState()*/ }
@@ -147,7 +138,7 @@ class SelectRoomViewModel(
 
     sealed class ViewEffect {
         class NavigateToChatRoom(val which: ChatRoom) : ViewEffect()
-        class ErrorFetchRoom(val err: Throwable) : ViewEffect()
+        class ErrorFetchRoom(val err: SportsTalkException) : ViewEffect()
     }
 
     companion object {

@@ -2,8 +2,8 @@ package com.sportstalk.app.demo.presentation.users.coroutine
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sportstalk.api.ChatApiService
-import com.sportstalk.app.demo.extensions.throttleFirst
+import com.sportstalk.api.ChatClient
+import com.sportstalk.models.SportsTalkException
 import com.sportstalk.models.chat.ChatRoomParticipant
 import com.sportstalk.models.users.User
 import kotlinx.coroutines.Dispatchers
@@ -23,7 +23,7 @@ class SelectDemoUserViewModel(
     *   // Access singleton instance
     *   val chatApiService = SportsTalkManager.instance.chatApiService
     */
-    private val chatApiService: ChatApiService
+    private val chatClient: ChatClient
 ) : ViewModel() {
 
     private val participants = ConflatedBroadcastChannel<List<ChatRoomParticipant>>()
@@ -69,30 +69,23 @@ class SelectDemoUserViewModel(
 ////////////////////////////////////////////////////////
 //////////////// CompletableFuture -> Coroutine
 ////////////////////////////////////////////////////////
-                val response =
+                val listParticipantsResponse =
                     withContext(Dispatchers.IO) { /* Switch to IO Context(i.e. Background Thread) */
-                        chatApiService.listRoomParticipants(
+                        chatClient.listRoomParticipants(
                             chatRoomId = roomId,
                             cursor = cursor,
                             limit = LIMIT_FETCH_USERS
                         )
                             .await()
                     }
-
-                // Map out `data` from response
-                val listParticipantsResponse = if (response.code in 200..299) {
-                    response.data!!
-                } else {
-                    // "error"
-                    throw Throwable(response.message)
-                }
                 // Emit update room list
-                val updatedParticipants = if(cursor == null || cursor.isEmpty()) listParticipantsResponse.participants
+                val updatedParticipants =
+                    if (cursor == null || cursor.isEmpty()) listParticipantsResponse.participants
                     else listParticipantsResponse.participants + participants.value
                 participants.send(updatedParticipants.distinct())
                 // Emit new cursor
                 this@SelectDemoUserViewModel.cursor.send(listParticipantsResponse.cursor ?: "")
-            } catch (err: Throwable) {
+            } catch (err: SportsTalkException) {
                 // Emit error if encountered
                 _effect.send(ViewEffect.ErrorFetchParticipants(err = err))
             } finally {
@@ -116,7 +109,7 @@ class SelectDemoUserViewModel(
 
     sealed class ViewEffect {
         data class NavigateToChatRoom(val which: User) : ViewEffect()
-        data class ErrorFetchParticipants(val err: Throwable) : ViewEffect()
+        data class ErrorFetchParticipants(val err: SportsTalkException) : ViewEffect()
     }
 
     companion object {

@@ -1,9 +1,10 @@
 package com.sportstalk.app.demo
 
 import android.app.Application
-import com.sportstalk.SportsTalkManager
-import com.sportstalk.api.ChatApiService
-import com.sportstalk.api.UsersApiService
+import com.sportstalk.SportsTalk247
+import com.sportstalk.api.ChatClient
+import com.sportstalk.api.UserClient
+import com.sportstalk.models.ClientConfig
 import com.sportstalk.app.demo.presentation.users.coroutine.SelectDemoUserViewModel as SelectDemoUserViewModelCoroutine
 import com.sportstalk.app.demo.presentation.rooms.rxjava.SelectRoomViewModel as SelectRoomViewModelRx
 import com.sportstalk.app.demo.presentation.rooms.coroutine.SelectRoomViewModel as SelectRoomViewModelCoroutine
@@ -19,15 +20,21 @@ class SportsTalkDemoApplication: Application() {
         super.onCreate()
 
         // Instantiate
-        SportsTalkManager.init(applicationContext)
-
         startKoin {
             androidContext(applicationContext)
             modules(
                 module {
-                    single { SportsTalkManager.instance }
-                    single<UsersApiService> { get<SportsTalkManager>().usersApiService }
-                    single<ChatApiService> { get<SportsTalkManager>().chatApiService }
+                    single<ClientConfig> {
+                        val metadata = applicationInfo.metaData
+
+                        ClientConfig(
+                            appId = metadata.getString("sportstalk.api.app_id")!!,
+                            apiToken = metadata.getString("sportstalk.api.auth_token")!!,
+                            endpoint = "https://qa-talkapi.sportstalk247.com/api/v3/"
+                        )
+                    }
+                    single<UserClient> { SportsTalk247.UserClient(config = get()) }
+                    single<ChatClient> { SportsTalk247.ChatClient(config = get()) }
                 },
                 module {
                     /*
@@ -35,17 +42,17 @@ class SportsTalkDemoApplication: Application() {
                     */
                     viewModel {
                         SelectRoomViewModelRx(
-                            chatApiService = get()
+                            chatClient = get()
                         )
                     }
                     viewModel {
                         SelectRoomViewModelCoroutine(
-                            chatApiService = get()
+                            chatClient = get()
                         )
                     }
                     viewModel {
                         SelectRoomViewModelLiveData(
-                            chatApiService = get()
+                            chatClient = get()
                         )
                     }
                     /*
@@ -53,7 +60,7 @@ class SportsTalkDemoApplication: Application() {
                     */
                     viewModel {
                         SelectDemoUserViewModelCoroutine(
-                            chatApiService = get()
+                            chatClient = get()
                         )
                     }
                 }

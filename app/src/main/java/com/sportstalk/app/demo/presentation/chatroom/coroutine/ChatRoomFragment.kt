@@ -13,15 +13,14 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
-import com.sportstalk.api.ChatApiService
-import com.sportstalk.api.polling.allEventUpdatesFlow
+import com.sportstalk.api.ChatClient
+import com.sportstalk.api.polling.coroutines.allEventUpdates
 import com.sportstalk.app.demo.databinding.FragmentChatRoomBinding
 import com.sportstalk.app.demo.presentation.chatroom.adapters.ItemChatEventRecycler
 import com.sportstalk.models.chat.ChatEvent
 import com.sportstalk.models.chat.ChatRoom
 import com.sportstalk.models.users.User
 import com.squareup.cycler.Recycler
-import com.squareup.cycler.getMutatedData
 import com.squareup.cycler.toDataSource
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
@@ -89,7 +88,7 @@ class ChatRoomFragment : Fragment() {
         )
 
         // Bare implementation
-        get<ChatApiService>().allEventUpdatesFlow(
+        get<ChatClient>().allEventUpdates(
             chatRoomId = room.id!!,
             lifecycleOwner = viewLifecycleOwner
         )

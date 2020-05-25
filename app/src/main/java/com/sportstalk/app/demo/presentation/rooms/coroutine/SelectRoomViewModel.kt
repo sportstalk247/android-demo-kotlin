@@ -2,8 +2,8 @@ package com.sportstalk.app.demo.presentation.rooms.coroutine
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sportstalk.api.ChatApiService
-import com.sportstalk.app.demo.extensions.throttleFirst
+import com.sportstalk.api.ChatClient
+import com.sportstalk.models.SportsTalkException
 import com.sportstalk.models.chat.ChatRoom
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BroadcastChannel
@@ -22,7 +22,7 @@ class SelectRoomViewModel(
     *   // Access singleton instance
     *   val chatApiService = SportsTalkManager.instance.chatApiService
     */
-    private val chatApiService: ChatApiService
+    private val chatClient: ChatClient
 ) : ViewModel() {
 
     private val rooms = ConflatedBroadcastChannel<List<ChatRoom>>()
@@ -68,29 +68,23 @@ class SelectRoomViewModel(
 ////////////////////////////////////////////////////////
 //////////////// CompletableFuture -> Coroutine
 ////////////////////////////////////////////////////////
-                val response = withContext(Dispatchers.IO) { /* Switch to IO Context(i.e. Background Thread) */
-                    chatApiService.listRooms(
-                        cursor = cursor,
-                        limit = LIMIT_FETCH_ROOMS
-                    )
-                        .await()
-                }
+                val listRoomsResponse =
+                    withContext(Dispatchers.IO) { /* Switch to IO Context(i.e. Background Thread) */
+                        chatClient.listRooms(
+                            cursor = cursor,
+                            limit = LIMIT_FETCH_ROOMS
+                        )
+                            .await()
+                    }
 
-                // Map out `data` from response
-                val listRoomsResponse = if (response.code in 200..299) {
-                    response.data!!
-                } else {
-                    // "error"
-                    throw Throwable(response.message)
-                }
                 // Emit update room list
-                val updatedRooms = if(cursor == null || cursor.isEmpty()) listRoomsResponse.rooms
-                    else listRoomsResponse.rooms + rooms.value
+                val updatedRooms = if (cursor == null || cursor.isEmpty()) listRoomsResponse.rooms
+                else listRoomsResponse.rooms + rooms.value
                 rooms.send(updatedRooms.distinct())
                 // Emit new cursor
                 this@SelectRoomViewModel.cursor.send(listRoomsResponse.cursor ?: "")
 
-            } catch (err: Throwable) {
+            } catch (err: SportsTalkException) {
                 // Emit error if encountered
                 _effect.send(ViewEffect.ErrorFetchRoom(err = err))
             } finally {
@@ -116,7 +110,7 @@ class SelectRoomViewModel(
 
     sealed class ViewEffect {
         data class NavigateToChatRoom(val which: ChatRoom) : ViewEffect()
-        data class ErrorFetchRoom(val err: Throwable) : ViewEffect()
+        data class ErrorFetchRoom(val err: SportsTalkException) : ViewEffect()
     }
 
     companion object {
