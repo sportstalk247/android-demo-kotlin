@@ -23,7 +23,7 @@ object ItemSelectRoomRecycler {
                     val binding = ItemSelectRoomBinding.bind(view)
                     bind { index, item ->
                         binding.actvRoomName.text = item.name
-                        binding.actvSlug.text = item.slug
+                        binding.actvSlug.text = item.customid
                         binding.actvDescription.text = item.description
                         binding.actvInRoomCount.text = item.inroom?.toString(10) ?: ""
 

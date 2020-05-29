@@ -1,17 +1,12 @@
-package com.sportstalk.app.demo.presentation.users.coroutine
+package com.sportstalk.app.demo.presentation.users.livedata
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.sportstalk.api.ChatClient
+import com.sportstalk.app.demo.extensions.SingleLiveEvent
 import com.sportstalk.models.SportsTalkException
 import com.sportstalk.models.chat.ChatRoomParticipant
 import com.sportstalk.models.users.User
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.channels.BroadcastChannel
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.ConflatedBroadcastChannel
-import kotlinx.coroutines.channels.sendBlocking
-import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -24,47 +19,53 @@ class SelectDemoUserViewModel(
     *   val chatClient = SportsTalk247.ChatClient(config = config)
     */
     private val chatClient: ChatClient
-) : ViewModel() {
+): ViewModel() {
 
-    private val participants = ConflatedBroadcastChannel<List<ChatRoomParticipant>>()
-    private val progressFetchParticipants = BroadcastChannel<Boolean>(Channel.BUFFERED)
-    private val cursor = BroadcastChannel<String>(Channel.BUFFERED)
-    private val _state = ConflatedBroadcastChannel<ViewState>()
-    val state: Flow<ViewState>
-        get() = _state.asFlow()
-            .onStart { emit(ViewState(progressFetchParticipants = true)) }
+    private val participants = MutableLiveData<List<ChatRoomParticipant>>()
+    private val progressFetchParticipants = SingleLiveEvent<Boolean>()
+    private val cursor = SingleLiveEvent<String>()
+    private val _state = MutableLiveData<ViewState>()
+    val state: LiveData<ViewState>
+        get() = _state
 
-    private val _effect = BroadcastChannel<ViewEffect>(Channel.BUFFERED)
-    val effect: Flow<ViewEffect>
-        get() = _effect
-            .asFlow()
-            .distinctUntilChanged()
+    private val _effect = SingleLiveEvent<ViewEffect>()
+    val effect: LiveData<ViewEffect>
+        get() = _effect.distinctUntilChanged()
+
+    /*
+   * Actively emit updated state based on combined livedata values
+   */
+    private val stateChangesLvDta = participants.switchMap { _rooms ->
+        progressFetchParticipants.switchMap<Boolean, ViewState> { _progress ->
+            cursor.map<String, ViewState> { _cursor ->
+                ViewState(_rooms, _progress, _cursor)
+            }
+        }
+    }
+
+    private val stateObserver: Observer<ViewState> = Observer<ViewState> { _viewState ->
+        _state.postValue(_viewState)
+    }
 
     init {
-        // Emit ViewState changes
-        combine(
-            participants.asFlow(),
-            progressFetchParticipants.asFlow(),
-            cursor.asFlow()
-        ) { _rooms, _progress, _cursor ->
-            ViewState(
-                _rooms,
-                _progress,
-                _cursor.takeIf { it.isNotEmpty() })
-        }
-            .onEach { _state.send(it) }
-            .launchIn(viewModelScope)
+        stateChangesLvDta.observeForever(stateObserver)
+    }
+
+    fun selectDemoUser(which: User) {
+        _effect.postValue(
+            ViewEffect.NavigateToChatRoom(which)
+        )
     }
 
     fun fetch(roomId: String, cursor: String? = null) {
         // Clear list if fetching without cursor(ex. swipe refresh)
-        this.cursor.sendBlocking(cursor ?: "")
+        this.cursor.postValue(cursor ?: "")
 
         // Attempt fetch
         viewModelScope.launch {
             try {
                 // Emit DISPLAY Progress indicator
-                progressFetchParticipants.send(true)
+                progressFetchParticipants.postValue(true)
 
 ////////////////////////////////////////////////////////
 //////////////// CompletableFuture -> Coroutine
@@ -81,24 +82,23 @@ class SelectDemoUserViewModel(
                 // Emit update room list
                 val updatedParticipants =
                     if (cursor == null || cursor.isEmpty()) listParticipantsResponse.participants
-                    else listParticipantsResponse.participants + participants.value
-                participants.send(updatedParticipants.distinct())
+                    else listParticipantsResponse.participants + participants.value!!
+                participants.postValue(updatedParticipants.distinct())
                 // Emit new cursor
-                this@SelectDemoUserViewModel.cursor.send(listParticipantsResponse.cursor ?: "")
+                this@SelectDemoUserViewModel.cursor.postValue(listParticipantsResponse.cursor ?: "")
             } catch (err: SportsTalkException) {
                 // Emit error if encountered
-                _effect.send(ViewEffect.ErrorFetchParticipants(err = err))
+                _effect.postValue(ViewEffect.ErrorFetchParticipants(err = err))
             } finally {
                 // Emit HIDE Progress indicator
-                progressFetchParticipants.send(false)
+                progressFetchParticipants.postValue(false)
             }
         }
     }
 
-    fun selectDemoUser(which: User) {
-        _effect.sendBlocking(
-            ViewEffect.NavigateToChatRoom(which)
-        )
+    override fun onCleared() {
+        super.onCleared()
+        stateChangesLvDta.removeObserver(stateObserver)
     }
 
     data class ViewState(

@@ -6,30 +6,52 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
+import androidx.navigation.NavController
+import androidx.navigation.Navigation
+import com.sportstalk.SportsTalk247
+import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.FragmentSelectRoomBinding
 import com.sportstalk.app.demo.presentation.rooms.adapters.ItemSelectRoomRecycler
+import com.sportstalk.app.demo.presentation.users.rxjava.SelectDemoUserFragment
+import com.sportstalk.models.ClientConfig
 import com.sportstalk.models.chat.ChatRoom
 import com.squareup.cycler.Recycler
 import com.squareup.cycler.toDataSource
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
-import io.reactivex.rxkotlin.withLatestFrom
 import io.reactivex.subjects.BehaviorSubject
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.koin.core.parameter.parametersOf
 import java.util.*
 import java.util.concurrent.TimeUnit
 
 class SelectRoomFragment : Fragment() {
 
+    private lateinit var appNavController: NavController
     private lateinit var binding: FragmentSelectRoomBinding
 
-    private val viewModel: SelectRoomViewModel by viewModel()
+    private val config: ClientConfig by lazy {
+        ClientConfig(
+            appId = "5ec0dc805617e00918446168",
+            apiToken = "R-GcA7YsG0Gu3DjEVMWcJA60RkU9uyH0Wmn2pnEbzJzA",
+            endpoint = "https://qa-talkapi.sportstalk247.com/api/v3/"
+        )
+    }
+
+    private val viewModel: SelectRoomViewModel by viewModel {
+        parametersOf(
+            SportsTalk247.ChatClient(config = config)
+        )
+    }
 
     private val rxDisposeBag = CompositeDisposable()
 
     private val cursor = BehaviorSubject.create<Optional<String>>()
     private val onScrollFetchNext = BehaviorSubject.create<String>()
+
+    private lateinit var recycler: Recycler<ChatRoom>
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -37,6 +59,21 @@ class SelectRoomFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         binding = FragmentSelectRoomBinding.inflate(inflater)
+        appNavController = Navigation.findNavController(requireActivity(), R.id.navHostFragmentApp)
+
+        recycler = ItemSelectRoomRecycler.adopt(
+            recyclerView = binding.recyclerView,
+            onScrollFetchChatRoomsNext = { cursor: String ->
+                // Attempt scroll next
+                onScrollFetchNext.onNext(cursor)
+            },
+            onSelectChatRoom = { chatRoom: ChatRoom ->
+                Log.d(TAG, "onSelectChatRoom() -> chatRoom = $chatRoom")
+                // Select Chat Room
+                viewModel.selectRoom(which = chatRoom)
+            }
+        )
+
         return binding.root
     }
 
@@ -47,12 +84,19 @@ class SelectRoomFragment : Fragment() {
          * Subscribe to and apply ViewState changes(ex. List of Room Updates, Progress indicator, etc.).
          */
         viewModel.state
-            .subscribe { state ->
-                takeProgressFetchRooms(state.progressFetchRooms)
-                takeRooms(state.rooms)
-                Log.d(TAG, "viewModel.state.cursor = ${state.cursor}")
-                cursor.onNext(Optional.ofNullable(state.cursor))
-            }
+            .map { it.progressFetchRooms }
+            .subscribe(::takeProgressFetchRooms)
+            .addTo(rxDisposeBag)
+
+        viewModel.state
+            .map { it.rooms }
+            .subscribe(::takeRooms)
+            .addTo(rxDisposeBag)
+
+        viewModel.state
+            .map { Optional.ofNullable(it.cursor) }
+            .doOnNext { Log.d(TAG, "viewModel.state.cursor = $it") }
+            .subscribe(cursor::onNext)
             .addTo(rxDisposeBag)
 
         /**
@@ -62,12 +106,15 @@ class SelectRoomFragment : Fragment() {
             .subscribe { effect ->
                 when (effect) {
                     is SelectRoomViewModel.ViewEffect.NavigateToChatRoom -> {
-                        // TODO::
-                        Toast.makeText(
-                            requireContext(),
-                            "Click Room: `${effect.which.slug}`",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        // Navigate to Select Demo User screen
+                        if (appNavController.currentDestination?.id == R.id.fragmentSelectRoom) {
+                            appNavController.navigate(
+                                R.id.action_fragmentSelectRoom_to_fragmentSelectDemoUser,
+                                bundleOf(
+                                    SelectDemoUserFragment.INPUT_ARG_ROOM to effect.which
+                                )
+                            )
+                        }
                     }
                     is SelectRoomViewModel.ViewEffect.ErrorFetchRoom -> {
                         // TODO::
@@ -84,8 +131,6 @@ class SelectRoomFragment : Fragment() {
         // Perform fetch on refresh
         binding.swipeRefresh.setOnRefreshListener {
             Log.d(TAG, "binding.swipeRefresh")
-            // Clear item list
-            recycler.clear()
             viewModel.fetch(cursor = null)
         }
 
@@ -128,20 +173,6 @@ class SelectRoomFragment : Fragment() {
         recycler.update {
             data = rooms.toDataSource()
         }
-    }
-
-    private val recycler: Recycler<ChatRoom> by lazy {
-        ItemSelectRoomRecycler.adopt(
-            recyclerView = binding.recyclerView,
-            onScrollFetchChatRoomsNext = { cursor: String ->
-                // Attempt scroll next
-                onScrollFetchNext.onNext(cursor)
-            },
-            onSelectChatRoom = { chatRoom: ChatRoom ->
-                // Select Chat Room
-                viewModel.selectRoom(which = chatRoom)
-            }
-        )
     }
 
     companion object {

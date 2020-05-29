@@ -1,10 +1,10 @@
 package com.sportstalk.app.demo
 
 import android.app.Application
-import com.sportstalk.SportsTalkManager
-import com.sportstalk.api.ChatApiService
-import com.sportstalk.api.UsersApiService
+import com.sportstalk.api.ChatClient
 import com.sportstalk.app.demo.presentation.users.coroutine.SelectDemoUserViewModel as SelectDemoUserViewModelCoroutine
+import com.sportstalk.app.demo.presentation.users.rxjava.SelectDemoUserViewModel as SelectDemoUserViewModelRx
+import com.sportstalk.app.demo.presentation.users.livedata.SelectDemoUserViewModel as SelectDemoUserViewModelLiveData
 import com.sportstalk.app.demo.presentation.rooms.rxjava.SelectRoomViewModel as SelectRoomViewModelRx
 import com.sportstalk.app.demo.presentation.rooms.coroutine.SelectRoomViewModel as SelectRoomViewModelCoroutine
 import com.sportstalk.app.demo.presentation.rooms.livedata.SelectRoomViewModel as SelectRoomViewModelLiveData
@@ -19,42 +19,33 @@ class SportsTalkDemoApplication: Application() {
         super.onCreate()
 
         // Instantiate
-        SportsTalkManager.init(applicationContext)
-
         startKoin {
             androidContext(applicationContext)
             modules(
-                module {
-                    single { SportsTalkManager.instance }
-                    single<UsersApiService> { get<SportsTalkManager>().usersApiService }
-                    single<ChatApiService> { get<SportsTalkManager>().chatApiService }
-                },
                 module {
                     /*
                     * Select Chat Room
                     */
                     viewModel {
-                        SelectRoomViewModelRx(
-                            chatApiService = get()
-                        )
+                            (chatClient: ChatClient) -> SelectRoomViewModelRx(chatClient)
                     }
                     viewModel {
-                        SelectRoomViewModelCoroutine(
-                            chatApiService = get()
-                        )
+                            (chatClient: ChatClient) -> SelectRoomViewModelCoroutine(chatClient)
                     }
                     viewModel {
-                        SelectRoomViewModelLiveData(
-                            chatApiService = get()
-                        )
+                            (chatClient: ChatClient) -> SelectRoomViewModelLiveData(chatClient)
                     }
                     /*
                     * Select Demo User
                     */
                     viewModel {
-                        SelectDemoUserViewModelCoroutine(
-                            chatApiService = get()
-                        )
+                            (chatClient: ChatClient) -> SelectDemoUserViewModelCoroutine(chatClient)
+                    }
+                    viewModel {
+                            (chatClient: ChatClient) -> SelectDemoUserViewModelRx(chatClient)
+                    }
+                    viewModel {
+                            (chatClient: ChatClient) -> SelectDemoUserViewModelLiveData(chatClient)
                     }
                 }
             )

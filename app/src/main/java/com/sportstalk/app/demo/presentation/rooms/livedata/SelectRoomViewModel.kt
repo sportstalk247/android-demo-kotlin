@@ -1,8 +1,9 @@
 package com.sportstalk.app.demo.presentation.rooms.livedata
 
 import androidx.lifecycle.*
-import com.sportstalk.api.ChatApiService
+import com.sportstalk.api.ChatClient
 import com.sportstalk.app.demo.extensions.SingleLiveEvent
+import com.sportstalk.models.SportsTalkException
 import com.sportstalk.models.chat.ChatRoom
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.future.await
@@ -11,12 +12,12 @@ import kotlinx.coroutines.withContext
 
 class SelectRoomViewModel(
     /*
-    * Typical use case to access API instance:
-    *   SportsTalkManager.init(applicationContext) // invoked once under SportsTalkDemoApplication.onCreate()
-    *   // Access singleton instance
-    *   val chatApiService = SportsTalkManager.instance.chatApiService
+    * Typical use case to access SDK client instance:
+    *   val config = ClientConfig(appId = "...", apiToken = "...", endpoint = "...")
+    *   // Instantiate via Factory
+    *   val chatClient = SportsTalk247.ChatClient(config = config)
     */
-    private val chatApiService: ChatApiService
+    private val chatClient: ChatClient
 ) : ViewModel() {
 
     private val rooms = MutableLiveData<List<ChatRoom>>()
@@ -63,28 +64,21 @@ class SelectRoomViewModel(
             progressFetchRooms.postValue(true)
 
             try {
-                val response =
+                val listRoomsResponse =
                     withContext(Dispatchers.IO) { /* Switch to IO Context(i.e. Background Thread) */
-                        chatApiService.listRooms(
+                        chatClient.listRooms(
                             cursor = cursor,
                             limit = LIMIT_FETCH_ROOMS
                         )
                             .await()
                     }
 
-                // Map out `data` from response
-                val listRoomsResponse = if (response.code in 200..299) {
-                    response.data!!
-                } else {
-                    // "error"
-                    throw Throwable(response.message)
-                }
                 // Emit update room list
                 rooms.postValue((listRoomsResponse.rooms + rooms.value!!).distinct())
                 // Emit new cursor
                 this@SelectRoomViewModel.cursor.postValue(listRoomsResponse.cursor ?: "")
 
-            } catch (err: Throwable) {
+            } catch (err: SportsTalkException) {
                 // Emit error if encountered
                 _effect.postValue(ViewEffect.ErrorFetchRoom(err = err))
             } finally {
@@ -110,7 +104,7 @@ class SelectRoomViewModel(
 
     sealed class ViewEffect {
         class NavigateToChatRoom(val which: ChatRoom) : ViewEffect()
-        class ErrorFetchRoom(val err: Throwable) : ViewEffect()
+        class ErrorFetchRoom(val err: SportsTalkException) : ViewEffect()
     }
 
     companion object {
