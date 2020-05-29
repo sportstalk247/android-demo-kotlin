@@ -20,10 +20,10 @@ import java.util.concurrent.TimeUnit
 
 class SelectRoomViewModel(
     /*
-    * Typical use case to access API instance:
-    *   SportsTalkManager.init(applicationContext) // invoked once under SportsTalkDemoApplication.onCreate()
-    *   // Access singleton instance
-    *   val chatApiService = SportsTalkManager.instance.chatApiService
+    * Typical use case to access SDK client instance:
+    *   val config = ClientConfig(appId = "...", apiToken = "...", endpoint = "...")
+    *   // Instantiate via Factory
+    *   val chatClient = SportsTalk247.ChatClient(config = config)
     */
     private val chatClient: ChatClient
 ) : ViewModel() {
@@ -64,47 +64,47 @@ class SelectRoomViewModel(
             .subscribe(_state::onNext)
             .addTo(rxDisposable)
 
-        // Perform Fetch Room on attempt fetch
-        performFetch
-            // Emit Display Progress Indicator
-            .doOnNext { progressFetchRooms.onNext(true) }
-            .switchMap { _fetchWithCursor ->
-////////////////////////////////////////////////////////
-//////////////// CompletableFuture -> RxJava Single
-////////////////////////////////////////////////////////
-                Single.fromFuture(
-                    chatClient.listRooms(
-                        cursor = _fetchWithCursor.takeIf { it.isNotEmpty() },
-                        limit = LIMIT_FETCH_ROOMS
-                    ),
-                    // Provide IO RxScheduler(i.e. background thread) that will be used to await future execution
-                    Schedulers.io()
-                )
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .onErrorResumeNext { err ->
-                        // Emit error if encountered
-                        _effect.onNext(
-                            ViewEffect.ErrorFetchRoom(
-                                err = err as SportsTalkException
-                            )
-                        )
-                        SingleSource { e -> e.onSuccess(ListRoomsResponse()) /*_state.value ?: ViewState()*/ }
-                    }
-                    .toObservable()
-            }
-            .doOnNext { response ->
-                // Emit HIDE Progress Indicator
-                progressFetchRooms.onNext(false)
-                // Emit Response List
-                rooms.onNext(
-                    ((response?.rooms ?: listOf()) + (rooms.value ?: listOf())).distinct()
-                )
-                // Emit new cursor
-                cursor.onNext(response?.cursor ?: "")
-            }
-            .subscribe()
-            .addTo(rxDisposable)
+//        // Perform Fetch Room on attempt fetch
+//        performFetch
+//            // Emit Display Progress Indicator
+//            .doOnNext { progressFetchRooms.onNext(true) }
+//            .switchMap { _fetchWithCursor ->
+//////////////////////////////////////////////////////////
+////////////////// CompletableFuture -> RxJava Single
+//////////////////////////////////////////////////////////
+//                Single.fromFuture(
+//                    chatClient.listRooms(
+//                        cursor = _fetchWithCursor.takeIf { it.isNotEmpty() },
+//                        limit = LIMIT_FETCH_ROOMS
+//                    ),
+//                    // Provide IO RxScheduler(i.e. background thread) that will be used to await future execution
+//                    Schedulers.io()
+//                )
+//                    .subscribeOn(Schedulers.io())
+//                    .observeOn(AndroidSchedulers.mainThread())
+//                    .onErrorResumeNext { err ->
+//                        // Emit error if encountered
+//                        _effect.onNext(
+//                            ViewEffect.ErrorFetchRoom(
+//                                err = err as SportsTalkException
+//                            )
+//                        )
+//                        SingleSource { e -> e.onSuccess(ListRoomsResponse()) /*_state.value ?: ViewState()*/ }
+//                    }
+//                    .toObservable()
+//            }
+//            .doOnNext { response ->
+//                // Emit HIDE Progress Indicator
+//                progressFetchRooms.onNext(false)
+//                // Emit Response List
+//                rooms.onNext(
+//                    ((response?.rooms ?: listOf()) + (rooms.value ?: listOf())).distinct()
+//                )
+//                // Emit new cursor
+//                cursor.onNext(response?.cursor ?: "")
+//            }
+//            .subscribe()
+//            .addTo(rxDisposable)
     }
 
     fun fetch(cursor: String? = null) {
@@ -112,8 +112,46 @@ class SelectRoomViewModel(
         if (cursor == null || cursor.isEmpty()) rooms.onNext(listOf())
         this.cursor.onNext(cursor ?: "")
 
-        // Attempt fetch
-        performFetch.onNext(cursor ?: "")
+        // Emit Display Progress Indicator
+        progressFetchRooms.onNext(true)
+////////////////////////////////////////////////////////
+//////////////// CompletableFuture -> RxJava Single
+////////////////////////////////////////////////////////
+        Single.fromFuture(
+            chatClient.listRooms(
+                cursor = cursor,
+                limit = LIMIT_FETCH_ROOMS
+            ),
+            // Provide IO RxScheduler(i.e. background thread) that will be used to await future execution
+            Schedulers.io()
+        )
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .onErrorResumeNext { err ->
+                // Emit error if encountered
+                _effect.onNext(
+                    ViewEffect.ErrorFetchRoom(
+                        err = err as SportsTalkException
+                    )
+                )
+                SingleSource { e -> e.onSuccess(ListRoomsResponse()) }
+            }
+            .doOnSuccess { listRoomsResponse ->
+                // Emit HIDE Progress Indicator
+                progressFetchRooms.onNext(false)
+
+                val updatedRooms = when (cursor == null || cursor.isEmpty()) {
+                    true -> listRoomsResponse.rooms
+                    else -> listRoomsResponse.rooms + rooms.value!!
+                }
+
+                // Emit Updated Chat Room List
+                rooms.onNext(updatedRooms)
+                // Emit new cursor
+                this@SelectRoomViewModel.cursor.onNext(listRoomsResponse.cursor ?: "")
+            }
+            .subscribe()
+            .addTo(rxDisposable)
     }
 
 

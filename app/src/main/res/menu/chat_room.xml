@@ -5,12 +5,18 @@
     xmlns:tools="http://schemas.android.com/tools"
     >
 
-    <!--<item android:id="@+id/action_search"
-        app:actionViewClass="androidx.appcompat.widget.SearchView"
-        android:icon="@drawable/ic_search"
+    <item
+        android:id="@+id/action_start_listen"
+        android:icon="@android:drawable/ic_media_play"
+        android:title="Start Listen Events"
         app:showAsAction="always"
-        android:visible="false"
-        tools:visible="true"
-        />-->
+        />
+
+    <item
+        android:id="@+id/action_stop_listen"
+        android:icon="@android:drawable/ic_media_pause"
+        android:title="Stop Listen Events"
+        app:showAsAction="always"
+        />
 
 </menu>

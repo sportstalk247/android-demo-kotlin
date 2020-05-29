@@ -17,10 +17,10 @@ import kotlinx.coroutines.withContext
 
 class SelectRoomViewModel(
     /*
-    * Typical use case to access API instance:
-    *   SportsTalkManager.init(applicationContext) // invoked once under SportsTalkDemoApplication.onCreate()
-    *   // Access singleton instance
-    *   val chatApiService = SportsTalkManager.instance.chatApiService
+    * Typical use case to access SDK client instance:
+    *   val config = ClientConfig(appId = "...", apiToken = "...", endpoint = "...")
+    *   // Instantiate via Factory
+    *   val chatClient = SportsTalk247.ChatClient(config = config)
     */
     private val chatClient: ChatClient
 ) : ViewModel() {
@@ -104,7 +104,7 @@ class SelectRoomViewModel(
 
     data class ViewState(
         val rooms: List<ChatRoom> = listOf(),
-        val progressFetchRooms: Boolean = false,
+        val progressFetchRooms: Boolean = true,
         val cursor: String? = null
     )
 

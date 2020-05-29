@@ -11,11 +11,13 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
+import com.sportstalk.SportsTalk247
 import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.FragmentSelectRoomBinding
 import com.sportstalk.app.demo.extensions.throttleFirst
 import com.sportstalk.app.demo.presentation.rooms.adapters.ItemSelectRoomRecycler
 import com.sportstalk.app.demo.presentation.users.coroutine.SelectDemoUserFragment
+import com.sportstalk.models.ClientConfig
 import com.sportstalk.models.chat.ChatRoom
 import com.squareup.cycler.Recycler
 import com.squareup.cycler.toDataSource
@@ -23,15 +25,27 @@ import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.channels.sendBlocking
 import kotlinx.coroutines.flow.*
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.koin.core.parameter.parametersOf
 import java.util.*
 
 class SelectRoomFragment : Fragment() {
 
     private lateinit var appNavController: NavController
-
     private lateinit var binding: FragmentSelectRoomBinding
 
-    private val viewModel: SelectRoomViewModel by viewModel()
+    private val config: ClientConfig by lazy {
+        ClientConfig(
+            appId = "5ec0dc805617e00918446168",
+            apiToken = "R-GcA7YsG0Gu3DjEVMWcJA60RkU9uyH0Wmn2pnEbzJzA",
+            endpoint = "https://qa-talkapi.sportstalk247.com/api/v3/"
+        )
+    }
+
+    private val viewModel: SelectRoomViewModel by viewModel {
+        parametersOf(
+            SportsTalk247.ChatClient(config = config)
+        )
+    }
 
     private val cursor = ConflatedBroadcastChannel<Optional<String>>()
     private val onScrollFetchNext = ConflatedBroadcastChannel<String>()

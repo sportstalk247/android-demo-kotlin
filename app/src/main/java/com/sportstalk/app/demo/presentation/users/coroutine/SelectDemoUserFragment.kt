@@ -13,22 +13,22 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
+import com.sportstalk.SportsTalk247
 import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.FragmentSelectDemoUserBinding
 import com.sportstalk.app.demo.extensions.throttleFirst
 import com.sportstalk.app.demo.presentation.chatroom.coroutine.ChatRoomFragment
 import com.sportstalk.app.demo.presentation.users.adapter.ItemSelectDemoUserRecycler
+import com.sportstalk.models.ClientConfig
 import com.sportstalk.models.chat.ChatRoom
 import com.sportstalk.models.chat.ChatRoomParticipant
 import com.squareup.cycler.Recycler
 import com.squareup.cycler.toDataSource
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.channels.sendBlocking
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.*
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.koin.core.parameter.parametersOf
 import java.util.*
 
 class SelectDemoUserFragment : Fragment() {
@@ -36,7 +36,19 @@ class SelectDemoUserFragment : Fragment() {
     private lateinit var appNavController: NavController
 
     private lateinit var binding: FragmentSelectDemoUserBinding
-    private val viewModel: SelectDemoUserViewModel by viewModel()
+
+    private val config: ClientConfig by lazy {
+        ClientConfig(
+            appId = "5ec0dc805617e00918446168",
+            apiToken = "R-GcA7YsG0Gu3DjEVMWcJA60RkU9uyH0Wmn2pnEbzJzA",
+            endpoint = "https://qa-talkapi.sportstalk247.com/api/v3/"
+        )
+    }
+    private val viewModel: SelectDemoUserViewModel by viewModel {
+        parametersOf(
+            SportsTalk247.ChatClient(config = config)
+        )
+    }
     private lateinit var argRoom: ChatRoom
 
     private val cursor = ConflatedBroadcastChannel<Optional<String>>()
@@ -95,11 +107,20 @@ class SelectDemoUserFragment : Fragment() {
          * Subscribe to and apply ViewState changes(ex. List of ChatRoom Participants Updates, Progress indicator, etc.).
          */
         viewModel.state
-            .onEach { state ->
-                takeProgressFetchParticipants(state.progressFetchParticipants)
-                takeParticipants(state.participants)
-                Log.d(TAG, "viewModel.state.cursor = ${state.cursor}")
-                cursor.send(Optional.ofNullable(state.cursor))
+            .map { it.progressFetchParticipants }
+            .onEach { takeProgressFetchParticipants(it) }
+            .launchIn(lifecycleScope)
+
+        viewModel.state
+            .map { it.participants }
+            .onEach { takeParticipants(it) }
+            .launchIn(lifecycleScope)
+
+        viewModel.state
+            .map { Optional.ofNullable(it.cursor) }
+            .onEach {
+                Log.d(TAG, "viewModel.state.cursor = $it")
+                cursor.send(it)
             }
             .launchIn(lifecycleScope)
 
