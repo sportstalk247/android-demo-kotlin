@@ -70,7 +70,7 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    implementation "com.gitlab.sportstalk247:sdk-android-kotlin:caa0919760"
+    implementation "com.gitlab.sportstalk247:sdk-android-kotlin:b5e58c8134"
 
     // Jetbrains Kotlin Dependencies
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"

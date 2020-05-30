@@ -110,8 +110,6 @@ class ChatRoomFragment : Fragment() {
                 Log.d(TAG, "[$strTime] -> events = ${json.stringify(events)}")
 
                 recycler.update {
-                    val hasNewUpdates = data.size != events.size
-
                     data = events.toMutableList().apply {
                         for (i in 0 until data.size) {
                             add(i, data[i])
@@ -120,9 +118,6 @@ class ChatRoomFragment : Fragment() {
                         .distinctBy { it.id }
                         .sortedByDescending { it.added }
                         .toDataSource()
-
-                    // Scroll to Latest Item
-                    if(hasNewUpdates) binding.recyclerView.scrollToPosition(0/*data.size - 1*/)
                 }
             })
 

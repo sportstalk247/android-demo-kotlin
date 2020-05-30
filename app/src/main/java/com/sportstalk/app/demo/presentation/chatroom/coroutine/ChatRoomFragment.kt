@@ -31,6 +31,7 @@ import com.sportstalk.models.users.User
 import com.squareup.cycler.Recycler
 import com.squareup.cycler.toDataSource
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -135,8 +136,6 @@ class ChatRoomFragment : Fragment() {
 
                 // Update chat list
                 recycler.update {
-                    val hasNewUpdates = data.size != events.size
-
                     data = events.toMutableList().apply {
                         for (i in 0 until data.size) {
                             add(i, data[i])
@@ -145,9 +144,6 @@ class ChatRoomFragment : Fragment() {
                         .distinctBy { it.id }
                         .sortedByDescending { it.added }
                         .toDataSource()
-
-                    // Scroll to Latest Item
-                    if(hasNewUpdates) binding.recyclerView.scrollToPosition(0/*data.size - 1*/)
                 }
             }
             .launchIn(lifecycleScope)
@@ -187,7 +183,7 @@ class ChatRoomFragment : Fragment() {
                         .sortedByDescending { it.added }
                         .toDataSource()
 
-                    binding.recyclerView.scrollToPosition(0/*data.size - 1*/)
+                    binding.recyclerView.scrollToPosition(0)
                 }
 
             } catch (err: SportsTalkException) {
@@ -244,6 +240,9 @@ class ChatRoomFragment : Fragment() {
                 } finally {
                     // Clear input text field
                     binding.tietChatMessage.setText("")
+                    // Scroll to bottom after sometime
+                    delay(750)
+                    binding.recyclerView.scrollToPosition(0)
                 }
             }
             .launchIn(lifecycleScope)
