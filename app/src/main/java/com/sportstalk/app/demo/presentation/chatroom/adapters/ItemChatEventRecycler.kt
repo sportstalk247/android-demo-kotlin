@@ -22,7 +22,7 @@ object ItemChatEventRecycler {
                 create(R.layout.item_chat_event) {
                     val binding = ItemChatEventBinding.bind(view)
                     bind { index, chatEvent ->
-                        chatEvent.user?.profileurl?.let { profileurl ->
+                        chatEvent.user?.pictureurl?.let { profileurl ->
                             Glide.with(binding.root.context)
                                 .load(profileurl)
                                 .apply(
@@ -31,7 +31,7 @@ object ItemChatEventRecycler {
                                 .into(binding.civProfile)
                         } ?: binding.civProfile.setImageResource(0)
 
-                        binding.actvDisplayHandle.text = "@${chatEvent.user?.handle}"
+                        binding.actvDisplayHandle.text = chatEvent.user?.handle?.let { handle -> "@$handle" }
 
                         binding.actvChatMessage.text = chatEvent.body
 

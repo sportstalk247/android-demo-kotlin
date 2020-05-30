@@ -1,5 +1,6 @@
 package com.sportstalk.app.demo.presentation.users.adapter
 
+import android.annotation.SuppressLint
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
@@ -24,9 +25,9 @@ object ItemSelectDemoUserRecycler {
                 create(R.layout.item_select_demo_user) {
                     val binding = ItemSelectDemoUserBinding.bind(view)
                     bind { index, item ->
-                        item.user?.profileurl?.let { profileurl ->
+                        item.user?.pictureurl?.let { pictureurl ->
                             Glide.with(binding.root.context)
-                                .load(profileurl)
+                                .load(pictureurl)
                                 .apply(
                                     RequestOptions.centerCropTransform()
                                 )
@@ -34,7 +35,7 @@ object ItemSelectDemoUserRecycler {
                         } ?: binding.civProfile.setImageResource(0)
 
                         binding.actvDisplayName.text = item.user?.displayname
-                        binding.actvHandle.text = "@${item.user?.handle}"
+                        binding.actvHandle.text = item.user?.handle?.let { handle -> "@$handle" }
 
                         // When Scrolling at the bottom of the recycler view, perform fetch next with cursor
                         if (index >= (recyclerView.adapter?.itemCount ?: 0) - 1) {
