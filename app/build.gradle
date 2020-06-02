@@ -4,6 +4,9 @@ apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 apply plugin: "androidx.navigation.safeargs.kotlin"
 
+def localProperties = new Properties()
+localProperties.load(new FileInputStream(rootProject.file("local.properties")))
+
 android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdkVersion rootProject.ext.compileSdkVersion
@@ -19,9 +22,23 @@ android {
     }
 
     buildTypes {
+
+        debug {
+            debuggable true
+
+            resValue "string", "sportstalk247_urlEndpoint", localProperties.getProperty("sportstalk247.qa.urlEndpoint", "")
+            resValue "string", "sportstalk247_authToken", localProperties.getProperty("sportstalk247.qa.authToken", "")
+            resValue "string", "sportstalk247_appid", localProperties.getProperty("sportstalk247.qa.appid", "")
+
+        }
         release {
+            debuggable false
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+
+            resValue "string", "sportstalk247_urlEndpoint", localProperties.getProperty("sportstalk247.urlEndpoint", "")
+            resValue "string", "sportstalk247_authToken", localProperties.getProperty("sportstalk247.authToken", "")
+            resValue "string", "sportstalk247_appid", localProperties.getProperty("sportstalk247.appid", "")
         }
     }
 
@@ -70,7 +87,8 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    implementation "com.gitlab.sportstalk247:sdk-android-kotlin:b5e58c8134"
+    /*implementation "com.gitlab.sportstalk247:sdk-android-kotlin:b5e58c8134"*/
+    implementation "com.gitlab.sportstalk247:sdk-android-kotlin:3833c440db"
 
     // Jetbrains Kotlin Dependencies
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
