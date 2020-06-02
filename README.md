@@ -1,33 +1,70 @@
+# sdk-android-kotlin 
+## Implementing the SDK  
+You can download the latest SportsTalk Android SDK from the following location:        
+https://gitlab.com/sportstalk247/sdk-android-kotlin        
+You need to register SportsTalk API with 'Appkey' and 'Token'.        
+How to get API Key and Token        
+You need to visit the dashboard with the following URL:        
+https://dashboard.sportstalk247.com        
+Then click on ''Application Management'' link to generate the above        
+## How to download the SDK from public repository
+The SportsTalk SDK has been published into **jitpack.io**.        
+In order to use it in your application, just do the following:        
 
+### Add the following in root  **build.gradle** file        
+```groovy        
+allprojects {  
+   repositories {  
+      // ...  
+      maven {  
+         url "https://jitpack.io"  
+      }  
+   }  
+}  
+```              
+### Then, under **local.properties** file, provide the following property entries:    
+```properties    
+sportstalk247.urlEndpoint=<Your PROD URL Endpoint>    
+sportstalk247.authToken=<Your PROD Auth Token generated from above>    
+sportstalk247.appid=<Your PROD App ID generated from above>    
     
-# sdk-android-kotlin    
- # Implementing the SDK    
- You can download the latest SportsTalk Android SDK from the following location:    
- https://gitlab.com/sportstalk247/sdk-android-kotlin    
- You need to register SportsTalk API with 'Appkey' and 'Token'.    
- How to get API Key and Token    
- You need to visit the dashboard with the following URL:    
- https://dashboard.sportstalk247.com    
- Then click on ''Application Management'' link to generate the above    
- # How to download the SDK from public repository    
- The SportsTalk SDK has been published into **jitpack.io**.    
- In order to use it in your application, just do the following:    
- 1. Add the following in root  **build.gradle** file    
- ```groovy    
- allprojects {    
-    repositories {    
-    // ...    
-       maven {    
-          url "https://jitpack.io"    
-       }    
-    }    
- }    
- ```    
- 2. Add the following lines in your module **build.gradle** file, under dependencies section    
- ```groovy    
- implementation 'com.gitlab.sportstalk247:sdk-android-kotlin:master-SNAPSHOT'    
- ```    
-Then sync again. The gradle build should now be successful.    
+sportstalk247.qa.urlEndpoint=<Your QA URL Endpoint>    
+sportstalk247.qa.authToken=<Your QA Auth Token generated from above>    
+sportstalk247.qa.appid=<Your QA App ID generated from above>    
+```  
+NOTE: Make sure the url end point must have a trailing '/' character.  
+
+### Add the following lines in your module **build.gradle** file:  
+Before `android {}` declaration  
+```groovy  
+def localProperties = new Properties()  
+localProperties.load(new FileInputStream(rootProject.file("local.properties")))  
+```  
+From your `android.buildTypes`
+```groovy  
+buildTypes {  
+    debug {  
+        // ...  
+        resValue "string", "sportstalk247_urlEndpoint", localProperties.getProperty("sportstalk247.qa.urlEndpoint", "")  
+        resValue "string", "sportstalk247_authToken", localProperties.getProperty("sportstalk247.qa.authToken", "")  
+        resValue "string", "sportstalk247_appid", localProperties.getProperty("sportstalk247.qa.appid", "")  
+    }  
+    release {  
+        // ...  
+        resValue "string", "sportstalk247_urlEndpoint", localProperties.getProperty("sportstalk247.urlEndpoint", "")  
+        resValue "string", "sportstalk247_authToken", localProperties.getProperty("sportstalk247.authToken", "")  
+        resValue "string", "sportstalk247_appid", localProperties.getProperty("sportstalk247.appid", "")  
+    }  
+}  
+```  
+NOTE: Above can also be applied under `android.productFlavors`, depending on client project build setup
+
+### Under dependencies section        
+```groovy        
+implementation 'com.gitlab.sportstalk247:sdk-android-kotlin:master-SNAPSHOT'        
+```  
+
+Then sync again. The gradle build should now be successful.
     
 # How to Use
 ## Instantiate SportsTalkManager Client
@@ -38,11 +75,12 @@ Android Sportstalk SDK is a Reactive and Asynchronous-driven API, powered by Jav
 ```kotlin    
 class MyFragment: Fragment() {  
   
-//...  
-//...  
-   val appId = "c84cb9c852932a6b0411e75e"    
-   val apiToken = "5MGq3XbsspBEQf3kj154_OSQV-jygEKwHJyuHjuAeWHA"     
-   val endpoint = "http://api.custom.endpoint/v1/" // please ensure out of the box the SDKs are configured for production URL  
+    //...  
+    //...  
+    // Build script generates string resource values for appId, authToken, and urlEndpoint   
+   val appId = getString(R.string.sportstalk247_appid)    
+   val apiToken = getString(R.string.sportstalk247_authToken)     
+   val endpoint = getString(R.string.sportstalk247_urlEndpoint) // please ensure out of the box the SDKs are configured for production URL  
        
    val userClient = SportsTalk247.UserClient(    
       config = ClientConfig(    
@@ -171,9 +209,9 @@ lifecycleScope.launch {
 // Under Fragment class  
 val chatClient = SportsTalk247.ChatClient(    
    config = ClientConfig(    
-      appId = "c84cb9c852932a6b0411e75e",    
-      apiToken = "5MGq3XbsspBEQf3kj154_OSQV-jygEKwHJyuHjuAeWHA",    
-      endpoint = "http://api.custom.endpoint/v1/"    
+      appId = getString(R.string.sportstalk247_appid),    
+      apiToken = getString(R.string.sportstalk247_authToken),    
+      endpoint = getString(R.string.sportstalk247_urlEndpoint)    
    )    
 )    
 ```  
@@ -292,9 +330,9 @@ lifecycleScope.launch {
 // Under Fragment class  
 val commentClient = SportsTalk247.CommentClient(    
    config = ClientConfig(    
-      appId = "c84cb9c852932a6b0411e75e",    
-      apiToken = "5MGq3XbsspBEQf3kj154_OSQV-jygEKwHJyuHjuAeWHA",    
-      endpoint = "http://api.custom.endpoint/v1/"    
+      appId = getString(R.string.sportstalk247_appid),    
+      apiToken = getString(R.string.sportstalk247_authToken),    
+      endpoint = getString(R.string.sportstalk247_urlEndpoint)    
    )    
 )    
 ```  
