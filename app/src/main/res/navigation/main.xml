@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    app:startDestination="@id/fragmentListChatroom"
+    tools:ignore="UnusedNavigation">
+
+    <fragment
+        android:id="@+id/fragmentListChatroom"
+        android:name="com.sportstalk.app.demo.presentation.listrooms.ListChatRoomsFragment"
+        tools:layout="@layout/fragment_list_chatroom"
+        >
+        <action
+            android:id="@+id/action_fragmentListChatroom_to_fragmentCreateAccount"
+            app:destination="@id/fragmentCreateAccount"
+            />
+        <action
+            android:id="@+id/action_fragmentListChatroom_to_fragmentChatroom"
+            app:destination="@id/fragmentChatroom" />
+        <action
+            android:id="@+id/action_fragmentListChatroom_to_fragmentCreateChatroom"
+            app:destination="@id/createChatroom" />
+        <action
+            android:id="@+id/action_fragmentListChatroom_to_fragmentAccountSettings"
+            app:destination="@id/accountSettings" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/fragmentCreateAccount"
+        android:name="com.sportstalk.app.demo.presentation.users.CreateAccountFragment"
+        tools:layout="@layout/fragment_create_account"
+        >
+        <action
+            android:id="@+id/action_fragmentCreateAccount_to_fragmentChatroom"
+            app:destination="@id/fragmentChatroom" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/fragmentChatroom"
+        tools:layout="@layout/fragment_chatroom"
+        >
+        <action
+            android:id="@+id/action_fragmentChatroom_to_chatRoomParticipants"
+            app:destination="@id/chatRoomParticipants" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/createChatroom"
+        >
+    </fragment>
+
+    <fragment
+        android:id="@+id/accountSettings"
+        >
+    </fragment>
+
+    <fragment
+        android:id="@+id/chatRoomParticipants"
+        >
+    </fragment>
+
+</navigation>

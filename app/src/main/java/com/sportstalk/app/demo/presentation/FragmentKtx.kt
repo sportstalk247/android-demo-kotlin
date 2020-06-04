@@ -21,3 +21,13 @@ inline fun <reified VM : ViewModel> Fragment.sharedGraphViewModel(
     val owner = findNavController().getViewModelStoreOwner(navGraphId)
     getKoin().getViewModel(owner, VM::class, qualifier, parameters)
 }
+
+inline fun <reified VM : ViewModel> Fragment.getSharedGraphViewModel(
+    @IdRes navGraphId: Int,
+    qualifier: Qualifier? = null,
+    noinline parameters: ParametersDefinition? = null
+) =
+    getKoin().getViewModel(
+        findNavController().getViewModelStoreOwner(navGraphId),
+        VM::class, qualifier, parameters
+    )

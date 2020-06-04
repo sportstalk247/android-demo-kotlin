@@ -18,7 +18,7 @@ import com.sportstalk.SportsTalk247
 import com.sportstalk.api.ChatClient
 import com.sportstalk.api.polling.coroutines.allEventUpdates
 import com.sportstalk.app.demo.R
-import com.sportstalk.app.demo.databinding.FragmentChatRoomBinding
+import com.sportstalk.app.demo.databinding.FragmentLiveChatRoomBinding
 import com.sportstalk.app.demo.extensions.throttleFirst
 import com.sportstalk.app.demo.presentation.chatroom.adapters.ItemChatEventRecycler
 import com.sportstalk.models.ClientConfig
@@ -49,7 +49,7 @@ import java.util.*
 
 class ChatRoomFragment : Fragment() {
 
-    private lateinit var binding: FragmentChatRoomBinding
+    private lateinit var binding: FragmentLiveChatRoomBinding
     private lateinit var appNavController: NavController
 
     private lateinit var user: User
@@ -91,7 +91,7 @@ class ChatRoomFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        binding = FragmentChatRoomBinding.inflate(inflater)
+        binding = FragmentLiveChatRoomBinding.inflate(inflater)
         appNavController = findNavController()
         recycler = ItemChatEventRecycler.adopt(
             recyclerView = binding.recyclerView,

@@ -2,6 +2,10 @@ package com.sportstalk.app.demo
 
 import android.app.Application
 import com.sportstalk.api.ChatClient
+import com.sportstalk.app.demo.presentation.listrooms.ListChatRoomsViewModel
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonBuilder
+import kotlinx.serialization.json.JsonConfiguration
 import com.sportstalk.app.demo.presentation.users.coroutine.SelectDemoUserViewModel as SelectDemoUserViewModelCoroutine
 import com.sportstalk.app.demo.presentation.users.rxjava.SelectDemoUserViewModel as SelectDemoUserViewModelRx
 import com.sportstalk.app.demo.presentation.users.livedata.SelectDemoUserViewModel as SelectDemoUserViewModelLiveData
@@ -23,6 +27,37 @@ class SportsTalkDemoApplication: Application() {
             androidContext(applicationContext)
             modules(
                 module {
+                    single {
+                        Json(
+                            JsonBuilder()
+                                .apply {
+                                    prettyPrint = true
+                                    isLenient = true
+                                    ignoreUnknownKeys = true
+                                }
+                                .buildConfiguration()
+                        )
+                    }
+
+                    // Preferences
+                    single {
+                        SportsTalkDemoPreferences(
+                            context = get(),
+                            json = get()
+                        )
+                    }
+
+                    /*
+                    * List Chatrooms
+                    */
+                    viewModel {
+                            (chatClient: ChatClient) ->
+                        ListChatRoomsViewModel(
+                            chatClient = chatClient,
+                            preferences = get()
+                        )
+                    }
+
                     /*
                     * Select Chat Room
                     */

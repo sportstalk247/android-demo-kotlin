@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardBackgroundColor="@android:color/white"
+    app:cardUseCompatPadding="true"
+    app:contentPaddingBottom="8dp"
+    app:cardCornerRadius="8dp"
+    >
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        >
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/civTeam1"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:tint="@color/lb_grey"
+            android:cropToPadding="true"
+            app:civ_border_width="2dp"
+            app:civ_border_overlay="false"
+            app:civ_border_color="@color/lb_grey"
+            app:layout_constraintTop_toBottomOf="@+id/guidelineHorizontal"
+            app:layout_constraintBottom_toTopOf="@+id/guidelineHorizontal"
+            app:layout_constraintLeft_toLeftOf="parent"
+            tools:src="@drawable/ic_chatroom_default_black"
+            />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/actvTeam1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:layout_marginLeft="4dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp"
+            android:textAlignment="gravity"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:maxLines="2"
+            android:ellipsize="end"
+            app:layout_constraintTop_toBottomOf="@+id/civTeam1"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toLeftOf="@+id/actvScore"
+            tools:text="Team 1"
+            />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/actvScore"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:textAlignment="gravity"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/primary_text_light"
+            app:layout_constraintTop_toBottomOf="@+id/guidelineHorizontal"
+            app:layout_constraintBottom_toTopOf="@+id/guidelineHorizontal"
+            app:layout_constraintLeft_toRightOf="@+id/civTeam1"
+            app:layout_constraintRight_toLeftOf="@+id/civTeam2"
+            tools:text="102-101"
+            />
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/civTeam2"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:tint="@color/lb_grey"
+            android:cropToPadding="true"
+            app:civ_border_width="2dp"
+            app:civ_border_overlay="false"
+            app:civ_border_color="@color/lb_grey"
+            app:layout_constraintTop_toBottomOf="@+id/guidelineHorizontal"
+            app:layout_constraintBottom_toTopOf="@+id/guidelineHorizontal"
+            app:layout_constraintRight_toLeftOf="@+id/guidelineVertical"
+            tools:src="@drawable/ic_chatroom_default_black"
+            />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/actvTeam2"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:layout_marginLeft="4dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp"
+            android:textAlignment="gravity"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:maxLines="2"
+            android:ellipsize="end"
+            app:layout_constraintTop_toBottomOf="@+id/civTeam2"
+            app:layout_constraintLeft_toRightOf="@+id/actvScore"
+            app:layout_constraintRight_toRightOf="@+id/guidelineVertical"
+            tools:text="Team 2"
+            />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/actvRoomName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:layout_marginLeft="4dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp"
+            android:textAlignment="gravity"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:maxLines="2"
+            android:ellipsize="end"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintLeft_toRightOf="@+id/guidelineVertical"
+            app:layout_constraintRight_toRightOf="parent"
+            tools:text="Standard League"
+            />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/actvAttendance"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:layout_marginLeft="4dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp"
+            android:textAlignment="gravity"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            app:layout_constraintTop_toBottomOf="@+id/actvRoomName"
+            app:layout_constraintLeft_toRightOf="@+id/guidelineVertical"
+            app:layout_constraintRight_toRightOf="parent"
+            tools:text="22,956"
+            />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnJoin"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:layout_marginLeft="12dp"
+            android:layout_marginRight="12dp"
+            android:gravity="center"
+            android:textAlignment="gravity"
+            android:text="Join"
+            android:textColor="@android:color/white"
+            android:backgroundTint="@android:color/darker_gray"
+            app:layout_constraintTop_toBottomOf="@+id/actvAttendance"
+            app:layout_constraintLeft_toRightOf="@+id/guidelineVertical"
+            app:layout_constraintRight_toRightOf="parent"
+            />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guidelineVertical"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.6"
+            />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guidelineHorizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent="0.45"
+            />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>

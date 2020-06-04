@@ -16,4 +16,21 @@
     <string name="open">Open</string>
     <string name="profanity_filter">Profanity Filter</string>
     <string name="send_a_message">Send a message…</string>
+
+    <string name="rooms">Rooms</string>
+    <string name="create_an_account">Create an Account</string>
+    <string name="display_name">Display Name</string>
+    <string name="handle_username">Handle / Username</string>
+    <string name="profile_link">Profile Link</string>
+    <string name="photo_link">Photo Link</string>
+    <string name="account_settings">Account Settings</string>
+    <string name="submit">Submit</string>
+    <string name="delete_account">Delete Account</string>
+    <string name="save">Save</string>
+    <string name="team">Team</string>
+    <string name="statistics">Statistics</string>
+    <string name="live_chat">Live Chat</string>
+    <string name="highlights">Highlights</string>
+    <string name="videos">Videos</string>
+
 </resources>
