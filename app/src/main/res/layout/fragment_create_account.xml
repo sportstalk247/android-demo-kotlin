@@ -20,6 +20,19 @@
             app:popupTheme="@style/AppTheme.PopupOverlay"
             app:title="@string/create_an_account" />
 
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="match_parent"
+            android:layout_height="8dp"
+            android:visibility="gone"
+            android:indeterminate="true"
+            android:indeterminateTint="@color/colorAccent"
+            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            tools:indeterminate="false"
+            tools:progress="75"
+            tools:visibility="visible"
+            />
+
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -124,6 +137,9 @@
         android:gravity="center"
         android:text="@string/submit"
         android:textColor="@android:color/white"
-        app:elevation="3dp" />
+        app:elevation="3dp"
+        android:enabled="false"
+        tools:enabled="true"
+        />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

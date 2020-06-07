@@ -28,6 +28,10 @@ class SportsTalkDemoPreferences(
             }
         }
 
+    fun clear() {
+        preferences.edit().clear().apply()
+    }
+
     companion object {
         const val KEY_CURRENT_USER = "currentUser"
     }

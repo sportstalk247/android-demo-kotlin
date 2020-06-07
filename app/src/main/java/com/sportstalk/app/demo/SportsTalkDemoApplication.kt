@@ -2,7 +2,9 @@ package com.sportstalk.app.demo
 
 import android.app.Application
 import com.sportstalk.api.ChatClient
+import com.sportstalk.api.UserClient
 import com.sportstalk.app.demo.presentation.listrooms.ListChatRoomsViewModel
+import com.sportstalk.app.demo.presentation.users.CreateAccountViewModel
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonBuilder
 import kotlinx.serialization.json.JsonConfiguration
@@ -51,6 +53,13 @@ class SportsTalkDemoApplication: Application() {
                     * List Chatrooms
                     */
                     viewModel { (chatClient: ChatClient) -> ListChatRoomsViewModel(chatClient = chatClient, preferences = get()) }
+
+                    /*
+                     * Create Account
+                     */
+                    viewModel {
+                        (userClient: UserClient) -> CreateAccountViewModel(userClient = userClient, preferences = get())
+                    }
 
                     /*
                     * Select Chat Room

@@ -17,6 +17,7 @@ import com.sportstalk.app.demo.databinding.FragmentListChatroomBinding
 import com.sportstalk.app.demo.presentation.BaseFragment
 import com.sportstalk.app.demo.presentation.chatroom.coroutine.ChatRoomFragment
 import com.sportstalk.app.demo.presentation.listrooms.adapters.ItemListChatRooms
+import com.sportstalk.app.demo.presentation.users.CreateAccountFragment
 import com.sportstalk.app.demo.presentation.utils.EndlessRecyclerViewScrollListener
 import com.sportstalk.models.ClientConfig
 import com.sportstalk.models.chat.ChatRoom
@@ -126,6 +127,10 @@ class ListChatRoomsFragment : BaseFragment() {
             }
             .launchIn(lifecycleScope)
 
+        ///////////////////////////////
+        // Bind UI Input Actions
+        ///////////////////////////////
+
         binding.swipeRefresh.refreshes()
             .asFlow()
             .onEach {
@@ -133,7 +138,7 @@ class ListChatRoomsFragment : BaseFragment() {
             }
             .launchIn(lifecycleScope)
 
-
+        // Then, fetch initial list
         viewModel.fetchInitial()
     }
 
@@ -171,7 +176,7 @@ class ListChatRoomsFragment : BaseFragment() {
                     appNavController.navigate(
                         R.id.action_fragmentListChatroom_to_fragmentCreateAccount,
                         bundleOf(
-                            /* TODO:: Bundle */"" to effect.which
+                            CreateAccountFragment.INPUT_ARG_ROOM to effect.which
                         )
                     )
                 }
