@@ -33,6 +33,7 @@ class ListChatRoomsFragment : BaseFragment() {
     private lateinit var binding: FragmentListChatroomBinding
 
     private lateinit var adapter: Recycler<ChatRoom>
+    private lateinit var scrollListener: RecyclerView.OnScrollListener
 
     private val config: ClientConfig by lazy {
         ClientConfig(
@@ -70,6 +71,19 @@ class ListChatRoomsFragment : BaseFragment() {
                 viewModel.join(which = chatRoom)
             }
         )
+
+        scrollListener = object : EndlessRecyclerViewScrollListener(binding.recyclerView.layoutManager!! as LinearLayoutManager) {
+            override fun onLoadMore(page: Int, totalItemsCount: Int, view: RecyclerView?) {
+                Log.d(
+                    TAG,
+                    "EndlessRecyclerViewScrollListener:: onLoadMore() -> page/totalItemsCount = ${page}/${totalItemsCount}"
+                )
+                // Attempt fetch more
+                viewModel.fetchMore()
+            }
+        }
+        // Scroll Listeners
+        binding.recyclerView.addOnScrollListener(scrollListener)
 
         return binding.root
     }
@@ -112,21 +126,6 @@ class ListChatRoomsFragment : BaseFragment() {
             }
             .launchIn(lifecycleScope)
 
-        // Scroll Listeners
-        binding.recyclerView.addOnScrollListener(
-            object :
-                EndlessRecyclerViewScrollListener(binding.recyclerView.layoutManager!! as LinearLayoutManager) {
-                override fun onLoadMore(page: Int, totalItemsCount: Int, view: RecyclerView?) {
-                    Log.d(
-                        TAG,
-                        "EndlessRecyclerViewScrollListener:: onLoadMore() -> page/totalItemsCount = ${page}/${totalItemsCount}"
-                    )
-                    // Attempt fetch more
-                    viewModel.fetchMore()
-                }
-            }
-        )
-
         binding.swipeRefresh.refreshes()
             .asFlow()
             .onEach {
@@ -136,6 +135,12 @@ class ListChatRoomsFragment : BaseFragment() {
 
 
         viewModel.fetchInitial()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+
+        binding.recyclerView.removeOnScrollListener(scrollListener)
     }
 
     private fun takeProgressFetchChatRooms(inProgress: Boolean) {
