@@ -1,6 +1,7 @@
 package com.sportstalk.app.demo.presentation
 
 import android.os.Bundle
+import android.view.View
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
@@ -11,8 +12,11 @@ import com.sportstalk.app.demo.R
 open class BaseFragment : Fragment() {
 
     // Top-level Nav Controller Instance
-    open val appNavController: NavController by lazy {
-        Navigation.findNavController(requireActivity(), R.id.navHostFragmentApp)
+    lateinit var appNavController: NavController
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        appNavController = Navigation.findNavController(requireActivity(), R.id.navHostFragmentApp)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {

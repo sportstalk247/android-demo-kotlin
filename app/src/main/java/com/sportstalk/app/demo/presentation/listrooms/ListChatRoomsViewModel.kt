@@ -31,25 +31,24 @@ class ListChatRoomsViewModel(
     private val preferences: SportsTalkDemoPreferences
 ): ViewModel() {
 
-    private val chatRooms = ConflatedBroadcastChannel<List<ChatRoom>>()
-    private val progressFetchRooms = BroadcastChannel<Boolean>(Channel.BUFFERED)
+    private val chatRooms = Channel<List<ChatRoom>>(Channel.RENDEZVOUS)
+    private val progressFetchRooms = Channel<Boolean>(Channel.RENDEZVOUS)
     // Keep track of cursor
     private val cursor = ConflatedBroadcastChannel<String>("")
     val state = object: ViewState {
         override fun progressFetchChatRooms(): Flow<Boolean> =
             progressFetchRooms
-                .openSubscription()
                 .consumeAsFlow()
 
         override fun chatRooms(): Flow<List<ChatRoom>> =
-            chatRooms.asFlow()
+            chatRooms
+                .consumeAsFlow()
     }
 
-    private val _effect = BroadcastChannel<ViewEffect>(Channel.BUFFERED)
+    private val _effect = Channel<ViewEffect>(Channel.RENDEZVOUS)
     val effect: Flow<ViewEffect>
         get() = _effect
-            .asFlow()
-            .distinctUntilChanged()
+            .consumeAsFlow()
 
     fun fetchInitial() {
         viewModelScope.launch {

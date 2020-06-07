@@ -3,7 +3,9 @@ package com.sportstalk.app.demo.presentation
 import androidx.annotation.IdRes
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
+import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
+import com.sportstalk.app.demo.R
 import org.koin.android.ext.android.getKoin
 import org.koin.androidx.viewmodel.koin.getViewModel
 import org.koin.core.parameter.ParametersDefinition
@@ -18,16 +20,15 @@ inline fun <reified VM : ViewModel> Fragment.sharedGraphViewModel(
     qualifier: Qualifier? = null,
     noinline parameters: ParametersDefinition? = null
 ) = lazy {
-    val owner = findNavController().getViewModelStoreOwner(navGraphId)
-    getKoin().getViewModel(owner, VM::class, qualifier, parameters)
+    getSharedGraphViewModel<VM>(navGraphId, qualifier, parameters)
 }
 
 inline fun <reified VM : ViewModel> Fragment.getSharedGraphViewModel(
     @IdRes navGraphId: Int,
     qualifier: Qualifier? = null,
     noinline parameters: ParametersDefinition? = null
-) =
+): VM =
     getKoin().getViewModel(
-        findNavController().getViewModelStoreOwner(navGraphId),
+        findNavController()/*Navigation.findNavController(requireActivity(), R.id.navHostFragmentApp)*/.getViewModelStoreOwner(navGraphId),
         VM::class, qualifier, parameters
     )

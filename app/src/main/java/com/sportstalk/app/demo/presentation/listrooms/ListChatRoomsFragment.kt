@@ -16,9 +16,7 @@ import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.FragmentListChatroomBinding
 import com.sportstalk.app.demo.presentation.BaseFragment
 import com.sportstalk.app.demo.presentation.chatroom.coroutine.ChatRoomFragment
-import com.sportstalk.app.demo.presentation.getSharedGraphViewModel
 import com.sportstalk.app.demo.presentation.listrooms.adapters.ItemListChatRooms
-import com.sportstalk.app.demo.presentation.sharedGraphViewModel
 import com.sportstalk.app.demo.presentation.utils.EndlessRecyclerViewScrollListener
 import com.sportstalk.models.ClientConfig
 import com.sportstalk.models.chat.ChatRoom
@@ -27,13 +25,13 @@ import com.squareup.cycler.toDataSource
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.rx2.asFlow
-import org.koin.androidx.viewmodel.ext.android.getViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
 
-class ListChatRoomsFragment: BaseFragment() {
+class ListChatRoomsFragment : BaseFragment() {
 
     private lateinit var binding: FragmentListChatroomBinding
+
     private lateinit var adapter: Recycler<ChatRoom>
 
     private val config: ClientConfig by lazy {
@@ -44,7 +42,7 @@ class ListChatRoomsFragment: BaseFragment() {
         )
     }
 
-    private val viewModel: ListChatRoomsViewModel by sharedGraphViewModel(R.id.main) {
+    private val viewModel: ListChatRoomsViewModel by viewModel {
         parametersOf(
             SportsTalk247.ChatClient(config = config)
         )
@@ -62,10 +60,11 @@ class ListChatRoomsFragment: BaseFragment() {
     ): View? {
         binding = FragmentListChatroomBinding.inflate(inflater)
 
-        binding.recyclerView.layoutManager = LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, false)
+        binding.recyclerView.layoutManager =
+            LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, false)
         adapter = ItemListChatRooms.adopt(
             binding.recyclerView,
-            onSelectItemChatRoom =  { chatRoom: ChatRoom ->
+            onSelectItemChatRoom = { chatRoom: ChatRoom ->
                 Log.d(TAG, "onSelectItemChatRoom() -> chatRoom = $chatRoom")
                 // Attempt Join Chatroom
                 viewModel.join(which = chatRoom)
@@ -115,9 +114,13 @@ class ListChatRoomsFragment: BaseFragment() {
 
         // Scroll Listeners
         binding.recyclerView.addOnScrollListener(
-            object : EndlessRecyclerViewScrollListener(binding.recyclerView.layoutManager!! as LinearLayoutManager) {
+            object :
+                EndlessRecyclerViewScrollListener(binding.recyclerView.layoutManager!! as LinearLayoutManager) {
                 override fun onLoadMore(page: Int, totalItemsCount: Int, view: RecyclerView?) {
-                    Log.d(TAG, "EndlessRecyclerViewScrollListener:: onLoadMore() -> page/totalItemsCount = ${page}/${totalItemsCount}")
+                    Log.d(
+                        TAG,
+                        "EndlessRecyclerViewScrollListener:: onLoadMore() -> page/totalItemsCount = ${page}/${totalItemsCount}"
+                    )
                     // Attempt fetch more
                     viewModel.fetchMore()
                 }
@@ -144,7 +147,7 @@ class ListChatRoomsFragment: BaseFragment() {
         Log.d(TAG, "takeChatRooms() -> chatRooms = $chatRooms")
 
         adapter.update {
-            if(data.isEmpty) {
+            if (data.isEmpty) {
                 data = chatRooms.toDataSource()
             } else {
                 addChunk(chatRooms)
@@ -154,26 +157,30 @@ class ListChatRoomsFragment: BaseFragment() {
 
     private fun takeViewEffect(effect: ListChatRoomsViewModel.ViewEffect) {
         Log.d(TAG, "takeViewEffect() -> effect = ${effect::class.java.simpleName}")
-        when(effect) {
+        when (effect) {
             is ListChatRoomsViewModel.ViewEffect.ClearListChatrooms -> {
                 adapter.clear()
             }
             is ListChatRoomsViewModel.ViewEffect.NavigateToCreateProfile -> {
-                appNavController.navigate(
-                    R.id.action_fragmentListChatroom_to_fragmentCreateAccount,
-                    bundleOf(
-                        /* TODO:: Bundle */"" to effect.which
+                if (appNavController.currentDestination?.id == R.id.fragmentListChatroom) {
+                    appNavController.navigate(
+                        R.id.action_fragmentListChatroom_to_fragmentCreateAccount,
+                        bundleOf(
+                            /* TODO:: Bundle */"" to effect.which
+                        )
                     )
-                )
+                }
             }
             is ListChatRoomsViewModel.ViewEffect.NavigateToChatRoom -> {
-                appNavController.navigate(
-                    R.id.action_fragmentListChatroom_to_fragmentChatroom,
-                    bundleOf(
-                        /* TODO:: Bundle */ChatRoomFragment.INPUT_ARG_ROOM to effect.which,
-                        /* TODO:: Bundle */ChatRoomFragment.INPUT_ARG_USER to effect.who
+                if (appNavController.currentDestination?.id == R.id.fragmentListChatroom) {
+                    appNavController.navigate(
+                        R.id.action_fragmentListChatroom_to_fragmentChatroom,
+                        bundleOf(
+                            /* TODO:: Bundle */ChatRoomFragment.INPUT_ARG_ROOM to effect.which,
+                            /* TODO:: Bundle */ChatRoomFragment.INPUT_ARG_USER to effect.who
+                        )
                     )
-                )
+                }
             }
         }
     }

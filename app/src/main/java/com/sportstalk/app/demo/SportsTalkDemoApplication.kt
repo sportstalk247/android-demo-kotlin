@@ -50,13 +50,7 @@ class SportsTalkDemoApplication: Application() {
                     /*
                     * List Chatrooms
                     */
-                    viewModel {
-                            (chatClient: ChatClient) ->
-                        ListChatRoomsViewModel(
-                            chatClient = chatClient,
-                            preferences = get()
-                        )
-                    }
+                    viewModel { (chatClient: ChatClient) -> ListChatRoomsViewModel(chatClient = chatClient, preferences = get()) }
 
                     /*
                     * Select Chat Room
