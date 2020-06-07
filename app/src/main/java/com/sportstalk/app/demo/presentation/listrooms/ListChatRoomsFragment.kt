@@ -11,6 +11,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.jakewharton.rxbinding3.swiperefreshlayout.refreshes
+import com.jakewharton.rxbinding3.view.clicks
 import com.sportstalk.SportsTalk247
 import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.FragmentListChatroomBinding
@@ -28,6 +29,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.rx2.asFlow
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
+import java.util.concurrent.TimeUnit
 
 class ListChatRoomsFragment : BaseFragment() {
 
@@ -135,6 +137,17 @@ class ListChatRoomsFragment : BaseFragment() {
             .asFlow()
             .onEach {
                 viewModel.fetchInitial()
+            }
+            .launchIn(lifecycleScope)
+
+        binding.fabAdd.clicks()
+            .throttleFirst(1000, TimeUnit.MILLISECONDS)
+            .asFlow()
+            .onEach {
+                // Navigate to Create Chatroom
+                appNavController.navigate(
+                    R.id.action_fragmentListChatroom_to_fragmentCreateChatroom
+                )
             }
             .launchIn(lifecycleScope)
 

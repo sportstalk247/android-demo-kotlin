@@ -29,6 +29,24 @@
     <string name="handle_username">Handle / Username (ex. \"@username_101\")</string>
     <string name="profile_link">Profile Link</string>
     <string name="photo_link">Photo Link</string>
+
+    <string name="discard_changes">Discard changes?</string>
+
+    <string name="create_chatroom">Create Chatroom</string>
+    <string name="room_name">Room Name</string>
+    <string name="room_description">Room Description(Optional)</string>
+    <string name="room_custom_id">Room Custom ID(Optional)</string>
+    <string name="action_enabled">Action Enabled</string>
+    <string name="action_disabled">Action DISABLED</string>
+    <string name="enter_exit_enabled">Enter/Exit Enabled</string>
+    <string name="enter_exit_disabled">Enter/Exit DISABLED</string>
+    <string name="room_is_open">Room is OPEN</string>
+    <string name="room_is_closed">Room is CLOSED</string>
+    <string name="profanity_filter_enabled">Profanity Filter Enabled</string>
+    <string name="profanity_filter_disabled">Profanity Filter DISABLED</string>
+    <string name="invalid_roomname">Invalid Room Name…</string>
+    <string name="chatroom_successfully_created" formatted="true">Chatroom \"%s\" successfully created…</string>
+
     <string name="account_settings">Account Settings</string>
     <string name="submit">Submit</string>
     <string name="delete_account">Delete Account</string>

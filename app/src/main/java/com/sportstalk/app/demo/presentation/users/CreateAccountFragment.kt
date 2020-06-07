@@ -11,6 +11,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.jakewharton.rxbinding3.view.clicks
 import com.jakewharton.rxbinding3.widget.textChanges
 import com.sportstalk.SportsTalk247
@@ -49,7 +50,16 @@ class CreateAccountFragment: BaseFragment() {
 
     override fun enableBackPressedCallback(): Boolean = true
     override fun onBackPressedCallback(): OnBackPressedCallback.() -> Unit = {
-        appNavController.popBackStack()
+        MaterialAlertDialogBuilder(requireContext())
+            .setMessage(R.string.discard_changes)
+            .setPositiveButton(android.R.string.ok) { dialog, which ->
+                dialog.dismiss()
+                appNavController.popBackStack()
+            }
+            .setNegativeButton(android.R.string.cancel) { dialog, which ->
+                dialog.dismiss()
+            }
+            .show()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -297,7 +307,10 @@ class CreateAccountFragment: BaseFragment() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean =
         when(item.itemId) {
-            android.R.id.home -> appNavController.popBackStack()
+            android.R.id.home -> {
+                requireActivity().onBackPressed()
+                true
+            }
             else -> super.onOptionsItemSelected(item)
         }
 

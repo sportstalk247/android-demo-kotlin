@@ -21,7 +21,10 @@
             app:destination="@id/fragmentChatroom" />
         <action
             android:id="@+id/action_fragmentListChatroom_to_fragmentCreateChatroom"
-            app:destination="@id/createChatroom" />
+            app:destination="@id/fragmentCreateChatroom"
+            app:popUpTo="@id/fragmentChatroom"
+            app:popUpToInclusive="true"
+            />
         <action
             android:id="@+id/action_fragmentListChatroom_to_fragmentAccountSettings"
             app:destination="@id/accountSettings" />
@@ -52,7 +55,9 @@
     </fragment>
 
     <fragment
-        android:id="@+id/createChatroom"
+        android:id="@+id/fragmentCreateChatroom"
+        android:name="com.sportstalk.app.demo.presentation.rooms.CreateChatroomFragment"
+        tools:layout="@layout/fragment_create_chatroom"
         >
     </fragment>
 

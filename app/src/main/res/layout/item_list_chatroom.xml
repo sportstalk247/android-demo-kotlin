@@ -31,7 +31,7 @@
             app:layout_constraintTop_toBottomOf="@+id/guidelineHorizontal"
             app:layout_constraintBottom_toTopOf="@+id/guidelineHorizontal"
             app:layout_constraintLeft_toLeftOf="parent"
-            tools:src="@drawable/ic_chatroom_default_black"
+            android:src="@drawable/ic_chatroom_default_black"
             />
 
         <androidx.appcompat.widget.AppCompatTextView
@@ -51,7 +51,7 @@
             app:layout_constraintTop_toBottomOf="@+id/civTeam1"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toLeftOf="@+id/actvScore"
-            tools:text="Team 1"
+            android:text="Team 1"
             />
 
         <androidx.appcompat.widget.AppCompatTextView
@@ -86,7 +86,7 @@
             app:layout_constraintTop_toBottomOf="@+id/guidelineHorizontal"
             app:layout_constraintBottom_toTopOf="@+id/guidelineHorizontal"
             app:layout_constraintRight_toLeftOf="@+id/guidelineVertical"
-            tools:src="@drawable/ic_chatroom_default_black"
+            android:src="@drawable/ic_chatroom_default_black"
             />
 
         <androidx.appcompat.widget.AppCompatTextView
@@ -106,7 +106,7 @@
             app:layout_constraintTop_toBottomOf="@+id/civTeam2"
             app:layout_constraintLeft_toRightOf="@+id/actvScore"
             app:layout_constraintRight_toRightOf="@+id/guidelineVertical"
-            tools:text="Team 2"
+            android:text="Team 2"
             />
 
         <androidx.appcompat.widget.AppCompatTextView
