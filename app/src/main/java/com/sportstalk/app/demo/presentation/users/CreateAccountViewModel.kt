@@ -210,7 +210,7 @@ class CreateAccountViewModel(
     companion object {
         private val REGEX_DISPLAYNAME = "^(([a-zA-Z]+)(\\s)*([a-zA-Z0-9]+\$)?){4,}"
         private val REGEX_HANDLENAME = "^@?(?=[a-zA-Z0-9._]{4,}\$)(?!.*[_.]{2})[^_.].*[^_.]\$"
-        private val REGEX_IMAGE_URL = "(http(s?):)([/|.|\\w|\\s|-])*\\.(?:jpg|gif|png)"
+        private val REGEX_IMAGE_URL = "(http(s?):)([/|.|\\w|\\s|-])*"
     }
 
 }

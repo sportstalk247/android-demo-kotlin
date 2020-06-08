@@ -50,11 +50,20 @@
     <string name="account_settings">Account Settings</string>
     <string name="submit">Submit</string>
     <string name="delete_account">Delete Account</string>
+    <string name="ban_account">Ban Account</string>
+    <string name="restore_account">Restore Account</string>
     <string name="save">Save</string>
     <string name="team">Team</string>
     <string name="statistics">Statistics</string>
     <string name="live_chat">Live Chat</string>
     <string name="highlights">Highlights</string>
     <string name="videos">Videos</string>
+    <string name="search">Search</string>
+    <string name="account_successfully_updated">Account successfully updated…</string>
+    <string name="account_successfully_deleted">Account successfully deleted…</string>
+    <string name="account_successfully_banned">Account successfully banned…</string>
+    <string name="account_successfully_restored">Account successfully banned…</string>
+
+    <string name="something_went_wrong_please_try_again">Something went wrong. Please try again later.</string>
 
 </resources>

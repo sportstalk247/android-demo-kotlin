@@ -2,9 +2,7 @@ package com.sportstalk.app.demo.presentation.listrooms
 
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import androidx.lifecycle.lifecycleScope
@@ -34,6 +32,7 @@ import java.util.concurrent.TimeUnit
 class ListChatRoomsFragment : BaseFragment() {
 
     private lateinit var binding: FragmentListChatroomBinding
+    private lateinit var menu: Menu
 
     private lateinit var adapter: Recycler<ChatRoom>
     private lateinit var scrollListener: RecyclerView.OnScrollListener
@@ -122,6 +121,13 @@ class ListChatRoomsFragment : BaseFragment() {
             }
             .launchIn(lifecycleScope)
 
+        /**
+         * Emits [true] if account was already created. Emits [false] otherwise.
+         */
+        viewModel.state.enableAccountSettings()
+            .onEach { takeEnableAccountSettings(it) }
+            .launchIn(lifecycleScope)
+
         // View Effect
         viewModel.effect
             .onEach {
@@ -155,9 +161,37 @@ class ListChatRoomsFragment : BaseFragment() {
         viewModel.fetchInitial()
     }
 
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        inflater.inflate(R.menu.list_chatroom, menu)
+
+        this.menu = menu
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean =
+        when(item.itemId) {
+            R.id.action_search -> {
+                // TODO:: R.id.action_search
+                true
+            }
+            R.id.action_account_settings -> {
+                // Navigate to Account Settings Screen
+                if(appNavController.currentDestination?.id == R.id.fragmentListChatroom) {
+                    appNavController.navigate(
+                        R.id.action_fragmentListChatroom_to_fragmentAccountSettings
+                    )
+                }
+
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+
+
     override fun onDestroyView() {
         super.onDestroyView()
 
+        // Remove Scroll Listener
         binding.recyclerView.removeOnScrollListener(scrollListener)
     }
 
@@ -176,6 +210,12 @@ class ListChatRoomsFragment : BaseFragment() {
                 addChunk(chatRooms)
             }
         }
+    }
+
+    private fun takeEnableAccountSettings(isEnabled: Boolean) {
+        Log.d(TAG, "takeEnableAccountSettings() -> isEnabled = $isEnabled")
+        // Toggle menu action
+        this.menu.findItem(R.id.action_account_settings)?.isEnabled = isEnabled
     }
 
     private fun takeViewEffect(effect: ListChatRoomsViewModel.ViewEffect) {

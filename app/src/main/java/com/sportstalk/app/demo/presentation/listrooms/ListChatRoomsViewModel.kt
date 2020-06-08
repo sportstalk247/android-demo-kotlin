@@ -33,6 +33,7 @@ class ListChatRoomsViewModel(
 
     private val chatRooms = Channel<List<ChatRoom>>(Channel.RENDEZVOUS)
     private val progressFetchRooms = Channel<Boolean>(Channel.RENDEZVOUS)
+    private val enableAccountSettings = ConflatedBroadcastChannel<Boolean>()
     // Keep track of cursor
     private val cursor = ConflatedBroadcastChannel<String>("")
     val state = object: ViewState {
@@ -43,6 +44,9 @@ class ListChatRoomsViewModel(
         override fun chatRooms(): Flow<List<ChatRoom>> =
             chatRooms
                 .consumeAsFlow()
+
+        override fun enableAccountSettings(): Flow<Boolean> =
+            enableAccountSettings.asFlow()
     }
 
     private val _effect = Channel<ViewEffect>(Channel.RENDEZVOUS)
@@ -105,6 +109,9 @@ class ListChatRoomsViewModel(
         } finally {
             // Emit HIDE Progress indicator
             progressFetchRooms.send(false)
+
+            // EMIT Enable/Disable Account Settings
+            enableAccountSettings.send(preferences.currentUser != null)
         }
     }
 
@@ -118,6 +125,11 @@ class ListChatRoomsViewModel(
          * Emits a list of [ChatRoom] everytime we receive response from SDK List Chatrooms Operation
          */
         fun chatRooms(): Flow<List<ChatRoom>>
+
+        /**
+         * Emits [true] if account was already created. Emits [false] otherwise.
+         */
+        fun enableAccountSettings(): Flow<Boolean>
     }
 
     sealed class ViewEffect {
