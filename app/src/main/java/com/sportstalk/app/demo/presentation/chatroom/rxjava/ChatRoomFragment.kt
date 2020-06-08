@@ -15,7 +15,8 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import com.sportstalk.SportsTalk247
 import com.sportstalk.api.polling.rxjava.allEventUpdates
-import com.sportstalk.app.demo.databinding.FragmentChatRoomBinding
+import com.sportstalk.app.demo.R
+import com.sportstalk.app.demo.databinding.FragmentLiveChatRoomBinding
 import com.sportstalk.app.demo.presentation.chatroom.adapters.ItemChatEventRecycler
 import com.sportstalk.models.ClientConfig
 import com.sportstalk.models.chat.ChatEvent
@@ -36,7 +37,7 @@ import java.util.*
 
 class ChatRoomFragment : Fragment() {
 
-    private lateinit var binding: FragmentChatRoomBinding
+    private lateinit var binding: FragmentLiveChatRoomBinding
     private lateinit var appNavController: NavController
 
     private lateinit var recycler: Recycler<ChatEvent>
@@ -52,7 +53,7 @@ class ChatRoomFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        binding = FragmentChatRoomBinding.inflate(inflater)
+        binding = FragmentLiveChatRoomBinding.inflate(inflater)
         appNavController = findNavController()
         recycler = ItemChatEventRecycler.adopt(
             recyclerView = binding.recyclerView,
@@ -89,9 +90,9 @@ class ChatRoomFragment : Fragment() {
         )
 
         val config = ClientConfig(
-            appId = "5ec0dc805617e00918446168",
-            apiToken = "R-GcA7YsG0Gu3DjEVMWcJA60RkU9uyH0Wmn2pnEbzJzA",
-            endpoint = "https://qa-talkapi.sportstalk247.com/api/v3/"
+            appId = getString(R.string.sportstalk247_appid),
+            apiToken = getString(R.string.sportstalk247_authToken),
+            endpoint = getString(R.string.sportstalk247_urlEndpoint)
         )
 
         val chatClient = SportsTalk247.ChatClient(config = config)

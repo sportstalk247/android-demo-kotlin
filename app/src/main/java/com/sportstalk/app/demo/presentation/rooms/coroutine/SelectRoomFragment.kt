@@ -35,9 +35,9 @@ class SelectRoomFragment : Fragment() {
 
     private val config: ClientConfig by lazy {
         ClientConfig(
-            appId = "5ec0dc805617e00918446168",
-            apiToken = "R-GcA7YsG0Gu3DjEVMWcJA60RkU9uyH0Wmn2pnEbzJzA",
-            endpoint = "https://qa-talkapi.sportstalk247.com/api/v3/"
+            appId = getString(R.string.sportstalk247_appid),
+            apiToken = getString(R.string.sportstalk247_authToken),
+            endpoint = getString(R.string.sportstalk247_urlEndpoint)
         )
     }
 

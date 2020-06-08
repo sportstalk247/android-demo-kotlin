@@ -32,7 +32,7 @@
     <fragment
         android:id="@+id/fragmentChatRoom"
         android:name="com.sportstalk.app.demo.presentation.chatroom.rxjava.ChatRoomFragment"
-        tools:layout="@layout/fragment_chat_room"
+        tools:layout="@layout/fragment_live_chat_room"
         />
 
 </navigation>
