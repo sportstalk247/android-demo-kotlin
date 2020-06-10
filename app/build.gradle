@@ -146,6 +146,8 @@ dependencies {
     implementation "androidx.appcompat:appcompat:$androidXAppCompatVersion"
     implementation "androidx.appcompat:appcompat-resources:$androidXAppCompatVersion"
     implementation "androidx.constraintlayout:constraintlayout:$constraintLayoutVersion"
+    // ViewPager2
+    implementation "androidx.viewpager2:viewpager2:$viewPager2Version"
     // AndroidX Navigation
     implementation "androidx.navigation:navigation-fragment:$rootProject.androidXNavigationVersion"
     implementation "androidx.navigation:navigation-fragment-ktx:$rootProject.androidXNavigationVersion"
@@ -194,6 +196,5 @@ dependencies {
     // Glide
     implementation "com.github.bumptech.glide:glide:$glideVersion"
     annotationProcessor "com.github.bumptech.glide:compiler:$glideVersion"
-
 
 }

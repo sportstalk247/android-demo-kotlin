@@ -14,7 +14,7 @@ import com.sportstalk.SportsTalk247
 import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.FragmentListChatroomBinding
 import com.sportstalk.app.demo.presentation.BaseFragment
-import com.sportstalk.app.demo.presentation.chatroom.coroutine.ChatRoomFragment
+import com.sportstalk.app.demo.presentation.chatroom.ChatRoomFragment
 import com.sportstalk.app.demo.presentation.listrooms.adapters.ItemListChatRooms
 import com.sportstalk.app.demo.presentation.users.CreateAccountFragment
 import com.sportstalk.app.demo.presentation.utils.EndlessRecyclerViewScrollListener
@@ -240,7 +240,8 @@ class ListChatRoomsFragment : BaseFragment() {
                         R.id.action_fragmentListChatroom_to_fragmentChatroom,
                         bundleOf(
                             /* TODO:: Bundle */ChatRoomFragment.INPUT_ARG_ROOM to effect.which,
-                            /* TODO:: Bundle */ChatRoomFragment.INPUT_ARG_USER to effect.who
+                            /* TODO:: Bundle */
+                            ChatRoomFragment.INPUT_ARG_USER to effect.who
                         )
                     )
                 }

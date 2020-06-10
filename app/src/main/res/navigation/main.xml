@@ -45,13 +45,9 @@
 
     <fragment
         android:id="@+id/fragmentChatroom"
-        android:name="com.sportstalk.app.demo.presentation.chatroom.coroutine.ChatRoomFragment"
+        android:name="com.sportstalk.app.demo.presentation.chatroom.ChatRoomFragment"
         tools:layout="@layout/fragment_chatroom"
         >
-        <action
-            android:id="@+id/action_fragmentChatroom_to_chatRoomParticipants"
-            app:destination="@id/chatRoomParticipants"
-            />
     </fragment>
 
     <fragment
@@ -69,7 +65,7 @@
     </fragment>
 
     <fragment
-        android:id="@+id/chatRoomParticipants"
+        android:id="@+id/fragmentChatRoomParticipants"
         >
     </fragment>
 

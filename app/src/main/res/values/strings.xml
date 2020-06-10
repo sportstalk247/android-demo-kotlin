@@ -65,5 +65,6 @@
     <string name="account_successfully_restored">Account successfully banned…</string>
 
     <string name="something_went_wrong_please_try_again">Something went wrong. Please try again later.</string>
+    <string name="leave_room">Leave Room</string>
 
 </resources>

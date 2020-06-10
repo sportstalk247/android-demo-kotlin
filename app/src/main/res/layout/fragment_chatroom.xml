@@ -20,7 +20,7 @@
             android:layout_height="match_parent"
             android:fitsSystemWindows="true"
             app:titleEnabled="false"
-            app:layout_scrollFlags="scroll|exitUntilCollapsed">
+            app:layout_scrollFlags="scroll|exitUntilCollapsed|snap">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
@@ -43,7 +43,7 @@
                     app:civ_circle_background_color="@color/lb_grey"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintRight_toLeftOf="@+id/actvScore"
-                    tools:src="@drawable/ic_chatroom_default_white"
+                    android:src="@drawable/ic_chatroom_default_white"
                     />
 
                 <androidx.appcompat.widget.AppCompatTextView
@@ -62,7 +62,7 @@
                     app:layout_constraintTop_toBottomOf="@+id/civTeam1"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintRight_toRightOf="@+id/guidelineVertical"
-                    tools:text="Team 1"
+                    android:text="Team 1"
                     />
 
                 <androidx.appcompat.widget.AppCompatTextView
@@ -80,6 +80,7 @@
                     app:layout_constraintBottom_toTopOf="@+id/civTeam2"
                     app:layout_constraintLeft_toRightOf="@+id/guidelineVertical"
                     app:layout_constraintRight_toLeftOf="@+id/guidelineVertical"
+                    android:text="0-0"
                     tools:text="102-101"
                     />
 
@@ -97,7 +98,7 @@
                     app:civ_circle_background_color="@color/lb_grey"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintLeft_toRightOf="@+id/actvScore"
-                    tools:src="@drawable/ic_chatroom_default_white"
+                    android:src="@drawable/ic_chatroom_default_white"
                     />
 
                 <androidx.appcompat.widget.AppCompatTextView
@@ -116,7 +117,7 @@
                     app:layout_constraintTop_toBottomOf="@+id/civTeam2"
                     app:layout_constraintLeft_toRightOf="@+id/guidelineVertical"
                     app:layout_constraintRight_toRightOf="parent"
-                    tools:text="Team 2"
+                    android:text="Team 2"
                     />
 
                 <androidx.appcompat.widget.AppCompatTextView
@@ -134,7 +135,7 @@
                     app:layout_constraintTop_toBottomOf="@+id/actvTeam1"
                     app:layout_constraintLeft_toRightOf="@+id/actvScore"
                     app:layout_constraintRight_toLeftOf="@+id/actvScore"
-                    tools:text="Standard League"
+                    android:text="Standard League"
                     />
 
                 <androidx.appcompat.widget.AppCompatTextView
@@ -152,7 +153,7 @@
                     app:layout_constraintTop_toBottomOf="@+id/actvRoomName"
                     app:layout_constraintLeft_toRightOf="@+id/actvRoomName"
                     app:layout_constraintRight_toLeftOf="@+id/actvRoomName"
-                    tools:text="22,956"
+                    android:text="22,956"
                     />
 
                 <androidx.constraintlayout.widget.Guideline
@@ -179,6 +180,7 @@
         </com.google.android.material.appbar.CollapsingToolbarLayout>
 
         <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tabLayoutChatroom"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
@@ -186,35 +188,30 @@
             >
 
             <com.google.android.material.tabs.TabItem
-                android:id="@+id/tabTeam"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/team"
                 />
 
             <com.google.android.material.tabs.TabItem
-                android:id="@+id/tabStatistics"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/statistics"
                 />
 
             <com.google.android.material.tabs.TabItem
-                android:id="@+id/tabLiveChat"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/live_chat"
                 />
 
             <com.google.android.material.tabs.TabItem
-                android:id="@+id/tabHighlights"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/highlights"
                 />
 
             <com.google.android.material.tabs.TabItem
-                android:id="@+id/tabVideos"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/videos"
@@ -229,5 +226,47 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior" />
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/layoutInputMessage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:orientation="horizontal"
+        app:elevation="3dp"
+        >
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilChatMessage"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_margin="8dp"
+            android:hint="@string/send_a_message"
+            app:boxCollapsedPaddingTop="8dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/tietChatMessage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:includeFontPadding="true"
+                />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <androidx.appcompat.widget.AppCompatImageButton
+            android:id="@+id/btnSend"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:layout_marginRight="8dp"
+            android:backgroundTint="@android:color/transparent"
+            android:foreground="?attr/selectableItemBackgroundBorderless"
+            android:tint="@color/colorAccent"
+            android:src="@drawable/ic_send"
+            android:layout_gravity="center_vertical"
+            />
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
