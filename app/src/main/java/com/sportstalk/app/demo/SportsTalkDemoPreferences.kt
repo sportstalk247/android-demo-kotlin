@@ -21,9 +21,11 @@ class SportsTalkDemoPreferences(
                 }
         }
         set(value) {
-            value?.let { _value ->
-                preferences.edit(true) {
+            preferences.edit(true) {
+                value?.let { _value ->
                     putString(KEY_CURRENT_USER, json.stringify(User.serializer(), _value))
+                } ?: run {
+                    putString(KEY_CURRENT_USER, null)
                 }
             }
         }
