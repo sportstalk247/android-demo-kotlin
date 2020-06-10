@@ -9,13 +9,6 @@ import com.sportstalk.app.demo.presentation.users.AccountSettingsViewModel
 import com.sportstalk.app.demo.presentation.users.CreateAccountViewModel
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonBuilder
-import kotlinx.serialization.json.JsonConfiguration
-import com.sportstalk.app.demo.presentation.users.coroutine.SelectDemoUserViewModel as SelectDemoUserViewModelCoroutine
-import com.sportstalk.app.demo.presentation.users.rxjava.SelectDemoUserViewModel as SelectDemoUserViewModelRx
-import com.sportstalk.app.demo.presentation.users.livedata.SelectDemoUserViewModel as SelectDemoUserViewModelLiveData
-import com.sportstalk.app.demo.presentation.rooms.rxjava.SelectRoomViewModel as SelectRoomViewModelRx
-import com.sportstalk.app.demo.presentation.rooms.coroutine.SelectRoomViewModel as SelectRoomViewModelCoroutine
-import com.sportstalk.app.demo.presentation.rooms.livedata.SelectRoomViewModel as SelectRoomViewModelLiveData
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.core.context.startKoin
@@ -77,30 +70,6 @@ class SportsTalkDemoApplication: Application() {
                         (chatClient: ChatClient) -> CreateChatroomViewModel(chatClient = chatClient, preferences = get())
                     }
 
-                    /*
-                    * Select Chat Room
-                    */
-                    viewModel {
-                            (chatClient: ChatClient) -> SelectRoomViewModelRx(chatClient)
-                    }
-                    viewModel {
-                            (chatClient: ChatClient) -> SelectRoomViewModelCoroutine(chatClient)
-                    }
-                    viewModel {
-                            (chatClient: ChatClient) -> SelectRoomViewModelLiveData(chatClient)
-                    }
-                    /*
-                    * Select Demo User
-                    */
-                    viewModel {
-                            (chatClient: ChatClient) -> SelectDemoUserViewModelCoroutine(chatClient)
-                    }
-                    viewModel {
-                            (chatClient: ChatClient) -> SelectDemoUserViewModelRx(chatClient)
-                    }
-                    viewModel {
-                            (chatClient: ChatClient) -> SelectDemoUserViewModelLiveData(chatClient)
-                    }
                 }
             )
         }

@@ -18,7 +18,7 @@ import com.sportstalk.SportsTalk247
 import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.FragmentCreateAccountBinding
 import com.sportstalk.app.demo.presentation.BaseFragment
-import com.sportstalk.app.demo.presentation.chatroom.coroutine.ChatRoomFragment
+import com.sportstalk.app.demo.presentation.chatroom.ChatRoomFragment
 import com.sportstalk.models.ClientConfig
 import com.sportstalk.models.chat.ChatRoom
 import kotlinx.coroutines.flow.debounce
