@@ -3,10 +3,13 @@ package com.sportstalk.app.demo
 import android.app.Application
 import com.sportstalk.api.ChatClient
 import com.sportstalk.api.UserClient
+import com.sportstalk.app.demo.presentation.chatroom.ChatRoomViewModel
 import com.sportstalk.app.demo.presentation.listrooms.ListChatRoomsViewModel
 import com.sportstalk.app.demo.presentation.rooms.CreateChatroomViewModel
 import com.sportstalk.app.demo.presentation.users.AccountSettingsViewModel
 import com.sportstalk.app.demo.presentation.users.CreateAccountViewModel
+import com.sportstalk.models.chat.ChatRoom
+import com.sportstalk.models.users.User
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonBuilder
 import org.koin.android.ext.koin.androidContext
@@ -68,6 +71,19 @@ class SportsTalkDemoApplication: Application() {
                      */
                     viewModel {
                         (chatClient: ChatClient) -> CreateChatroomViewModel(chatClient = chatClient, preferences = get())
+                    }
+
+                    /*
+                    * Chatroom
+                    */
+                    viewModel {
+                        (room: ChatRoom, user: User, chatClient: ChatClient) ->
+                        ChatRoomViewModel(
+                            room = room,
+                            user = user,
+                            chatClient = chatClient,
+                            preferences = get()
+                        )
                     }
 
                 }

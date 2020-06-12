@@ -179,6 +179,19 @@
 
         </com.google.android.material.appbar.CollapsingToolbarLayout>
 
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="match_parent"
+            android:layout_height="8dp"
+            android:visibility="gone"
+            android:indeterminate="true"
+            android:indeterminateTint="@color/colorAccent"
+            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            tools:indeterminate="false"
+            tools:progress="75"
+            tools:visibility="visible"
+            />
+
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tabLayoutChatroom"
             android:layout_width="match_parent"
@@ -225,6 +238,7 @@
         android:id="@+id/viewPager2"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginBottom="64dp"
         app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior" />
 
     <androidx.appcompat.widget.LinearLayoutCompat
@@ -243,7 +257,9 @@
             android:layout_weight="1"
             android:layout_margin="8dp"
             android:hint="@string/send_a_message"
-            app:boxCollapsedPaddingTop="8dp">
+            app:boxCollapsedPaddingTop="8dp"
+            >
+            <!-- android:theme="@style/Theme.MaterialComponents.Light.DarkActionBar" -->
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/tietChatMessage"
@@ -251,6 +267,18 @@
                 android:layout_height="wrap_content"
                 android:textSize="14sp"
                 android:includeFontPadding="true"
+                />
+            <ProgressBar
+                android:id="@+id/progressBarSendChat"
+                android:layout_width="match_parent"
+                android:layout_height="4dp"
+                android:visibility="gone"
+                android:indeterminate="true"
+                android:indeterminateTint="@color/colorAccent"
+                style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+                tools:indeterminate="false"
+                tools:progress="75"
+                tools:visibility="visible"
                 />
 
         </com.google.android.material.textfield.TextInputLayout>
