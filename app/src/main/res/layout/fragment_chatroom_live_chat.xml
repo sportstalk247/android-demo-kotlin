@@ -20,7 +20,7 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintBottom_toTopOf="@+id/layoutInputMessage"
-        tools:listitem="@layout/item_chatroom_live_chat"
+        tools:listitem="@layout/item_chatroom_live_chat_received"
         tools:itemCount="3"
         />
 

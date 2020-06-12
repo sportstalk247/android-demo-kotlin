@@ -5,7 +5,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.sportstalk.app.demo.R
-import com.sportstalk.app.demo.databinding.ItemChatroomLiveChatBinding
+import com.sportstalk.app.demo.databinding.ItemChatroomLiveChatReceivedBinding
 import com.sportstalk.models.chat.ChatEvent
 import com.squareup.cycler.ItemComparator
 import com.squareup.cycler.Recycler
@@ -19,8 +19,8 @@ object ItemChatEventRecycler {
     ): Recycler<ChatEvent> =
         Recycler.adopt(recyclerView) {
             row<ChatEvent, ConstraintLayout> {
-                create(R.layout.item_chatroom_live_chat) {
-                    val binding = ItemChatroomLiveChatBinding.bind(view)
+                create(R.layout.item_chatroom_live_chat_received) {
+                    val binding = ItemChatroomLiveChatReceivedBinding.bind(view)
                     bind { index, chatEvent ->
                         chatEvent.user?.pictureurl?.let { profileurl ->
                             Glide.with(binding.root.context)
