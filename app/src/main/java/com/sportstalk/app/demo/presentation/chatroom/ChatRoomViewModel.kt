@@ -76,7 +76,7 @@ class ChatRoomViewModel(
                 .take(1)
     }
 
-    private val _effect = Channel<ViewEffect>(Channel.RENDEZVOUS)
+    private val _effect = Channel<ViewEffect>(Channel.BUFFERED)
     val effect: Flow<ViewEffect>
         get() = _effect
             .receiveAsFlow()
@@ -381,9 +381,38 @@ class ChatRoomViewModel(
         }
     }
 
-    fun reactToAMessage() {
+    fun reactToAMessage(event: ChatEvent, hasAlreadyReacted: Boolean) {
         viewModelScope.launch {
-            // TODO::
+
+            try {
+                // Perform React To a Message SDK Operation
+                val response = withContext(Dispatchers.IO) {
+                    chatClient.reactToEvent(
+                        chatRoomId = room.id!!,
+                        eventId = event.id!!,
+                        request = ReactToAMessageRequest(
+                            userid = user.userid!!,
+                            reaction = EventReaction.LIKE,
+                            reacted = !hasAlreadyReacted
+                        )
+                    )
+                        .await()
+                }
+
+                // Emit Success
+                var replyTo: ChatEvent? = response.replyto
+                while(replyTo != null) {
+                    _effect.send(
+                        ViewEffect.SuccessReactToAMessage(replyTo)
+                    )
+                    replyTo = replyTo.replyto
+                }
+
+            } catch (err: SportsTalkException) {
+                // Emit Error
+                _effect.send(ViewEffect.ErrorReactToAMessage(err))
+            }
+
         }
     }
 
@@ -477,6 +506,9 @@ class ChatRoomViewModel(
         data class ErrorSendQuotedReply(val err: SportsTalkException) : ViewEffect()
         data class ThreadedReplySent(val response: ExecuteChatCommandResponse) : ViewEffect()
         data class ErrorSendThreadedReply(val err: SportsTalkException) : ViewEffect()
+
+        data class SuccessReactToAMessage(val response: ChatEvent) : ViewEffect()
+        data class ErrorReactToAMessage(val err: SportsTalkException) : ViewEffect()
 
         class SuccessExitRoom() : ViewEffect()
         data class ErrorExitRoom(val err: SportsTalkException) : ViewEffect()

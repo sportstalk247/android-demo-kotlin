@@ -128,11 +128,11 @@ class LiveChatFragment : BaseFragment() {
                 viewModel.prepareQuotedReply(replyTo = chatEvent)
             },
             onTapReactChatEventItem = { chatEvent: ChatEvent, hasAlreadyReacted: Boolean ->
-                Toast.makeText(
-                    requireContext(),
-                    "On Tap React to Chat Event(already reacted = $hasAlreadyReacted): `${chatEvent.id}`",
-                    Toast.LENGTH_SHORT
-                ).show()
+                // Perform React Operation
+                viewModel.reactToAMessage(
+                    event = chatEvent,
+                    hasAlreadyReacted = hasAlreadyReacted
+                )
             }
         )
 
@@ -203,6 +203,19 @@ class LiveChatFragment : BaseFragment() {
 
             }
             is ChatRoomViewModel.ViewEffect.ErrorListPreviousEvents -> {
+                Toast.makeText(
+                    requireContext(),
+                    R.string.something_went_wrong_please_try_again,
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+            is ChatRoomViewModel.ViewEffect.SuccessReactToAMessage -> {
+                // Pre-emptively Update React State of Reacted ChatEvent
+                if (::adapter.isInitialized) {
+                    adapter.update(effect.response)
+                }
+            }
+            is ChatRoomViewModel.ViewEffect.ErrorReactToAMessage -> {
                 Toast.makeText(
                     requireContext(),
                     R.string.something_went_wrong_please_try_again,

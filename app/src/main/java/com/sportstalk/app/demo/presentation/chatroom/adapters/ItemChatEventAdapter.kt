@@ -39,6 +39,20 @@ class ItemChatEventAdapter(
      */
     private var dataVersion = 0
 
+    @MainThread
+    fun update(item: ChatEvent) {
+        /*update(listOf(item))*/
+        synchronized(items) {
+            items = ArrayList(items).apply {
+                val index = items.indexOfFirst { oldItem -> oldItem.id == item.id }
+                if (index >= 0) {
+                    set(index, item)
+                    notifyItemChanged(index)
+                }
+            }
+        }
+    }
+
     @SuppressLint("StaticFieldLeak")
     @MainThread
     fun update(itemUpdates: List<ChatEvent>) {
@@ -260,7 +274,7 @@ class ItemChatEventAdapter(
                     )
                 }
 
-                isEnabled = !iReactedToThisMessage
+                /*isEnabled = !iReactedToThisMessage*/
             }
 
             // ChatEvent Reaction Count
