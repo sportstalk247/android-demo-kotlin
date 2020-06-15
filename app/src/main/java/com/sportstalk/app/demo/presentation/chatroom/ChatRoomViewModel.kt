@@ -11,6 +11,7 @@ import com.sportstalk.models.chat.*
 import com.sportstalk.models.users.User
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.channels.sendBlocking
@@ -76,12 +77,10 @@ class ChatRoomViewModel(
                 .take(1)
     }
 
-    private val _effect = Channel<ViewEffect>(Channel.BUFFERED)
+    private val _effect = Channel<ViewEffect>(Channel.RENDEZVOUS)
     val effect: Flow<ViewEffect>
         get() = _effect
             .receiveAsFlow()
-            .conflate()
-
 
     init {
         // Emit Room Name
@@ -158,6 +157,8 @@ class ChatRoomViewModel(
                         }
                     }
                 }
+                    // Filter out "reaction" event type
+                    .filter { it.eventtype != EventType.REACTION }
                     .sortedByDescending { it.ts }
                     .distinctBy { it.id }
 
@@ -401,7 +402,7 @@ class ChatRoomViewModel(
 
                 // Emit Success
                 var replyTo: ChatEvent? = response.replyto
-                while(replyTo != null) {
+                while(replyTo != null && replyTo.eventtype != EventType.REACTION) {
                     _effect.send(
                         ViewEffect.SuccessReactToAMessage(replyTo)
                     )
