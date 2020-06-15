@@ -68,5 +68,8 @@
     <string name="unable_to_join_room_please_try_again">Unable to join room. Please try again…</string>
     <string name="join_room">Join Room</string>
     <string name="leave_room">Leave Room</string>
+    <string name="reply_to" formatted="true">Reply to %s</string>
+    <string name="others_replied_to" formatted="true">%s replied to %s</string>
+    <string name="you_replied_to" formatted="true">You replied to %s</string>
 
 </resources>

@@ -12,6 +12,7 @@
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:layout_marginBottom="16dp"
         android:focusable="true"
         android:focusableInTouchMode="true"
         app:reverseLayout="true"
@@ -19,9 +20,106 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/layoutInputMessage"
+        app:layout_constraintBottom_toTopOf="@+id/containerReply"
         tools:listitem="@layout/item_chatroom_live_chat_received"
         tools:itemCount="3"
         />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/containerReply"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="12dp"
+        android:visibility="gone"
+        tools:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        >
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/actvReplyTo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="12dp"
+            android:layout_marginRight="8dp"
+            android:maxLines="1"
+            android:textAppearance="?attr/textAppearanceSubtitle2"
+            android:textColor="@android:color/tertiary_text_light"
+            android:textSize="12sp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            tools:text="Reply to @bobby_axelrod"
+            />
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardViewReply"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            app:cardBackgroundColor="@color/bg_replied_message"
+            app:cardUseCompatPadding="false"
+            app:contentPadding="4dp"
+            app:cardCornerRadius="8dp"
+            android:layout_marginRight="16dp"
+            app:layout_constraintTop_toBottomOf="@+id/actvReplyTo"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toLeftOf="@+id/btnClear"
+            app:layout_constraintHorizontal_bias="0.0"
+            android:theme="@style/Theme.MaterialComponents.Light.DarkActionBar"
+            >
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                >
+                <View
+                    android:id="@+id/divider"
+                    android:layout_width="2dp"
+                    android:layout_height="0dp"
+                    android:layout_marginTop="2dp"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginBottom="2dp"
+                    android:background="@android:color/darker_gray"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintTop_toTopOf="@+id/actvRepliedMessage"
+                    app:layout_constraintBottom_toBottomOf="@+id/actvRepliedMessage"
+                    />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:id="@+id/actvRepliedMessage"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="12dp"
+                    android:layout_marginTop="2dp"
+                    android:layout_marginRight="12dp"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintLeft_toRightOf="@+id/divider"
+                    android:textSize="16sp"
+                    android:textAppearance="?attr/textAppearanceHeadline1"
+                    android:textColor="@android:color/tertiary_text_light"
+                    tools:text="I'm good. How are you doing???"
+                    />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/btnClear"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            app:srcCompat="@drawable/ic_clear_white"
+            app:tint="@color/lb_grey"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/actvReplyTo"
+            app:layout_constraintBottom_toBottomOf="@+id/cardViewReply"
+            app:layout_constraintVertical_bias="0.99"
+            />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

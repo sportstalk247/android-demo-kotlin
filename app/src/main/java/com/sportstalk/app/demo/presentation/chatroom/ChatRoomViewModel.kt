@@ -36,6 +36,7 @@ class ChatRoomViewModel(
     private val progressExitRoom = Channel<Boolean>(Channel.RENDEZVOUS)
     private val progressListPreviousEvents = Channel<Boolean>(Channel.RENDEZVOUS)
     private val progressSendChatMessage = Channel<Boolean>(Channel.RENDEZVOUS)
+    private val quotedReply = ConflatedBroadcastChannel<ChatEvent>()
 
     private lateinit var previouseventscursor: String
 
@@ -66,6 +67,9 @@ class ChatRoomViewModel(
         override fun progressSendChatMessage(): Flow<Boolean> =
             progressSendChatMessage.receiveAsFlow()
 
+        override fun quotedReply(): Flow<ChatEvent> =
+            quotedReply.asFlow()
+
         override fun chatEvents(): Flow<List<ChatEvent>> =
             chatEvents
                 .asFlow()
@@ -74,7 +78,10 @@ class ChatRoomViewModel(
 
     private val _effect = Channel<ViewEffect>(Channel.RENDEZVOUS)
     val effect: Flow<ViewEffect>
-        get() = _effect.consumeAsFlow()
+        get() = _effect
+            .receiveAsFlow()
+            .conflate()
+
 
     init {
         // Emit Room Name
@@ -225,37 +232,56 @@ class ChatRoomViewModel(
         custompayload: String? = null,
         customtype: String? = null
     ) {
-        viewModelScope.launch {
-            try {
-                // DISPLAY Progress Indicator
-                progressSendChatMessage.send(true)
 
-                val response = withContext(Dispatchers.IO) {
-                    chatClient.executeChatCommand(
-                        chatRoomId = room.id!!,
-                        request = ExecuteChatCommandRequest(
-                            command = message,
-                            userid = user.userid!!,
-                            customid = null,
-                            custompayload = null,
-                            customtype = null
-                        )
-                    ).await()
+        when {
+            quotedReply.valueOrNull != null && quotedReply.value != PLACEHOLDER_CLEAR_REPLY -> {
+                sendQuotedReply(
+                    message = message,
+                    customid = customid,
+                    custompayload = custompayload,
+                    replyTo = quotedReply.value
+                )
+            }
+            else -> {
+                viewModelScope.launch {
+                    try {
+                        // DISPLAY Progress Indicator
+                        progressSendChatMessage.send(true)
+
+                        val response = withContext(Dispatchers.IO) {
+                            chatClient.executeChatCommand(
+                                chatRoomId = room.id!!,
+                                request = ExecuteChatCommandRequest(
+                                    command = message,
+                                    userid = user.userid!!,
+                                    customid = null,
+                                    custompayload = null,
+                                    customtype = null
+                                )
+                            ).await()
+                        }
+
+                        // Emit SUCCESS Send Chat Message
+                        _effect.send(ViewEffect.ChatMessageSent(response))
+
+                    } catch (err: SportsTalkException) {
+                        // EMIT Error
+                        _effect.send(ViewEffect.ErrorSendChatMessage(err))
+
+                    } finally {
+                        // HIDE Progress Indicator
+                        progressSendChatMessage.send(false)
+                    }
                 }
-
-                // Emit SUCCESS Send Chat Message
-                _effect.send(ViewEffect.ChatMessageSent(response))
-
-            } catch (err: SportsTalkException) {
-                // EMIT Error
-                _effect.send(ViewEffect.ErrorSendChatMessage(err))
-
-            } finally {
-                // HIDE Progress Indicator
-                progressSendChatMessage.send(false)
             }
         }
     }
+
+    fun prepareQuotedReply(replyTo: ChatEvent) =
+        this@ChatRoomViewModel.quotedReply.sendBlocking(replyTo)
+
+    fun clearQuotedReply() =
+        this@ChatRoomViewModel.quotedReply.sendBlocking(PLACEHOLDER_CLEAR_REPLY)
 
     /**
      * Perform `Reply to a Message (Threaded)` SDK Operation
@@ -304,6 +330,9 @@ class ChatRoomViewModel(
             } finally {
                 // HIDE Progress Indicator
                 progressSendChatMessage.send(false)
+
+                // Clear Prepared Quoted Reply
+                this@ChatRoomViewModel.quotedReply.send(PLACEHOLDER_CLEAR_REPLY)
             }
         }
     }
@@ -424,6 +453,13 @@ class ChatRoomViewModel(
         fun progressSendChatMessage(): Flow<Boolean>
 
         /**
+         * Emits an instance of [ChatEvent] the user wants to reply to(quoted).
+         * - Displays a reply UI component on top of chat input field.
+         * - If emitted instance is [PLACEHOLDER_CLEAR_REPLY], clears the UI component
+         */
+        fun quotedReply(): Flow<ChatEvent>
+
+        /**
          * Emits the overall list of events(includes results from `previouseventscursor` and `nexteventscursor`)
          */
         fun chatEvents(): Flow<List<ChatEvent>>
@@ -451,6 +487,8 @@ class ChatRoomViewModel(
 
     companion object {
         private const val LIST_LIMIT = 10
+
+        val PLACEHOLDER_CLEAR_REPLY = ChatEvent()
     }
 
 }
