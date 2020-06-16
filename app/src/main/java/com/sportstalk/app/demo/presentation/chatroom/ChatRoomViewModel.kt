@@ -406,11 +406,15 @@ class ChatRoomViewModel(
 
                 // Emit Success
                 var replyTo: ChatEvent? = response.replyto
-                while(replyTo != null && replyTo.eventtype != EventType.REACTION) {
-                    _effect.send(
-                        ViewEffect.SuccessReactToAMessage(replyTo)
-                    )
-                    replyTo = replyTo.replyto
+                while (replyTo != null) {
+                    if(replyTo.id == event.id) {
+                        _effect.send(
+                            ViewEffect.SuccessReactToAMessage(replyTo)
+                        )
+                        break
+                    }
+
+                    replyTo = replyTo?.replyto
                 }
 
             } catch (err: SportsTalkException) {

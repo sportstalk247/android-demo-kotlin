@@ -287,6 +287,7 @@ class ItemChatEventAdapter(
                 }
 
                 /*isEnabled = !iReactedToThisMessage*/
+                requestLayout()
             }
 
             // ChatEvent Reaction Count
