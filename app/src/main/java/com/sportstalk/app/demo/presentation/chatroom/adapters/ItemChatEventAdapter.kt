@@ -32,6 +32,7 @@ class ItemChatEventAdapter(
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private var items: List<ChatEvent> = ArrayList(initialItems)
+    fun getItem(position: Int) = items[position]
 
     /**
      * Each time data is set, we update this variable so that if DiffUtil calculation returns

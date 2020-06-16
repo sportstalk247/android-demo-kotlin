@@ -195,10 +195,17 @@ class LiveChatFragment : BaseFragment() {
             }
         )
 
+        adapter.registerAdapterDataObserver(object: RecyclerView.AdapterDataObserver() {
+            override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
+                super.onItemRangeInserted(positionStart, itemCount)
+                val item = adapter.getItem(positionStart)
+                if(item.userid == user.userid) {
+                    binding.recyclerView.scrollToPosition(0)
+                }
+            }
+        })
+
         binding.recyclerView.adapter = adapter
-        // Explicit force scroll to latest chat event item
-        delay(1000)
-        binding.recyclerView.smoothScrollToPosition(0)
     }
 
     private suspend fun takeReplyTo(replyTo: ChatEvent) {
@@ -225,11 +232,7 @@ class LiveChatFragment : BaseFragment() {
                 }
             }
             is ChatRoomViewModel.ViewEffect.ChatMessageSent -> {
-                // Scroll to bottom of chat event list
-                if (::adapter.isInitialized) {
-                    delay(1000)
-                    binding.recyclerView.smoothScrollToPosition(0)
-                }
+                
             }
             is ChatRoomViewModel.ViewEffect.ErrorSendChatMessage -> {
                 Toast.makeText(
