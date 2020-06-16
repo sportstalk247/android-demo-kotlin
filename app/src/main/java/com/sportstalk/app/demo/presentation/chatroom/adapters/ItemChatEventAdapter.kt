@@ -41,13 +41,25 @@ class ItemChatEventAdapter(
 
     @MainThread
     fun update(item: ChatEvent) {
-        /*update(listOf(item))*/
         synchronized(items) {
             items = ArrayList(items).apply {
                 val index = items.indexOfFirst { oldItem -> oldItem.id == item.id }
                 if (index >= 0) {
                     set(index, item)
                     notifyItemChanged(index)
+                }
+            }
+        }
+    }
+
+    @MainThread
+    fun remove(item: ChatEvent) {
+        synchronized(items) {
+            items = ArrayList(items).apply {
+                val index = items.indexOfFirst { oldItem -> oldItem.id == item.id }
+                if (index >= 0) {
+                    removeAt(index)
+                    notifyItemRemoved(index)
                 }
             }
         }

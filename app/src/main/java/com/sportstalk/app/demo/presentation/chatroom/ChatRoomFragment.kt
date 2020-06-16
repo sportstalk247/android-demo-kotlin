@@ -181,6 +181,13 @@ class ChatRoomFragment : BaseFragment() {
             .onEach(::takeProgressSendChatMessage)
             .launchIn(lifecycleScope)
 
+        /**
+         * Emits [true] upon start `Delete Event` or `Flag Message Event as Deleted` SDK operation. Emits [false] when done.
+         */
+        viewModel.state.progressRemoveMessage()
+            .onEach(::takeProgressRemoveMessage)
+            .launchIn(lifecycleScope)
+
         ///////////////////////////////
         // Bind View Effect
         ///////////////////////////////
@@ -267,7 +274,6 @@ class ChatRoomFragment : BaseFragment() {
 
     private suspend fun takeProgressSendChatMessage(inProgress: Boolean) {
         Log.d(TAG, "takeProgressSendChatMessage() -> inProgress = $inProgress")
-        // TODO
 
         when (inProgress) {
             true -> {
@@ -280,6 +286,15 @@ class ChatRoomFragment : BaseFragment() {
                 binding.btnSend.isEnabled = true
                 binding.progressBarSendChat.visibility = View.GONE
             }
+        }
+    }
+
+    private suspend fun takeProgressRemoveMessage(inProgress: Boolean) {
+        Log.d(TAG, "takeProgressRemoveMessage() -> inProgress = $inProgress")
+
+        binding.progressBar.visibility = when (inProgress) {
+            true -> View.VISIBLE
+            false -> View.GONE
         }
     }
 
@@ -314,6 +329,13 @@ class ChatRoomFragment : BaseFragment() {
             is ChatRoomViewModel.ViewEffect.ChatMessageSent -> {
                 // Clear text
                 binding.tietChatMessage.setText("")
+            }
+            is ChatRoomViewModel.ViewEffect.ErrorRemoveMessage -> {
+                Toast.makeText(
+                    requireContext(),
+                    R.string.something_went_wrong_please_try_again,
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
     }
