@@ -5,6 +5,7 @@ import android.content.res.ColorStateList
 import android.os.AsyncTask
 import android.text.format.DateUtils
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
 import androidx.core.content.ContextCompat
@@ -26,8 +27,8 @@ typealias OnTapReactChatEventItem = ((ChatEvent, Boolean) -> Unit)
 class ItemChatEventAdapter(
     private val me: User,
     initialItems: List<ChatEvent> = listOf(),
-    private val onTapChatEventItem: OnTapChatEventItem? = null,
-    private val onTapReactChatEventItem: OnTapReactChatEventItem? = null
+    private val onTapChatEventItem: OnTapChatEventItem = {},
+    private val onTapReactChatEventItem: OnTapReactChatEventItem = { _, _ -> }
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private var items: List<ChatEvent> = ArrayList(initialItems)
@@ -37,6 +38,20 @@ class ItemChatEventAdapter(
      * after repetitive updates, we can ignore the old calculation
      */
     private var dataVersion = 0
+
+    @MainThread
+    fun update(item: ChatEvent) {
+        /*update(listOf(item))*/
+        synchronized(items) {
+            items = ArrayList(items).apply {
+                val index = items.indexOfFirst { oldItem -> oldItem.id == item.id }
+                if (index >= 0) {
+                    set(index, item)
+                    notifyItemChanged(index)
+                }
+            }
+        }
+    }
 
     @SuppressLint("StaticFieldLeak")
     @MainThread
@@ -151,21 +166,21 @@ class ItemChatEventAdapter(
         when(holder) {
             is ItemChatEventActionViewHolder -> {
                 holder.bind(me, item)
-                holder.itemView.setOnClickListener(null)
+                holder.binding.cardViewMessage.setOnClickListener(null)
             }
             is ItemChatEventSentViewHolder -> {
                 holder.bind(me, item)
-                holder.itemView.setOnClickListener { onTapChatEventItem?.invoke(item) }
+                holder.binding.cardViewMessage.setOnClickListener { onTapChatEventItem(item) }
             }
             is ItemChatEventReceivedViewHolder -> {
                 holder.bind(me, item)
-                holder.itemView.setOnClickListener { onTapChatEventItem?.invoke(item) }
+                holder.binding.cardViewMessage.setOnClickListener { onTapChatEventItem(item) }
                 val iReactedToThisMessage = item.reactions
                     .any { rxn ->
                         rxn.users.any { usr -> usr.userid == me.userid }
                     }
                 holder.binding.btnLike.setOnClickListener {
-                    onTapReactChatEventItem?.invoke(item, iReactedToThisMessage)
+                    onTapReactChatEventItem.invoke(item, iReactedToThisMessage)
                 }
             }
         }
@@ -208,6 +223,21 @@ class ItemChatEventAdapter(
                     DateUtils.FORMAT_SHOW_YEAR
                 ).toString()
             }
+
+            ///////////////////////////////
+            // Quoted Reply
+            ///////////////////////////////
+            if(item.replyto != null) {
+                binding.actvRepliedTo.text = context.getString(
+                    R.string.you_replied_to,
+                    "@${item.user?.handle ?: ""}"
+                )
+                binding.actvRepliedMessage.text = item.replyto?.body
+
+                binding.containerReply.visibility = View.VISIBLE
+            } else {
+                binding.containerReply.visibility = View.GONE
+            }
         }
     }
 
@@ -244,7 +274,7 @@ class ItemChatEventAdapter(
                     )
                 }
 
-                isEnabled = !iReactedToThisMessage
+                /*isEnabled = !iReactedToThisMessage*/
             }
 
             // ChatEvent Reaction Count
@@ -262,6 +292,23 @@ class ItemChatEventAdapter(
                     DateUtils.DAY_IN_MILLIS
                 )
             }
+
+            ///////////////////////////////
+            // Quoted Reply
+            ///////////////////////////////
+            if(item.replyto != null) {
+                binding.actvRepliedTo.text = context.getString(
+                    R.string.others_replied_to,
+                    "@${item.user?.handle ?: ""}",
+                    "@${item.replyto?.user?.handle ?: ""}"
+                )
+                binding.actvRepliedMessage.text = item.replyto?.body
+
+                binding.containerReply.visibility = View.VISIBLE
+            } else {
+                binding.containerReply.visibility = View.GONE
+            }
+
         }
     }
 

@@ -6,4 +6,8 @@
 
     <color name="bg_chat_message_sent">#3981ED</color>
     <color name="blue_like">#5291EF</color>
+
+    <color name="bg_replied_message">#FFDDDDDD</color>
+
+
 </resources>

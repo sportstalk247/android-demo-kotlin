@@ -11,6 +11,7 @@ import androidx.core.view.ViewCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.jakewharton.rxbinding3.view.clicks
 import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.FragmentChatroomLiveChatBinding
 import com.sportstalk.app.demo.presentation.BaseFragment
@@ -21,7 +22,9 @@ import com.sportstalk.models.users.User
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.rx2.asFlow
 import org.koin.androidx.viewmodel.ext.android.getViewModel
+import java.util.concurrent.TimeUnit
 
 class LiveChatFragment : BaseFragment() {
 
@@ -79,11 +82,29 @@ class LiveChatFragment : BaseFragment() {
             .onEach(::takeChatEvents)
             .launchIn(lifecycleScope)
 
+        /**
+         * Emits an instance of [ChatEvent] the user wants to reply to(quoted).
+         */
+        viewModel.state.quotedReply()
+            .onEach(::takeReplyTo)
+            .launchIn(lifecycleScope)
+
         ///////////////////////////////
         // Bind View Effect
         ///////////////////////////////
         viewModel.effect
             .onEach(::takeViewEffect)
+            .launchIn(lifecycleScope)
+
+        /**
+         * On click Clear Quoted Reply
+         */
+        binding.btnClear.clicks()
+            .throttleFirst(1000, TimeUnit.MILLISECONDS)
+            .asFlow()
+            .onEach {
+                viewModel.clearQuotedReply()
+            }
             .launchIn(lifecycleScope)
 
     }
@@ -102,25 +123,36 @@ class LiveChatFragment : BaseFragment() {
             onTapChatEventItem = { chatEvent: ChatEvent ->
                 Log.d(TAG, "takeChatEvents() -> onTapChatEventItem() -> chatEvent = $chatEvent")
                 // TODO:: onTapChatEventItem
-                Toast.makeText(
-                    requireContext(),
-                    "On Tap Chat Event: `${chatEvent.id}`",
-                    Toast.LENGTH_SHORT
-                ).show()
+
+                // Prepare Quoted Reply
+                viewModel.prepareQuotedReply(replyTo = chatEvent)
             },
             onTapReactChatEventItem = { chatEvent: ChatEvent, hasAlreadyReacted: Boolean ->
-                Toast.makeText(
-                    requireContext(),
-                    "On Tap React to Chat Event(already reacted = $hasAlreadyReacted): `${chatEvent.id}`",
-                    Toast.LENGTH_SHORT
-                ).show()
+                // Perform React Operation
+                viewModel.reactToAMessage(
+                    event = chatEvent,
+                    hasAlreadyReacted = hasAlreadyReacted
+                )
             }
         )
 
         binding.recyclerView.adapter = adapter
         // Explicit force scroll to latest chat event item
-        delay(500)
+        delay(1000)
         binding.recyclerView.smoothScrollToPosition(0)
+    }
+
+    private suspend fun takeReplyTo(replyTo: ChatEvent) {
+        Log.d(TAG, "takeReplyTo() - replyTo = $replyTo")
+
+        if(replyTo.id != null) {
+            binding.actvReplyTo.text = getString(R.string.reply_to, replyTo.user?.handle ?: "")
+            binding.actvRepliedMessage.text = replyTo.body
+
+            binding.containerReply.visibility = View.VISIBLE
+        } else {
+            binding.containerReply.visibility = View.GONE
+        }
     }
 
     private suspend fun takeViewEffect(effect: ChatRoomViewModel.ViewEffect) {
@@ -131,14 +163,12 @@ class LiveChatFragment : BaseFragment() {
                 // Dispatch update received new events
                 if (::adapter.isInitialized) {
                     adapter.update(effect.eventUpdates)
-                    delay(500)
-                    binding.recyclerView.smoothScrollToPosition(0)
                 }
             }
             is ChatRoomViewModel.ViewEffect.ChatMessageSent -> {
                 // Scroll to bottom of chat event list
                 if (::adapter.isInitialized) {
-                    delay(500)
+                    delay(1000)
                     binding.recyclerView.smoothScrollToPosition(0)
                 }
             }
@@ -173,6 +203,19 @@ class LiveChatFragment : BaseFragment() {
 
             }
             is ChatRoomViewModel.ViewEffect.ErrorListPreviousEvents -> {
+                Toast.makeText(
+                    requireContext(),
+                    R.string.something_went_wrong_please_try_again,
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+            is ChatRoomViewModel.ViewEffect.SuccessReactToAMessage -> {
+                // Pre-emptively Update React State of Reacted ChatEvent
+                if (::adapter.isInitialized) {
+                    adapter.update(effect.response)
+                }
+            }
+            is ChatRoomViewModel.ViewEffect.ErrorReactToAMessage -> {
                 Toast.makeText(
                     requireContext(),
                     R.string.something_went_wrong_please_try_again,

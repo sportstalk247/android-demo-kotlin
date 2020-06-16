@@ -21,6 +21,7 @@ import com.sportstalk.app.demo.databinding.FragmentChatroomBinding
 import com.sportstalk.app.demo.presentation.BaseFragment
 import com.sportstalk.app.demo.presentation.utils.AppBarStateChangedListener
 import com.sportstalk.models.ClientConfig
+import com.sportstalk.models.chat.ChatEvent
 import com.sportstalk.models.chat.ChatRoom
 import com.sportstalk.models.users.User
 import kotlinx.coroutines.flow.launchIn
@@ -198,6 +199,8 @@ class ChatRoomFragment : BaseFragment() {
                 viewModel.sendChatMessage(
                     message = binding.tietChatMessage.text?.toString() ?: ""
                 )
+                // Clear text
+                binding.tietChatMessage.setText("")
             }
             .launchIn(lifecycleScope)
 
