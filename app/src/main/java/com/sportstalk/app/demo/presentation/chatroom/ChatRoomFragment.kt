@@ -5,6 +5,7 @@ import android.util.Log
 import android.view.*
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
@@ -19,6 +20,7 @@ import com.sportstalk.SportsTalk247
 import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.FragmentChatroomBinding
 import com.sportstalk.app.demo.presentation.BaseFragment
+import com.sportstalk.app.demo.presentation.chatroom.listparticipants.ChatroomListParticipantsFragment
 import com.sportstalk.app.demo.presentation.utils.AppBarStateChangedListener
 import com.sportstalk.models.ClientConfig
 import com.sportstalk.models.chat.ChatEvent
@@ -235,6 +237,16 @@ class ChatRoomFragment : BaseFragment() {
                 appNavController.popBackStack()
                 true
             }
+            R.id.action_chatroom_participants -> {
+                appNavController.navigate(
+                    R.id.action_fragmentChatroom_to_fragmentChatRoomParticipants,
+                    bundleOf(
+                        ChatroomListParticipantsFragment.INPUT_ARG_ROOM to room,
+                        ChatroomListParticipantsFragment.INPUT_ARG_USER to user
+                    )
+                )
+                true
+            }
             R.id.action_leave_room -> {
                 // Attempt execute Exit Room
                 viewModel.exitRoom()
@@ -358,8 +370,6 @@ class ChatRoomFragment : BaseFragment() {
     }
 
     companion object {
-        val TAG = ChatRoomFragment::class.java.simpleName
-
         private const val TAB_COUNT = 5
         private const val TAB_TEAM = 0
         private const val TAB_STATISTICS = 1

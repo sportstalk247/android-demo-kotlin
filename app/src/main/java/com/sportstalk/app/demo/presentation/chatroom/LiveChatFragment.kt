@@ -17,6 +17,7 @@ import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.FragmentChatroomLiveChatBinding
 import com.sportstalk.app.demo.presentation.BaseFragment
 import com.sportstalk.app.demo.presentation.chatroom.adapters.ItemChatEventAdapter
+import com.sportstalk.app.demo.presentation.utils.EndlessRecyclerViewScrollListener
 import com.sportstalk.models.chat.ChatEvent
 import com.sportstalk.models.chat.ChatRoom
 import com.sportstalk.models.users.User
@@ -33,6 +34,8 @@ class LiveChatFragment : BaseFragment() {
     private val viewModel: ChatRoomViewModel by lazy {
         (parentFragment ?: this@LiveChatFragment).getViewModel<ChatRoomViewModel>()
     }
+
+    private lateinit var scrollListener: RecyclerView.OnScrollListener
 
     private lateinit var user: User
     private lateinit var room: ChatRoom
@@ -56,6 +59,17 @@ class LiveChatFragment : BaseFragment() {
         // Setup RecyclerView
         binding.recyclerView.layoutManager =
             LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, true)
+
+        scrollListener = object : EndlessRecyclerViewScrollListener(binding.recyclerView.layoutManager!! as LinearLayoutManager) {
+            override fun onLoadMore(page: Int, totalItemsCount: Int, view: RecyclerView?) {
+                Log.d(
+                    TAG,
+                    "EndlessRecyclerViewScrollListener:: onLoadMore() -> page/totalItemsCount = ${page}/${totalItemsCount}"
+                )
+                // Attempt fetch more
+                viewModel.listPreviousEvents()
+            }
+        }
 
         return binding.root
     }
@@ -232,7 +246,7 @@ class LiveChatFragment : BaseFragment() {
                 }
             }
             is ChatRoomViewModel.ViewEffect.ChatMessageSent -> {
-                
+
             }
             is ChatRoomViewModel.ViewEffect.ErrorSendChatMessage -> {
                 Toast.makeText(

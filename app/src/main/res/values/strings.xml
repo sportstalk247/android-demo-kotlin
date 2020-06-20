@@ -80,5 +80,11 @@
 
     <string name="message_successfully_removed">Message successfully removed…</string>
     <string name="permanent_if_no_replies">Do you want this message to get permanently deleted if no replies were received?</string>
+    <string name="chatroom_participants">Chatroom Participants</string>
+    <string name="banned">Banned</string>
+
+    <string name="ban_handle" formatted="true">Ban %s</string>
+    <string name="remove_ban_from_handle" formatted="true">Remove Ban from %s</string>
+    <string name="are_you_sure">Are you sure?</string>
 
 </resources>
