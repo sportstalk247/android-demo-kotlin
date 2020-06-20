@@ -32,6 +32,7 @@ class ItemChatEventAdapter(
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private var items: List<ChatEvent> = ArrayList(initialItems)
+    fun getItem(position: Int) = items[position]
 
     /**
      * Each time data is set, we update this variable so that if DiffUtil calculation returns
@@ -41,13 +42,25 @@ class ItemChatEventAdapter(
 
     @MainThread
     fun update(item: ChatEvent) {
-        /*update(listOf(item))*/
         synchronized(items) {
             items = ArrayList(items).apply {
                 val index = items.indexOfFirst { oldItem -> oldItem.id == item.id }
                 if (index >= 0) {
                     set(index, item)
                     notifyItemChanged(index)
+                }
+            }
+        }
+    }
+
+    @MainThread
+    fun remove(item: ChatEvent) {
+        synchronized(items) {
+            items = ArrayList(items).apply {
+                val index = items.indexOfFirst { oldItem -> oldItem.id == item.id }
+                if (index >= 0) {
+                    removeAt(index)
+                    notifyItemRemoved(index)
                 }
             }
         }
@@ -275,6 +288,7 @@ class ItemChatEventAdapter(
                 }
 
                 /*isEnabled = !iReactedToThisMessage*/
+                requestLayout()
             }
 
             // ChatEvent Reaction Count

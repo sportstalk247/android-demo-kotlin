@@ -11,7 +11,6 @@ import com.sportstalk.models.chat.*
 import com.sportstalk.models.users.User
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.channels.sendBlocking
@@ -37,6 +36,8 @@ class ChatRoomViewModel(
     private val progressExitRoom = Channel<Boolean>(Channel.RENDEZVOUS)
     private val progressListPreviousEvents = Channel<Boolean>(Channel.RENDEZVOUS)
     private val progressSendChatMessage = Channel<Boolean>(Channel.RENDEZVOUS)
+    private val progressRemoveMessage = Channel<Boolean>(Channel.RENDEZVOUS)
+    private val progressReportMessage = Channel<Boolean>(Channel.RENDEZVOUS)
     private val quotedReply = ConflatedBroadcastChannel<ChatEvent>()
 
     private lateinit var previouseventscursor: String
@@ -67,6 +68,12 @@ class ChatRoomViewModel(
 
         override fun progressSendChatMessage(): Flow<Boolean> =
             progressSendChatMessage.receiveAsFlow()
+
+        override fun progressRemoveMessage(): Flow<Boolean> =
+            progressRemoveMessage.receiveAsFlow()
+
+        override fun progressReportMessage(): Flow<Boolean> =
+            progressReportMessage.receiveAsFlow()
 
         override fun quotedReply(): Flow<ChatEvent> =
             quotedReply.asFlow()
@@ -382,6 +389,41 @@ class ChatRoomViewModel(
         }
     }
 
+    /**
+     * Perform `Report Message` SDK Operation
+     */
+    fun reportMessage(which: ChatEvent, reporttype: String) {
+        viewModelScope.launch {
+            try {
+                // DISPLAY Progress Indicator
+                progressReportMessage.send(true)
+
+                val response = withContext(Dispatchers.IO) {
+                    chatClient.reportMessage(
+                        chatRoomId = room.id!!,
+                        eventId = which.id!!,
+                        request = ReportMessageRequest(
+                            reporttype = reporttype,
+                            userid = user.userid!!
+                        )
+                    )
+                        .await()
+                }
+
+                // EMIT Success
+                _effect.send(ViewEffect.SuccessReportMessage(response))
+
+            } catch (err: SportsTalkException) {
+                // EMIT Error
+                _effect.send(ViewEffect.ErrorReportMessage(err))
+            } finally {
+                // HIDE Progress Indicator
+                progressReportMessage.send(false)
+            }
+
+        }
+    }
+
     fun reactToAMessage(event: ChatEvent, hasAlreadyReacted: Boolean) {
         viewModelScope.launch {
 
@@ -402,11 +444,15 @@ class ChatRoomViewModel(
 
                 // Emit Success
                 var replyTo: ChatEvent? = response.replyto
-                while(replyTo != null && replyTo.eventtype != EventType.REACTION) {
-                    _effect.send(
-                        ViewEffect.SuccessReactToAMessage(replyTo)
-                    )
-                    replyTo = replyTo.replyto
+                while (replyTo != null) {
+                    if(replyTo.id == event.id) {
+                        _effect.send(
+                            ViewEffect.SuccessReactToAMessage(replyTo)
+                        )
+                        break
+                    }
+
+                    replyTo = replyTo?.replyto
                 }
 
             } catch (err: SportsTalkException) {
@@ -414,6 +460,55 @@ class ChatRoomViewModel(
                 _effect.send(ViewEffect.ErrorReactToAMessage(err))
             }
 
+        }
+    }
+
+    fun removeMessage(
+        which: ChatEvent,
+        isPermanentDelete: Boolean,
+        permanentifnoreplies: Boolean? = null
+    ) {
+        viewModelScope.launch {
+            try {
+                // DISPLAY Progress Indicator
+                progressRemoveMessage.send(true)
+
+                val response = withContext(Dispatchers.IO) {
+                    when(isPermanentDelete) {
+                        // Perform Permanent Delete
+                        true -> {
+                            chatClient.permanentlyDeleteEvent(
+                                chatRoomId = room.id!!,
+                                userid = user.userid!!,
+                                eventId = which.id!!,
+                                permanentifnoreplies = permanentifnoreplies
+                            )
+                        }
+                        // Perform Flag Event as Deleted
+                        false -> {
+                            chatClient.flagEventLogicallyDeleted(
+                                chatRoomId = room.id!!,
+                                userid = user.userid!!,
+                                eventId = which.id!!,
+                                permanentifnoreplies = permanentifnoreplies
+                            )
+                        }
+                    }
+                        .await()
+                }
+
+                // EMIT Success
+                _effect.send(
+                    ViewEffect.SuccessRemoveMessage(response)
+                )
+
+            } catch (err: SportsTalkException) {
+                // EMIT Error
+                _effect.send(ViewEffect.ErrorReactToAMessage(err))
+            } finally {
+                // HIDE Progress Indicator
+                progressRemoveMessage.send(false)
+            }
         }
     }
 
@@ -483,6 +578,16 @@ class ChatRoomViewModel(
         fun progressSendChatMessage(): Flow<Boolean>
 
         /**
+         * Emits [true] upon start `Delete Event` or `Flag Message Event as Deleted` SDK operation. Emits [false] when done.
+         */
+        fun progressRemoveMessage(): Flow<Boolean>
+
+        /**
+         * Emits [true] upon start `Report Message` SDK operation. Emits [false] when done.
+         */
+        fun progressReportMessage(): Flow<Boolean>
+
+        /**
          * Emits an instance of [ChatEvent] the user wants to reply to(quoted).
          * - Displays a reply UI component on top of chat input field.
          * - If emitted instance is [PLACEHOLDER_CLEAR_REPLY], clears the UI component
@@ -510,6 +615,12 @@ class ChatRoomViewModel(
 
         data class SuccessReactToAMessage(val response: ChatEvent) : ViewEffect()
         data class ErrorReactToAMessage(val err: SportsTalkException) : ViewEffect()
+
+        data class SuccessRemoveMessage(val response: DeleteEventResponse) : ViewEffect()
+        data class ErrorRemoveMessage(val err: SportsTalkException) : ViewEffect()
+
+        data class SuccessReportMessage(val response: ChatEvent) : ViewEffect()
+        data class ErrorReportMessage(val err: SportsTalkException) : ViewEffect()
 
         class SuccessExitRoom() : ViewEffect()
         data class ErrorExitRoom(val err: SportsTalkException) : ViewEffect()

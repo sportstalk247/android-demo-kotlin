@@ -238,7 +238,7 @@
         android:id="@+id/viewPager2"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginBottom="64dp"
+        android:paddingBottom="64dp"
         app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior" />
 
     <androidx.appcompat.widget.LinearLayoutCompat
@@ -249,8 +249,6 @@
         android:orientation="vertical"
         app:elevation="3dp"
         >
-
-
 
         <androidx.appcompat.widget.LinearLayoutCompat
             android:layout_width="match_parent"
@@ -270,7 +268,6 @@
                 android:hint="@string/send_a_message"
                 app:boxCollapsedPaddingTop="8dp"
                 >
-                <!-- android:theme="@style/Theme.MaterialComponents.Light.DarkActionBar" -->
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/tietChatMessage"

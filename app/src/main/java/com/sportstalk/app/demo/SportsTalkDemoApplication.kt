@@ -4,6 +4,7 @@ import android.app.Application
 import com.sportstalk.api.ChatClient
 import com.sportstalk.api.UserClient
 import com.sportstalk.app.demo.presentation.chatroom.ChatRoomViewModel
+import com.sportstalk.app.demo.presentation.chatroom.listparticipants.ChatroomListParticipantsViewModel
 import com.sportstalk.app.demo.presentation.listrooms.ListChatRoomsViewModel
 import com.sportstalk.app.demo.presentation.rooms.CreateChatroomViewModel
 import com.sportstalk.app.demo.presentation.users.AccountSettingsViewModel
@@ -83,6 +84,19 @@ class SportsTalkDemoApplication: Application() {
                             user = user,
                             chatClient = chatClient,
                             preferences = get()
+                        )
+                    }
+
+                    /*
+                    * Chatroom List Participants
+                    */
+                    viewModel {
+                        (room: ChatRoom, user: User, userClient: UserClient, chatClient: ChatClient) ->
+                        ChatroomListParticipantsViewModel(
+                            room = room,
+                            user = user,
+                            userClient = userClient,
+                            chatClient = chatClient
                         )
                     }
 

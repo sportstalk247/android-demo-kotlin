@@ -11,13 +11,16 @@ import androidx.core.view.ViewCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.jakewharton.rxbinding3.view.clicks
 import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.FragmentChatroomLiveChatBinding
 import com.sportstalk.app.demo.presentation.BaseFragment
 import com.sportstalk.app.demo.presentation.chatroom.adapters.ItemChatEventAdapter
+import com.sportstalk.app.demo.presentation.utils.EndlessRecyclerViewScrollListener
 import com.sportstalk.models.chat.ChatEvent
 import com.sportstalk.models.chat.ChatRoom
+import com.sportstalk.models.chat.ReportType
 import com.sportstalk.models.users.User
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.launchIn
@@ -32,6 +35,8 @@ class LiveChatFragment : BaseFragment() {
     private val viewModel: ChatRoomViewModel by lazy {
         (parentFragment ?: this@LiveChatFragment).getViewModel<ChatRoomViewModel>()
     }
+
+    private lateinit var scrollListener: RecyclerView.OnScrollListener
 
     private lateinit var user: User
     private lateinit var room: ChatRoom
@@ -55,6 +60,17 @@ class LiveChatFragment : BaseFragment() {
         // Setup RecyclerView
         binding.recyclerView.layoutManager =
             LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, true)
+
+        scrollListener = object : EndlessRecyclerViewScrollListener(binding.recyclerView.layoutManager!! as LinearLayoutManager) {
+            override fun onLoadMore(page: Int, totalItemsCount: Int, view: RecyclerView?) {
+                Log.d(
+                    TAG,
+                    "EndlessRecyclerViewScrollListener:: onLoadMore() -> page/totalItemsCount = ${page}/${totalItemsCount}"
+                )
+                // Attempt fetch more
+                viewModel.listPreviousEvents()
+            }
+        }
 
         return binding.root
     }
@@ -81,6 +97,7 @@ class LiveChatFragment : BaseFragment() {
         viewModel.state.chatEvents()
             .onEach(::takeChatEvents)
             .launchIn(lifecycleScope)
+
 
         /**
          * Emits an instance of [ChatEvent] the user wants to reply to(quoted).
@@ -122,10 +139,74 @@ class LiveChatFragment : BaseFragment() {
             initialItems = initialChatEvents,
             onTapChatEventItem = { chatEvent: ChatEvent ->
                 Log.d(TAG, "takeChatEvents() -> onTapChatEventItem() -> chatEvent = $chatEvent")
-                // TODO:: onTapChatEventItem
 
-                // Prepare Quoted Reply
-                viewModel.prepareQuotedReply(replyTo = chatEvent)
+                val options = ArrayList(
+                    resources.getStringArray(R.array.chat_message_tap_options).toList()
+                ).run {
+                    // User's sent chat message(Prompt "Reply", "Report", "Flag as Deleted", or "Delete Permanently" options)
+                    if(chatEvent.userid == user.userid)
+                        slice(0 until size)
+                    // Other's chat message(Prompt "Reply" and "Report" options ONLY)
+                    else
+                        slice(0 until 2)
+                }.toTypedArray()
+
+                MaterialAlertDialogBuilder(requireContext())
+                    .setItems(options) { dialog, which ->
+                        when(which) {
+                            // Reply
+                            0 -> {
+                                // Prepare Quoted Reply
+                                viewModel.prepareQuotedReply(replyTo = chatEvent)
+                            }
+                            // Report
+                            1 -> {
+                                // Perform Report Message
+                                viewModel.reportMessage(which = chatEvent, reporttype = ReportType.ABUSE)
+                            }
+                            // Flag as Deleted
+                            // Delete Permanently
+                            else -> {
+                                /*
+                                * [Y/N] Do you want this message to get permanently deleted if no replies were received?
+                                */
+                                var permanentifnoreplies: Boolean? = null
+                                MaterialAlertDialogBuilder(requireContext())
+                                    .setMessage(R.string.permanent_if_no_replies)
+                                    .setPositiveButton(android.R.string.yes) { dialog, _ ->
+                                        permanentifnoreplies = true
+                                        dialog.dismiss()
+                                    }
+                                    .setNegativeButton(android.R.string.no) { dialog, _ ->
+                                        permanentifnoreplies = false
+                                        dialog.dismiss()
+                                    }
+                                    .setOnDismissListener {
+                                        when(which) {
+                                            // Flag as Deleted
+                                            1 -> {
+                                                viewModel.removeMessage(
+                                                    which = chatEvent,
+                                                    isPermanentDelete = false,
+                                                    permanentifnoreplies = permanentifnoreplies
+                                                )
+                                            }
+                                            // Delete Permanently
+                                            2 -> {
+                                                viewModel.removeMessage(
+                                                    which = chatEvent,
+                                                    isPermanentDelete = true,
+                                                    permanentifnoreplies = permanentifnoreplies
+                                                )
+                                            }
+                                        }
+                                    }
+                                    .show()
+                            }
+                        }
+                        dialog.dismiss()
+                    }
+                    .show()
             },
             onTapReactChatEventItem = { chatEvent: ChatEvent, hasAlreadyReacted: Boolean ->
                 // Perform React Operation
@@ -136,10 +217,17 @@ class LiveChatFragment : BaseFragment() {
             }
         )
 
+        adapter.registerAdapterDataObserver(object: RecyclerView.AdapterDataObserver() {
+            override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
+                super.onItemRangeInserted(positionStart, itemCount)
+                val item = adapter.getItem(positionStart)
+                if(item.userid == user.userid) {
+                    binding.recyclerView.scrollToPosition(0)
+                }
+            }
+        })
+
         binding.recyclerView.adapter = adapter
-        // Explicit force scroll to latest chat event item
-        delay(1000)
-        binding.recyclerView.smoothScrollToPosition(0)
     }
 
     private suspend fun takeReplyTo(replyTo: ChatEvent) {
@@ -166,16 +254,12 @@ class LiveChatFragment : BaseFragment() {
                 }
             }
             is ChatRoomViewModel.ViewEffect.ChatMessageSent -> {
-                // Scroll to bottom of chat event list
-                if (::adapter.isInitialized) {
-                    delay(1000)
-                    binding.recyclerView.smoothScrollToPosition(0)
-                }
+
             }
             is ChatRoomViewModel.ViewEffect.ErrorSendChatMessage -> {
                 Toast.makeText(
                     requireContext(),
-                    R.string.something_went_wrong_please_try_again,
+                    effect.err.message ?: getString(R.string.something_went_wrong_please_try_again),
                     Toast.LENGTH_SHORT
                 ).show()
             }
@@ -185,7 +269,7 @@ class LiveChatFragment : BaseFragment() {
             is ChatRoomViewModel.ViewEffect.ErrorSendQuotedReply -> {
                 Toast.makeText(
                     requireContext(),
-                    R.string.something_went_wrong_please_try_again,
+                    effect.err.message ?: getString(R.string.something_went_wrong_please_try_again),
                     Toast.LENGTH_SHORT
                 ).show()
             }
@@ -195,7 +279,7 @@ class LiveChatFragment : BaseFragment() {
             is ChatRoomViewModel.ViewEffect.ErrorSendThreadedReply -> {
                 Toast.makeText(
                     requireContext(),
-                    R.string.something_went_wrong_please_try_again,
+                    effect.err.message ?: getString(R.string.something_went_wrong_please_try_again),
                     Toast.LENGTH_SHORT
                 ).show()
             }
@@ -205,7 +289,7 @@ class LiveChatFragment : BaseFragment() {
             is ChatRoomViewModel.ViewEffect.ErrorListPreviousEvents -> {
                 Toast.makeText(
                     requireContext(),
-                    R.string.something_went_wrong_please_try_again,
+                    effect.err.message ?: getString(R.string.something_went_wrong_please_try_again),
                     Toast.LENGTH_SHORT
                 ).show()
             }
@@ -218,7 +302,21 @@ class LiveChatFragment : BaseFragment() {
             is ChatRoomViewModel.ViewEffect.ErrorReactToAMessage -> {
                 Toast.makeText(
                     requireContext(),
-                    R.string.something_went_wrong_please_try_again,
+                    effect.err.message ?: getString(R.string.something_went_wrong_please_try_again),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+            is ChatRoomViewModel.ViewEffect.SuccessRemoveMessage -> {
+                // Pre-emptively Remove ChatEvent
+                if (::adapter.isInitialized) {
+                    effect.response.event?.let { removedEvent ->
+                        adapter.remove(removedEvent)
+                    }
+                }
+
+                Toast.makeText(
+                    requireContext(),
+                    R.string.message_successfully_removed,
                     Toast.LENGTH_SHORT
                 ).show()
             }

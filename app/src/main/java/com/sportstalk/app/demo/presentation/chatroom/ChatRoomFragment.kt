@@ -5,6 +5,7 @@ import android.util.Log
 import android.view.*
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
@@ -19,6 +20,7 @@ import com.sportstalk.SportsTalk247
 import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.FragmentChatroomBinding
 import com.sportstalk.app.demo.presentation.BaseFragment
+import com.sportstalk.app.demo.presentation.chatroom.listparticipants.ChatroomListParticipantsFragment
 import com.sportstalk.app.demo.presentation.utils.AppBarStateChangedListener
 import com.sportstalk.models.ClientConfig
 import com.sportstalk.models.chat.ChatEvent
@@ -181,6 +183,20 @@ class ChatRoomFragment : BaseFragment() {
             .onEach(::takeProgressSendChatMessage)
             .launchIn(lifecycleScope)
 
+        /**
+         * Emits [true] upon start `Delete Event` or `Flag Message Event as Deleted` SDK operation. Emits [false] when done.
+         */
+        viewModel.state.progressRemoveMessage()
+            .onEach(::takeProgressRemoveMessage)
+            .launchIn(lifecycleScope)
+
+        /**
+         * Emits [true] upon start `Report Message` SDK operation. Emits [false] when done.
+         */
+        viewModel.state.progressReportMessage()
+            .onEach(::takeProgressReportMessage)
+            .launchIn(lifecycleScope)
+
         ///////////////////////////////
         // Bind View Effect
         ///////////////////////////////
@@ -228,6 +244,16 @@ class ChatRoomFragment : BaseFragment() {
                 appNavController.popBackStack()
                 true
             }
+            R.id.action_chatroom_participants -> {
+                appNavController.navigate(
+                    R.id.action_fragmentChatroom_to_fragmentChatRoomParticipants,
+                    bundleOf(
+                        ChatroomListParticipantsFragment.INPUT_ARG_ROOM to room,
+                        ChatroomListParticipantsFragment.INPUT_ARG_USER to user
+                    )
+                )
+                true
+            }
             R.id.action_leave_room -> {
                 // Attempt execute Exit Room
                 viewModel.exitRoom()
@@ -267,7 +293,6 @@ class ChatRoomFragment : BaseFragment() {
 
     private suspend fun takeProgressSendChatMessage(inProgress: Boolean) {
         Log.d(TAG, "takeProgressSendChatMessage() -> inProgress = $inProgress")
-        // TODO
 
         when (inProgress) {
             true -> {
@@ -280,6 +305,24 @@ class ChatRoomFragment : BaseFragment() {
                 binding.btnSend.isEnabled = true
                 binding.progressBarSendChat.visibility = View.GONE
             }
+        }
+    }
+
+    private suspend fun takeProgressRemoveMessage(inProgress: Boolean) {
+        Log.d(TAG, "takeProgressRemoveMessage() -> inProgress = $inProgress")
+
+        binding.progressBar.visibility = when (inProgress) {
+            true -> View.VISIBLE
+            false -> View.GONE
+        }
+    }
+
+    private suspend fun takeProgressReportMessage(inProgress: Boolean) {
+        Log.d(TAG, "takeProgressReportMessage() -> inProgress = $inProgress")
+
+        binding.progressBar.visibility = when (inProgress) {
+            true -> View.VISIBLE
+            false -> View.GONE
         }
     }
 
@@ -315,6 +358,27 @@ class ChatRoomFragment : BaseFragment() {
                 // Clear text
                 binding.tietChatMessage.setText("")
             }
+            is ChatRoomViewModel.ViewEffect.ErrorRemoveMessage -> {
+                Toast.makeText(
+                    requireContext(),
+                    R.string.something_went_wrong_please_try_again,
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+            is ChatRoomViewModel.ViewEffect.SuccessReportMessage -> {
+                Toast.makeText(
+                    requireContext(),
+                    R.string.message_successfully_reported,
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+            is ChatRoomViewModel.ViewEffect.ErrorReportMessage -> {
+                Toast.makeText(
+                    requireContext(),
+                    effect.err.message ?: getString(R.string.something_went_wrong_please_try_again),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
         }
     }
 
@@ -336,8 +400,6 @@ class ChatRoomFragment : BaseFragment() {
     }
 
     companion object {
-        val TAG = ChatRoomFragment::class.java.simpleName
-
         private const val TAB_COUNT = 5
         private const val TAB_TEAM = 0
         private const val TAB_STATISTICS = 1
