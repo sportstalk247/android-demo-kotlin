@@ -11,7 +11,6 @@ import com.sportstalk.models.chat.*
 import com.sportstalk.models.users.User
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.channels.sendBlocking
@@ -38,6 +37,7 @@ class ChatRoomViewModel(
     private val progressListPreviousEvents = Channel<Boolean>(Channel.RENDEZVOUS)
     private val progressSendChatMessage = Channel<Boolean>(Channel.RENDEZVOUS)
     private val progressRemoveMessage = Channel<Boolean>(Channel.RENDEZVOUS)
+    private val progressReportMessage = Channel<Boolean>(Channel.RENDEZVOUS)
     private val quotedReply = ConflatedBroadcastChannel<ChatEvent>()
 
     private lateinit var previouseventscursor: String
@@ -71,6 +71,9 @@ class ChatRoomViewModel(
 
         override fun progressRemoveMessage(): Flow<Boolean> =
             progressRemoveMessage.receiveAsFlow()
+
+        override fun progressReportMessage(): Flow<Boolean> =
+            progressReportMessage.receiveAsFlow()
 
         override fun quotedReply(): Flow<ChatEvent> =
             quotedReply.asFlow()
@@ -386,6 +389,41 @@ class ChatRoomViewModel(
         }
     }
 
+    /**
+     * Perform `Report Message` SDK Operation
+     */
+    fun reportMessage(which: ChatEvent, reporttype: String) {
+        viewModelScope.launch {
+            try {
+                // DISPLAY Progress Indicator
+                progressReportMessage.send(true)
+
+                val response = withContext(Dispatchers.IO) {
+                    chatClient.reportMessage(
+                        chatRoomId = room.id!!,
+                        eventId = which.id!!,
+                        request = ReportMessageRequest(
+                            reporttype = reporttype,
+                            userid = user.userid!!
+                        )
+                    )
+                        .await()
+                }
+
+                // EMIT Success
+                _effect.send(ViewEffect.SuccessReportMessage(response))
+
+            } catch (err: SportsTalkException) {
+                // EMIT Error
+                _effect.send(ViewEffect.ErrorReportMessage(err))
+            } finally {
+                // HIDE Progress Indicator
+                progressReportMessage.send(false)
+            }
+
+        }
+    }
+
     fun reactToAMessage(event: ChatEvent, hasAlreadyReacted: Boolean) {
         viewModelScope.launch {
 
@@ -545,6 +583,11 @@ class ChatRoomViewModel(
         fun progressRemoveMessage(): Flow<Boolean>
 
         /**
+         * Emits [true] upon start `Report Message` SDK operation. Emits [false] when done.
+         */
+        fun progressReportMessage(): Flow<Boolean>
+
+        /**
          * Emits an instance of [ChatEvent] the user wants to reply to(quoted).
          * - Displays a reply UI component on top of chat input field.
          * - If emitted instance is [PLACEHOLDER_CLEAR_REPLY], clears the UI component
@@ -575,6 +618,9 @@ class ChatRoomViewModel(
 
         data class SuccessRemoveMessage(val response: DeleteEventResponse) : ViewEffect()
         data class ErrorRemoveMessage(val err: SportsTalkException) : ViewEffect()
+
+        data class SuccessReportMessage(val response: ChatEvent) : ViewEffect()
+        data class ErrorReportMessage(val err: SportsTalkException) : ViewEffect()
 
         class SuccessExitRoom() : ViewEffect()
         data class ErrorExitRoom(val err: SportsTalkException) : ViewEffect()

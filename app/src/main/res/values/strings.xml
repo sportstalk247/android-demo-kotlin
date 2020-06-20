@@ -74,12 +74,15 @@
 
     <string-array name="chat_message_tap_options">
         <item>Reply</item>
+        <item>Report</item>
         <item>Flag as Deleted</item>
         <item>Delete Permanently</item>
     </string-array>
 
     <string name="message_successfully_removed">Message successfully removed…</string>
     <string name="permanent_if_no_replies">Do you want this message to get permanently deleted if no replies were received?</string>
+    <string name="message_successfully_reported">Message successfully reported…</string>
+
     <string name="chatroom_participants">Chatroom Participants</string>
     <string name="banned">Banned</string>
 

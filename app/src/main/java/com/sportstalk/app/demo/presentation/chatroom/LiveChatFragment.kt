@@ -20,6 +20,7 @@ import com.sportstalk.app.demo.presentation.chatroom.adapters.ItemChatEventAdapt
 import com.sportstalk.app.demo.presentation.utils.EndlessRecyclerViewScrollListener
 import com.sportstalk.models.chat.ChatEvent
 import com.sportstalk.models.chat.ChatRoom
+import com.sportstalk.models.chat.ReportType
 import com.sportstalk.models.users.User
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.launchIn
@@ -142,12 +143,12 @@ class LiveChatFragment : BaseFragment() {
                 val options = ArrayList(
                     resources.getStringArray(R.array.chat_message_tap_options).toList()
                 ).run {
-                    // User's sent chat message(Prompt "Reply", "Flag as Deleted", or "Delete Permanently" options)
+                    // User's sent chat message(Prompt "Reply", "Report", "Flag as Deleted", or "Delete Permanently" options)
                     if(chatEvent.userid == user.userid)
                         slice(0 until size)
-                    // Other's chat message(Prompt "Reply" option ONLY)
+                    // Other's chat message(Prompt "Reply" and "Report" options ONLY)
                     else
-                        slice(0 until 1)
+                        slice(0 until 2)
                 }.toTypedArray()
 
                 MaterialAlertDialogBuilder(requireContext())
@@ -158,6 +159,13 @@ class LiveChatFragment : BaseFragment() {
                                 // Prepare Quoted Reply
                                 viewModel.prepareQuotedReply(replyTo = chatEvent)
                             }
+                            // Report
+                            1 -> {
+                                // Perform Report Message
+                                viewModel.reportMessage(which = chatEvent, reporttype = ReportType.ABUSE)
+                            }
+                            // Flag as Deleted
+                            // Delete Permanently
                             else -> {
                                 /*
                                 * [Y/N] Do you want this message to get permanently deleted if no replies were received?
@@ -251,7 +259,7 @@ class LiveChatFragment : BaseFragment() {
             is ChatRoomViewModel.ViewEffect.ErrorSendChatMessage -> {
                 Toast.makeText(
                     requireContext(),
-                    R.string.something_went_wrong_please_try_again,
+                    effect.err.message ?: getString(R.string.something_went_wrong_please_try_again),
                     Toast.LENGTH_SHORT
                 ).show()
             }
@@ -261,7 +269,7 @@ class LiveChatFragment : BaseFragment() {
             is ChatRoomViewModel.ViewEffect.ErrorSendQuotedReply -> {
                 Toast.makeText(
                     requireContext(),
-                    R.string.something_went_wrong_please_try_again,
+                    effect.err.message ?: getString(R.string.something_went_wrong_please_try_again),
                     Toast.LENGTH_SHORT
                 ).show()
             }
@@ -271,7 +279,7 @@ class LiveChatFragment : BaseFragment() {
             is ChatRoomViewModel.ViewEffect.ErrorSendThreadedReply -> {
                 Toast.makeText(
                     requireContext(),
-                    R.string.something_went_wrong_please_try_again,
+                    effect.err.message ?: getString(R.string.something_went_wrong_please_try_again),
                     Toast.LENGTH_SHORT
                 ).show()
             }
@@ -281,7 +289,7 @@ class LiveChatFragment : BaseFragment() {
             is ChatRoomViewModel.ViewEffect.ErrorListPreviousEvents -> {
                 Toast.makeText(
                     requireContext(),
-                    R.string.something_went_wrong_please_try_again,
+                    effect.err.message ?: getString(R.string.something_went_wrong_please_try_again),
                     Toast.LENGTH_SHORT
                 ).show()
             }
@@ -294,7 +302,7 @@ class LiveChatFragment : BaseFragment() {
             is ChatRoomViewModel.ViewEffect.ErrorReactToAMessage -> {
                 Toast.makeText(
                     requireContext(),
-                    R.string.something_went_wrong_please_try_again,
+                    effect.err.message ?: getString(R.string.something_went_wrong_please_try_again),
                     Toast.LENGTH_SHORT
                 ).show()
             }

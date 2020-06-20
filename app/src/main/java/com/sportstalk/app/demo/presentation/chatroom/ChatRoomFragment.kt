@@ -190,6 +190,13 @@ class ChatRoomFragment : BaseFragment() {
             .onEach(::takeProgressRemoveMessage)
             .launchIn(lifecycleScope)
 
+        /**
+         * Emits [true] upon start `Report Message` SDK operation. Emits [false] when done.
+         */
+        viewModel.state.progressReportMessage()
+            .onEach(::takeProgressReportMessage)
+            .launchIn(lifecycleScope)
+
         ///////////////////////////////
         // Bind View Effect
         ///////////////////////////////
@@ -310,6 +317,15 @@ class ChatRoomFragment : BaseFragment() {
         }
     }
 
+    private suspend fun takeProgressReportMessage(inProgress: Boolean) {
+        Log.d(TAG, "takeProgressReportMessage() -> inProgress = $inProgress")
+
+        binding.progressBar.visibility = when (inProgress) {
+            true -> View.VISIBLE
+            false -> View.GONE
+        }
+    }
+
     private suspend fun takeViewEffect(effect: ChatRoomViewModel.ViewEffect) {
         Log.d(TAG, "takeViewEffect() -> effect = ${effect::class.java.simpleName}")
 
@@ -346,6 +362,20 @@ class ChatRoomFragment : BaseFragment() {
                 Toast.makeText(
                     requireContext(),
                     R.string.something_went_wrong_please_try_again,
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+            is ChatRoomViewModel.ViewEffect.SuccessReportMessage -> {
+                Toast.makeText(
+                    requireContext(),
+                    R.string.message_successfully_reported,
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+            is ChatRoomViewModel.ViewEffect.ErrorReportMessage -> {
+                Toast.makeText(
+                    requireContext(),
+                    effect.err.message ?: getString(R.string.something_went_wrong_please_try_again),
                     Toast.LENGTH_SHORT
                 ).show()
             }
