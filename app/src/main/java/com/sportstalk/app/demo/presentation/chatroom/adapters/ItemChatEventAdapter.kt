@@ -21,6 +21,9 @@ import com.sportstalk.models.chat.ChatEvent
 import com.sportstalk.models.chat.EventType
 import com.sportstalk.models.users.User
 import java.text.DecimalFormat
+import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.collections.ArrayList
 
 typealias OnTapChatEventItem = ((ChatEvent) -> Unit)
 typealias OnTapReactChatEventItem = ((ChatEvent, Boolean) -> Unit)
@@ -31,6 +34,10 @@ class ItemChatEventAdapter(
     private val onTapChatEventItem: OnTapChatEventItem = {},
     private val onTapReactChatEventItem: OnTapReactChatEventItem = { _, _ -> }
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+
+    private val UTC_BIRTHDAY_FORMATTER: SimpleDateFormat =
+        /*SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX", Locale.getDefault())*/
+        SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
 
     private var items: List<ChatEvent> = ArrayList(initialItems)
     fun getItem(position: Int) = items[position]
@@ -241,10 +248,11 @@ class ItemChatEventAdapter(
                 else -> null
             }
             // ChatEvent Relative Time Sent: ex. "Just now"
-            binding.actvSent.text = item.ts?.let { ts ->
+            binding.actvSent.text = item.added?.let { added ->
+                val date = UTC_BIRTHDAY_FORMATTER.parse(added) ?: return@let null
                 DateUtils.getRelativeDateTimeString(
                     context,
-                    ts,
+                    date.time,
                     DateUtils.DAY_IN_MILLIS,
                     DateUtils.WEEK_IN_MILLIS,
                     DateUtils.FORMAT_SHOW_YEAR
@@ -313,12 +321,15 @@ class ItemChatEventAdapter(
                 else -> null
             }
             // ChatEvent Relative Time Sent: ex. "Just now"
-            binding.actvSent.text = item.ts?.let { ts ->
-                DateUtils.getRelativeTimeSpanString(
-                    ts,
-                    System.currentTimeMillis(),
-                    DateUtils.DAY_IN_MILLIS
-                )
+            binding.actvSent.text = item.added?.let { added ->
+                val date = UTC_BIRTHDAY_FORMATTER.parse(added) ?: return@let null
+                DateUtils.getRelativeDateTimeString(
+                    context,
+                    date.time,
+                    DateUtils.DAY_IN_MILLIS,
+                    DateUtils.WEEK_IN_MILLIS,
+                    DateUtils.FORMAT_SHOW_YEAR
+                ).toString()
             }
 
             ///////////////////////////////
