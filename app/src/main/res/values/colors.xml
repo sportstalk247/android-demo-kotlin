@@ -8,6 +8,7 @@
     <color name="blue_like">#5291EF</color>
 
     <color name="bg_replied_message">#FFDDDDDD</color>
+    <color name="bg_announcement">#FCF8E3</color>
 
 
 </resources>
