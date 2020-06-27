@@ -152,7 +152,7 @@ class ListChatRoomsFragment : BaseFragment() {
             .onEach {
                 // Navigate to Create Chatroom
                 appNavController.navigate(
-                    R.id.action_fragmentListChatroom_to_fragmentCreateChatroom
+                    R.id.action_fragmentHome_to_fragmentCreateChatroom
                 )
             }
             .launchIn(lifecycleScope)
@@ -176,9 +176,9 @@ class ListChatRoomsFragment : BaseFragment() {
             }
             R.id.action_account_settings -> {
                 // Navigate to Account Settings Screen
-                if(appNavController.currentDestination?.id == R.id.fragmentListChatroom) {
+                if(appNavController.currentDestination?.id == R.id.fragmentHome) {
                     appNavController.navigate(
-                        R.id.action_fragmentListChatroom_to_fragmentAccountSettings
+                        R.id.action_fragmentHome_to_fragmentAccountSettings
                     )
                 }
 
@@ -225,9 +225,9 @@ class ListChatRoomsFragment : BaseFragment() {
                 adapter.clear()
             }
             is ListChatRoomsViewModel.ViewEffect.NavigateToCreateProfile -> {
-                if (appNavController.currentDestination?.id == R.id.fragmentListChatroom) {
+                if (appNavController.currentDestination?.id == R.id.fragmentHome) {
                     appNavController.navigate(
-                        R.id.action_fragmentListChatroom_to_fragmentCreateAccount,
+                        R.id.action_fragmentHome_to_fragmentCreateAccount,
                         bundleOf(
                             CreateAccountFragment.INPUT_ARG_ROOM to effect.which
                         )
@@ -235,9 +235,9 @@ class ListChatRoomsFragment : BaseFragment() {
                 }
             }
             is ListChatRoomsViewModel.ViewEffect.NavigateToChatRoom -> {
-                if (appNavController.currentDestination?.id == R.id.fragmentListChatroom) {
+                if (appNavController.currentDestination?.id == R.id.fragmentHome) {
                     appNavController.navigate(
-                        R.id.action_fragmentListChatroom_to_fragmentChatroom,
+                        R.id.action_fragmentHome_to_fragmentChatroom,
                         bundleOf(
                             /* TODO:: Bundle */ChatRoomFragment.INPUT_ARG_ROOM to effect.which,
                             /* TODO:: Bundle */

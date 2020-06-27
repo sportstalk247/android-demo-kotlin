@@ -42,6 +42,7 @@ class SportsTalkDemoPreferences(
     var urlEndpoint: String?
         get() {
             return preferences.getString(KEY_URL_ENDPOINT, "")!!.takeIf { it.isNotEmpty() }
+                ?: ORIGINAL_URL_ENDPOINT
         }
     set(value) {
         preferences.edit(true) {
@@ -55,6 +56,7 @@ class SportsTalkDemoPreferences(
             if(key == KEY_URL_ENDPOINT) {
                 sendBlocking(
                     pref.getString(key, "")!!.takeIf { it.isNotEmpty() }
+                        ?: ORIGINAL_URL_ENDPOINT
                 )
             }
         }
@@ -68,6 +70,7 @@ class SportsTalkDemoPreferences(
     var authToken: String?
         get() {
             return preferences.getString(KEY_AUTH_TOKEN, "")!!.takeIf { it.isNotEmpty() }
+                ?: ORIGINAL_AUTH_TOKEN
         }
     set(value) {
         preferences.edit(true) {
@@ -80,6 +83,7 @@ class SportsTalkDemoPreferences(
             if(key == KEY_AUTH_TOKEN) {
                 sendBlocking(
                     pref.getString(key, "")!!.takeIf { it.isNotEmpty() }
+                        ?: KEY_AUTH_TOKEN
                 )
             }
         }
@@ -93,6 +97,7 @@ class SportsTalkDemoPreferences(
     var appId: String?
         get() {
             return preferences.getString(KEY_APP_ID, "")!!.takeIf { it.isNotEmpty() }
+                ?: ORIGINAL_APP_ID
         }
     set(value) {
         preferences.edit(true) {
@@ -105,6 +110,7 @@ class SportsTalkDemoPreferences(
             if(key == KEY_APP_ID) {
                 sendBlocking(
                     pref.getString(key, "")!!.takeIf { it.isNotEmpty() }
+                        ?: ORIGINAL_APP_ID
                 )
             }
         }
@@ -117,10 +123,9 @@ class SportsTalkDemoPreferences(
 
     fun clear() {
         preferences.edit(true) {
-            clear()
             putString(KEY_URL_ENDPOINT, ORIGINAL_URL_ENDPOINT)
             putString(KEY_AUTH_TOKEN, ORIGINAL_AUTH_TOKEN)
-            putString(KEY_AUTH_TOKEN, ORIGINAL_APP_ID)
+            putString(KEY_APP_ID, ORIGINAL_APP_ID)
         }
     }
 

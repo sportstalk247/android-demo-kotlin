@@ -4,29 +4,29 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
-    app:startDestination="@id/fragmentListChatroom"
+    app:startDestination="@id/fragmentHome"
     tools:ignore="UnusedNavigation">
 
     <fragment
-        android:id="@+id/fragmentListChatroom"
-        android:name="com.sportstalk.app.demo.presentation.listrooms.ListChatRoomsFragment"
-        tools:layout="@layout/fragment_list_chatroom"
+        android:id="@+id/fragmentHome"
+        android:name="com.sportstalk.app.demo.presentation.HomeFragment"
+        tools:layout="@layout/fragment_home"
         >
         <action
-            android:id="@+id/action_fragmentListChatroom_to_fragmentCreateAccount"
+            android:id="@+id/action_fragmentHome_to_fragmentCreateAccount"
             app:destination="@id/fragmentCreateAccount"
             />
         <action
-            android:id="@+id/action_fragmentListChatroom_to_fragmentChatroom"
+            android:id="@+id/action_fragmentHome_to_fragmentChatroom"
             app:destination="@id/fragmentChatroom" />
         <action
-            android:id="@+id/action_fragmentListChatroom_to_fragmentCreateChatroom"
+            android:id="@+id/action_fragmentHome_to_fragmentCreateChatroom"
             app:destination="@id/fragmentCreateChatroom"
             app:popUpTo="@id/fragmentChatroom"
             app:popUpToInclusive="true"
             />
         <action
-            android:id="@+id/action_fragmentListChatroom_to_fragmentAccountSettings"
+            android:id="@+id/action_fragmentHome_to_fragmentAccountSettings"
             app:destination="@id/fragmentAccountSettings" />
     </fragment>
 

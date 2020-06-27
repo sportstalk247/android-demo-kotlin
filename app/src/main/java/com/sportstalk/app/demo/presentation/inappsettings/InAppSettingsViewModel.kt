@@ -53,14 +53,17 @@ class InAppSettingsViewModel(
             .launchIn(viewModelScope)
     }
 
-    fun urlEndpoint(urlEndpoint: String?) =
-        this@InAppSettingsViewModel.urlEndpoint.sendBlocking(urlEndpoint)
+    fun urlEndpoint(urlEndpoint: String?) {
+        preferences.urlEndpoint = urlEndpoint
+    }
 
-    fun authToken(authToken: String?) =
-        this@InAppSettingsViewModel.authToken.sendBlocking(authToken)
+    fun authToken(authToken: String?) {
+        preferences.authToken = authToken
+    }
 
-    fun appId(appId: String?) =
-        this@InAppSettingsViewModel.appId.sendBlocking(appId)
+    fun appId(appId: String?) {
+        preferences.appId = appId
+    }
 
     fun reset() {
         // Clear operation automatically sets original values
