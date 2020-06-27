@@ -20,7 +20,7 @@
             android:background="?attr/colorPrimary"
             app:title="@string/rooms"
             app:popupTheme="@style/AppTheme.PopupOverlay"
-            app:menu="@menu/list_chatroom"
+            app:menu="@menu/admin_list_chatroom"
             />
 
     </com.google.android.material.appbar.AppBarLayout>
@@ -39,7 +39,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            tools:listitem="@layout/item_list_chatroom"
+            tools:listitem="@layout/item_admin_list_chatroom"
             tools:itemCount="3"
             />
 

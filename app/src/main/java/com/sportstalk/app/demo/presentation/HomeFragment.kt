@@ -14,6 +14,7 @@ import com.jakewharton.rxbinding3.viewpager2.pageSelections
 import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.FragmentHomeBinding
 import com.sportstalk.app.demo.presentation.inappsettings.InAppSettingsFragment
+import com.sportstalk.app.demo.presentation.listrooms.AdminListChatRoomsFragment
 import com.sportstalk.app.demo.presentation.listrooms.ListChatRoomsFragment
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -74,7 +75,7 @@ class HomeFragment : BaseFragment() {
         override fun createFragment(position: Int): Fragment =
             when (position) {
                 TAB_FAN -> ListChatRoomsFragment()
-                TAB_ADMIN -> Fragment()
+                TAB_ADMIN -> AdminListChatRoomsFragment()
                 TAB_SETTINGS -> InAppSettingsFragment()
                 else -> Fragment()
             }

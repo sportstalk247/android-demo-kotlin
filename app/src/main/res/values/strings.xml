@@ -96,6 +96,8 @@
     <string name="app_id">App ID</string>
     <string name="app_version" formatted="true">Version %s</string>
     <string name="apply">Apply</string>
+
     <string name="reset_was_successful">Reset was successful…</string>
+    <string name="n_fans_inside" formatted="true">%s fans inside</string>
 
 </resources>
