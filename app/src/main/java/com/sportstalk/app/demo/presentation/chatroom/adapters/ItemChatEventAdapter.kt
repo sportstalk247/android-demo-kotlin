@@ -14,12 +14,16 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.ItemChatroomLiveChatActionBinding
+import com.sportstalk.app.demo.databinding.ItemChatroomLiveChatAnnouncementBinding
 import com.sportstalk.app.demo.databinding.ItemChatroomLiveChatReceivedBinding
 import com.sportstalk.app.demo.databinding.ItemChatroomLiveChatSentBinding
 import com.sportstalk.models.chat.ChatEvent
 import com.sportstalk.models.chat.EventType
 import com.sportstalk.models.users.User
 import java.text.DecimalFormat
+import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.collections.ArrayList
 
 typealias OnTapChatEventItem = ((ChatEvent) -> Unit)
 typealias OnTapReactChatEventItem = ((ChatEvent, Boolean) -> Unit)
@@ -30,6 +34,10 @@ class ItemChatEventAdapter(
     private val onTapChatEventItem: OnTapChatEventItem = {},
     private val onTapReactChatEventItem: OnTapReactChatEventItem = { _, _ -> }
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+
+    private val UTC_BIRTHDAY_FORMATTER: SimpleDateFormat =
+        /*SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX", Locale.getDefault())*/
+        SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
 
     private var items: List<ChatEvent> = ArrayList(initialItems)
     fun getItem(position: Int) = items[position]
@@ -141,6 +149,8 @@ class ItemChatEventAdapter(
     override fun getItemViewType(position: Int): Int {
         val item = items[position]
         return when {
+            // Temporary "Announcement" implementation
+            item.customtype == "announcement" -> VIEW_TYPE_ANNOUNCEMENT
             item.eventtype == EventType.ACTION -> VIEW_TYPE_ACTION
             item.userid == me.userid -> VIEW_TYPE_SENT
             item.userid != me.userid -> VIEW_TYPE_RECEIVED
@@ -171,6 +181,13 @@ class ItemChatEventAdapter(
                     false
                 )
             )
+            VIEW_TYPE_ANNOUNCEMENT -> ItemChatEventAnnouncementViewHolder(
+                ItemChatroomLiveChatAnnouncementBinding.inflate(
+                    LayoutInflater.from(parent.context),
+                    parent,
+                    false
+                )
+            )
             else -> object: RecyclerView.ViewHolder(parent) {}
         }
 
@@ -195,6 +212,10 @@ class ItemChatEventAdapter(
                 holder.binding.btnLike.setOnClickListener {
                     onTapReactChatEventItem.invoke(item, iReactedToThisMessage)
                 }
+            }
+            is ItemChatEventAnnouncementViewHolder -> {
+                holder.bind(item)
+                holder.binding.cardViewMessage.setOnClickListener(null)
             }
         }
     }
@@ -227,10 +248,11 @@ class ItemChatEventAdapter(
                 else -> null
             }
             // ChatEvent Relative Time Sent: ex. "Just now"
-            binding.actvSent.text = item.ts?.let { ts ->
+            binding.actvSent.text = item.added?.let { added ->
+                val date = UTC_BIRTHDAY_FORMATTER.parse(added) ?: return@let null
                 DateUtils.getRelativeDateTimeString(
                     context,
-                    ts,
+                    date.time,
                     DateUtils.DAY_IN_MILLIS,
                     DateUtils.WEEK_IN_MILLIS,
                     DateUtils.FORMAT_SHOW_YEAR
@@ -299,12 +321,15 @@ class ItemChatEventAdapter(
                 else -> null
             }
             // ChatEvent Relative Time Sent: ex. "Just now"
-            binding.actvSent.text = item.ts?.let { ts ->
-                DateUtils.getRelativeTimeSpanString(
-                    ts,
-                    System.currentTimeMillis(),
-                    DateUtils.DAY_IN_MILLIS
-                )
+            binding.actvSent.text = item.added?.let { added ->
+                val date = UTC_BIRTHDAY_FORMATTER.parse(added) ?: return@let null
+                DateUtils.getRelativeDateTimeString(
+                    context,
+                    date.time,
+                    DateUtils.DAY_IN_MILLIS,
+                    DateUtils.WEEK_IN_MILLIS,
+                    DateUtils.FORMAT_SHOW_YEAR
+                ).toString()
             }
 
             ///////////////////////////////
@@ -334,10 +359,19 @@ class ItemChatEventAdapter(
         }
     }
 
+    inner class ItemChatEventAnnouncementViewHolder(
+        val binding: ItemChatroomLiveChatAnnouncementBinding
+    ): RecyclerView.ViewHolder(binding.root) {
+        fun bind(item: ChatEvent) {
+            binding.actvChatMessage.text = item.body
+        }
+    }
+
     companion object {
         private const val VIEW_TYPE_SENT = 0x04
         private const val VIEW_TYPE_RECEIVED = 0x08
         private const val VIEW_TYPE_ACTION = 0x00
+        private const val VIEW_TYPE_ANNOUNCEMENT = 0x01
 
     }
 }

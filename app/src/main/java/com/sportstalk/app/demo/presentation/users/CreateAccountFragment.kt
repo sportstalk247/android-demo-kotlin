@@ -82,7 +82,7 @@ class CreateAccountFragment: BaseFragment() {
         // Setup Toolbar
         (requireActivity() as? AppCompatActivity)?.let { actv ->
             actv.setSupportActionBar(binding.toolbar)
-            actv.supportActionBar?.title = getString(R.string.rooms)
+            actv.supportActionBar?.title = getString(R.string.create_an_account)
             actv.supportActionBar?.setDisplayHomeAsUpEnabled(true)
         }
 

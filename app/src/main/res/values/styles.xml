@@ -15,4 +15,20 @@
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
+    <style name="MyProfileItem.Title">
+        <item name="android:textSize">20sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/inapp_settings_item_text_selector</item>
+    </style>
+
+    <style name="MyProfileItem">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@color/inapp_settings_item_text_selector</item>
+    </style>
+
+    <style name="MyProfileItem.SubItem">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@android:color/secondary_text_dark</item>
+    </style>
+
 </resources>

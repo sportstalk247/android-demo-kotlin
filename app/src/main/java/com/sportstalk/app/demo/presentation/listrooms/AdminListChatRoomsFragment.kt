@@ -3,20 +3,19 @@ package com.sportstalk.app.demo.presentation.listrooms
 import android.os.Bundle
 import android.util.Log
 import android.view.*
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.os.bundleOf
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.jakewharton.rxbinding3.swiperefreshlayout.refreshes
 import com.jakewharton.rxbinding3.view.clicks
 import com.sportstalk.SportsTalk247
 import com.sportstalk.app.demo.R
-import com.sportstalk.app.demo.databinding.FragmentListChatroomBinding
+import com.sportstalk.app.demo.databinding.FragmentAdminListChatroomBinding
 import com.sportstalk.app.demo.presentation.BaseFragment
-import com.sportstalk.app.demo.presentation.chatroom.ChatRoomFragment
-import com.sportstalk.app.demo.presentation.listrooms.adapters.ItemListChatRooms
-import com.sportstalk.app.demo.presentation.users.CreateAccountFragment
+import com.sportstalk.app.demo.presentation.listrooms.adapters.ItemAdminListChatRooms
 import com.sportstalk.app.demo.presentation.utils.EndlessRecyclerViewScrollListener
 import com.sportstalk.models.ClientConfig
 import com.sportstalk.models.chat.ChatRoom
@@ -29,10 +28,9 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
 import java.util.concurrent.TimeUnit
 
-class ListChatRoomsFragment : BaseFragment() {
+class AdminListChatRoomsFragment : BaseFragment() {
 
-    private lateinit var binding: FragmentListChatroomBinding
-    private lateinit var menu: Menu
+    private lateinit var binding: FragmentAdminListChatroomBinding
 
     private lateinit var adapter: Recycler<ChatRoom>
     private lateinit var scrollListener: RecyclerView.OnScrollListener
@@ -45,7 +43,7 @@ class ListChatRoomsFragment : BaseFragment() {
         )
     }
 
-    private val viewModel: ListChatRoomsViewModel by viewModel {
+    private val viewModel: AdminListChatRoomsViewModel by viewModel {
         parametersOf(
             SportsTalk247.ChatClient(config = config)
         )
@@ -61,20 +59,38 @@ class ListChatRoomsFragment : BaseFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        binding = FragmentListChatroomBinding.inflate(inflater)
+        binding = FragmentAdminListChatroomBinding.inflate(inflater)
 
         binding.recyclerView.layoutManager =
             LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, false)
-        adapter = ItemListChatRooms.adopt(
-            binding.recyclerView,
-            onSelectItemChatRoom = { chatRoom: ChatRoom ->
-                Log.d(TAG, "onSelectItemChatRoom() -> chatRoom = $chatRoom")
-                // Attempt Join Chatroom
-                viewModel.join(which = chatRoom)
+        adapter = ItemAdminListChatRooms.adopt(
+            recyclerView = binding.recyclerView,
+            onItemUpdateChatRoom = { selected ->
+                Log.d(
+                    TAG,
+                    "ItemAdminListChatRooms.adopt() -> onItemUpdateChatRoom() -> selected = $selected"
+                )
+
+                viewModel.update(which = selected)
+            },
+            onItemDeleteChatRoom = { selected ->
+                Log.d(TAG,"ItemAdminListChatRooms.adopt() -> onItemDeleteChatRoom() -> selected = $selected")
+
+                MaterialAlertDialogBuilder(requireContext())
+                    .setTitle("Delete Chatroom")
+                    .setMessage(R.string.are_you_sure)
+                    .setPositiveButton(android.R.string.yes) { _, _ ->
+                        viewModel.delete(which = selected)
+                    }
+                    .setNegativeButton(android.R.string.no) { dialog, _ ->
+                        dialog.dismiss()
+                    }
+                    .show()
             }
         )
 
-        scrollListener = object : EndlessRecyclerViewScrollListener(binding.recyclerView.layoutManager!! as LinearLayoutManager) {
+        scrollListener = object :
+            EndlessRecyclerViewScrollListener(binding.recyclerView.layoutManager!! as LinearLayoutManager) {
             override fun onLoadMore(page: Int, totalItemsCount: Int, view: RecyclerView?) {
                 Log.d(
                     TAG,
@@ -122,10 +138,12 @@ class ListChatRoomsFragment : BaseFragment() {
             .launchIn(lifecycleScope)
 
         /**
-         * Emits [true] if account was already created. Emits [false] otherwise.
+         * Emits [true] upon start SDK Delete Chatroom Operation. Emits [false] when done.
          */
-        viewModel.state.enableAccountSettings()
-            .onEach { takeEnableAccountSettings(it) }
+        viewModel.state.progressDeleteChatRoom()
+            .onEach { inProgress: Boolean ->
+                takeProgressDeleteChatRoom(inProgress)
+            }
             .launchIn(lifecycleScope)
 
         // View Effect
@@ -135,16 +153,10 @@ class ListChatRoomsFragment : BaseFragment() {
             }
             .launchIn(lifecycleScope)
 
+
         ///////////////////////////////
         // Bind UI Input Actions
         ///////////////////////////////
-
-        binding.swipeRefresh.refreshes()
-            .asFlow()
-            .onEach {
-                viewModel.fetchInitial()
-            }
-            .launchIn(lifecycleScope)
 
         binding.fabAdd.clicks()
             .throttleFirst(1000, TimeUnit.MILLISECONDS)
@@ -157,36 +169,30 @@ class ListChatRoomsFragment : BaseFragment() {
             }
             .launchIn(lifecycleScope)
 
-        // Then, fetch initial list
+        binding.swipeRefresh.refreshes()
+            .asFlow()
+            .onEach {
+                // Perform fetch upon Refresh
+                viewModel.fetchInitial()
+            }
+            .launchIn(lifecycleScope)
+
         viewModel.fetchInitial()
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
-        inflater.inflate(R.menu.list_chatroom, menu)
-
-        this.menu = menu
+        inflater.inflate(R.menu.admin_list_chatroom, menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean =
-        when(item.itemId) {
+        when (item.itemId) {
             R.id.action_search -> {
                 // TODO:: R.id.action_search
                 true
             }
-            R.id.action_account_settings -> {
-                // Navigate to Account Settings Screen
-                if(appNavController.currentDestination?.id == R.id.fragmentHome) {
-                    appNavController.navigate(
-                        R.id.action_fragmentHome_to_fragmentAccountSettings
-                    )
-                }
-
-                true
-            }
             else -> super.onOptionsItemSelected(item)
         }
-
 
     override fun onDestroyView() {
         super.onDestroyView()
@@ -212,39 +218,47 @@ class ListChatRoomsFragment : BaseFragment() {
         }
     }
 
-    private fun takeEnableAccountSettings(isEnabled: Boolean) {
-        Log.d(TAG, "takeEnableAccountSettings() -> isEnabled = $isEnabled")
-        // Toggle menu action
-        this.menu.findItem(R.id.action_account_settings)?.isEnabled = isEnabled
+    private fun takeProgressDeleteChatRoom(inProgress: Boolean) {
+        Log.d(TAG, "takeProgressDeleteChatRoom() -> inProgress = $inProgress")
+        binding.swipeRefresh.isRefreshing = inProgress
+        binding.recyclerView.isEnabled = !inProgress
     }
 
-    private fun takeViewEffect(effect: ListChatRoomsViewModel.ViewEffect) {
+    private fun takeViewEffect(effect: AdminListChatRoomsViewModel.ViewEffect) {
         Log.d(TAG, "takeViewEffect() -> effect = ${effect::class.java.simpleName}")
+
         when (effect) {
-            is ListChatRoomsViewModel.ViewEffect.ClearListChatrooms -> {
+            is AdminListChatRoomsViewModel.ViewEffect.ClearListChatrooms -> {
                 adapter.clear()
             }
-            is ListChatRoomsViewModel.ViewEffect.NavigateToCreateProfile -> {
-                if (appNavController.currentDestination?.id == R.id.fragmentHome) {
+            is AdminListChatRoomsViewModel.ViewEffect.ErrorFetchListChatrooms -> {
+                Toast.makeText(
+                    requireContext(),
+                    effect.err.message ?: getString(R.string.something_went_wrong_please_try_again),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+            is AdminListChatRoomsViewModel.ViewEffect.NavigateToChatRoomDetails -> {
+                // TODO:: Navigate to Chatroom Details Screen
+                /*if (appNavController.currentDestination?.id == R.id.fragmentHome) {
                     appNavController.navigate(
-                        R.id.action_fragmentHome_to_fragmentCreateAccount,
+                        R.id.action_fragmentHome_to_fragmentChatroomDetails,
                         bundleOf(
                             CreateAccountFragment.INPUT_ARG_ROOM to effect.which
                         )
                     )
-                }
+                }*/
             }
-            is ListChatRoomsViewModel.ViewEffect.NavigateToChatRoom -> {
-                if (appNavController.currentDestination?.id == R.id.fragmentHome) {
-                    appNavController.navigate(
-                        R.id.action_fragmentHome_to_fragmentChatroom,
-                        bundleOf(
-                            /* TODO:: Bundle */ChatRoomFragment.INPUT_ARG_ROOM to effect.which,
-                            /* TODO:: Bundle */
-                            ChatRoomFragment.INPUT_ARG_USER to effect.who
-                        )
-                    )
-                }
+            is AdminListChatRoomsViewModel.ViewEffect.SuccessDeleteRoom -> {
+                // Refresh list
+                viewModel.fetchInitial()
+            }
+            is AdminListChatRoomsViewModel.ViewEffect.ErrorDeleteRoom -> {
+                Toast.makeText(
+                    requireContext(),
+                    effect.err.message ?: getString(R.string.something_went_wrong_please_try_again),
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
     }

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    >
+
+    <item android:id="@+id/bottomNavFan"
+        android:icon="@drawable/ic_profile_default"
+        android:title="Fan"
+        app:showAsAction="always"
+        />
+
+    <item android:id="@+id/bottomNavAdmin"
+        android:icon="@drawable/ic_announcement_black_24dp"
+        android:iconTint="@android:color/white"
+        android:title="Admin"
+        app:showAsAction="always"
+        />
+
+    <item android:id="@+id/bottomNavSettings"
+        android:icon="@drawable/lb_ic_more"
+        android:title="Settings"
+        app:showAsAction="always"
+        />
+
+</menu>

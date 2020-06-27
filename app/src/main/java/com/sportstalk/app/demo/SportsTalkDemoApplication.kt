@@ -5,6 +5,8 @@ import com.sportstalk.api.ChatClient
 import com.sportstalk.api.UserClient
 import com.sportstalk.app.demo.presentation.chatroom.ChatRoomViewModel
 import com.sportstalk.app.demo.presentation.chatroom.listparticipants.ChatroomListParticipantsViewModel
+import com.sportstalk.app.demo.presentation.inappsettings.InAppSettingsViewModel
+import com.sportstalk.app.demo.presentation.listrooms.AdminListChatRoomsViewModel
 import com.sportstalk.app.demo.presentation.listrooms.ListChatRoomsViewModel
 import com.sportstalk.app.demo.presentation.rooms.CreateChatroomViewModel
 import com.sportstalk.app.demo.presentation.users.AccountSettingsViewModel
@@ -49,9 +51,19 @@ class SportsTalkDemoApplication: Application() {
                     }
 
                     /*
+                    * In-app Settings
+                    */
+                    viewModel { InAppSettingsViewModel(preferences = get()) }
+
+                    /*
                     * List Chatrooms
                     */
                     viewModel { (chatClient: ChatClient) -> ListChatRoomsViewModel(chatClient = chatClient, preferences = get()) }
+
+                    /*
+                    * Admin List Chatrooms
+                    */
+                    viewModel { (chatClient: ChatClient) -> AdminListChatRoomsViewModel(chatClient = chatClient, preferences = get()) }
 
                     /*
                      * Create Account
