@@ -1,8 +1,13 @@
 package com.sportstalk.app.demo
 
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.core.content.edit
 import com.sportstalk.models.users.User
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.channels.sendBlocking
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.serialization.json.Json
 
 class SportsTalkDemoPreferences(
@@ -11,6 +16,10 @@ class SportsTalkDemoPreferences(
 ) {
 
     private val preferences = context.getSharedPreferences(context.packageName, Context.MODE_PRIVATE)
+
+    private val ORIGINAL_URL_ENDPOINT = context.getString(R.string.sportstalk247_urlEndpoint)
+    private val ORIGINAL_AUTH_TOKEN = context.getString(R.string.sportstalk247_authToken)
+    private val ORIGINAL_APP_ID = context.getString(R.string.sportstalk247_appid)
 
     var currentUser: User?
         get() {
@@ -30,11 +39,95 @@ class SportsTalkDemoPreferences(
             }
         }
 
+    var urlEndpoint: String?
+        get() {
+            return preferences.getString(KEY_URL_ENDPOINT, "")!!.takeIf { it.isNotEmpty() }
+        }
+    set(value) {
+        preferences.edit(true) {
+            putString(KEY_URL_ENDPOINT, value)
+        }
+    }
+
+    fun urlEndpointChanges(): Flow<String?> = callbackFlow {
+        // Preference Value Change Listener
+        val onSharedPrefChanges = SharedPreferences.OnSharedPreferenceChangeListener { pref, key ->
+            if(key == KEY_URL_ENDPOINT) {
+                sendBlocking(
+                    pref.getString(key, "")!!.takeIf { it.isNotEmpty() }
+                )
+            }
+        }
+        preferences.registerOnSharedPreferenceChangeListener(onSharedPrefChanges)
+        // Emit initial value upon subscribe
+        send(urlEndpoint)
+        // Unregister on await close
+        awaitClose { preferences.unregisterOnSharedPreferenceChangeListener(onSharedPrefChanges) }
+    }
+
+    var authToken: String?
+        get() {
+            return preferences.getString(KEY_AUTH_TOKEN, "")!!.takeIf { it.isNotEmpty() }
+        }
+    set(value) {
+        preferences.edit(true) {
+            putString(KEY_AUTH_TOKEN, value)
+        }
+    }
+    fun authTokenChanges(): Flow<String?> = callbackFlow {
+        // Preference Value Change Listener
+        val onSharedPrefChanges = SharedPreferences.OnSharedPreferenceChangeListener { pref, key ->
+            if(key == KEY_AUTH_TOKEN) {
+                sendBlocking(
+                    pref.getString(key, "")!!.takeIf { it.isNotEmpty() }
+                )
+            }
+        }
+        preferences.registerOnSharedPreferenceChangeListener(onSharedPrefChanges)
+        // Emit initial value upon subscribe
+        send(authToken)
+        // Unregister on await close
+        awaitClose { preferences.unregisterOnSharedPreferenceChangeListener(onSharedPrefChanges) }
+    }
+
+    var appId: String?
+        get() {
+            return preferences.getString(KEY_APP_ID, "")!!.takeIf { it.isNotEmpty() }
+        }
+    set(value) {
+        preferences.edit(true) {
+            putString(KEY_APP_ID, value)
+        }
+    }
+    fun appIdChanges(): Flow<String?> = callbackFlow {
+        // Preference Value Change Listener
+        val onSharedPrefChanges = SharedPreferences.OnSharedPreferenceChangeListener { pref, key ->
+            if(key == KEY_APP_ID) {
+                sendBlocking(
+                    pref.getString(key, "")!!.takeIf { it.isNotEmpty() }
+                )
+            }
+        }
+        preferences.registerOnSharedPreferenceChangeListener(onSharedPrefChanges)
+        // Emit initial value upon subscribe
+        send(appId)
+        // Unregister on await close
+        awaitClose { preferences.unregisterOnSharedPreferenceChangeListener(onSharedPrefChanges) }
+    }
+
     fun clear() {
-        preferences.edit().clear().apply()
+        preferences.edit(true) {
+            clear()
+            putString(KEY_URL_ENDPOINT, ORIGINAL_URL_ENDPOINT)
+            putString(KEY_AUTH_TOKEN, ORIGINAL_AUTH_TOKEN)
+            putString(KEY_AUTH_TOKEN, ORIGINAL_APP_ID)
+        }
     }
 
     companion object {
         const val KEY_CURRENT_USER = "currentUser"
+        const val KEY_URL_ENDPOINT = "urlEndpoint"
+        const val KEY_AUTH_TOKEN = "authToken"
+        const val KEY_APP_ID = "appId"
     }
 }

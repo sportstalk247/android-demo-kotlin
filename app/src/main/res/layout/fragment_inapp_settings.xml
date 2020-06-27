@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/AppTheme.AppBarOverlay">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            app:title="@string/inapp_settings"
+            app:popupTheme="@style/AppTheme.PopupOverlay"
+            app:menu="@menu/inapp_settings"
+            />
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="16dp"
+        android:orientation="vertical"
+        app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"
+        >
+
+        <!-- URL Endpoint -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/containerUrlEndpoint"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?android:attr/selectableItemBackgroundBorderless"
+            >
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/actvUrlEndpointLabel"
+                style="@style/MyProfileItem"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:layout_marginRight="16dp"
+                android:textAlignment="gravity"
+                android:paddingLeft="4dp"
+                android:paddingRight="4dp"
+                android:text="@string/url_endpoint"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/actvUrlEndpointValue"
+                style="@style/MyProfileItem.SubItem"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:paddingLeft="4dp"
+                android:paddingRight="4dp"
+                android:layout_marginRight="16dp"
+                android:textAlignment="gravity"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/actvUrlEndpointLabel"
+                tools:text="https://qa-talkapi.sportstalk247.com/api/v3/"
+                />
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginRight="8dp"
+                app:srcCompat="@drawable/ic_navigate_next"
+                app:tint="@color/colorAccent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/actvUrlEndpointLabel"
+                app:layout_constraintBottom_toTopOf="@+id/actvUrlEndpointValue"
+                />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- Auth Token -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/containerAuthToken"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?android:attr/selectableItemBackgroundBorderless"
+            >
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/actvAuthTokenLabel"
+                style="@style/MyProfileItem"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:layout_marginRight="16dp"
+                android:textAlignment="gravity"
+                android:paddingLeft="4dp"
+                android:paddingRight="4dp"
+                android:text="@string/auth_token"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/actvAuthTokenValue"
+                style="@style/MyProfileItem.SubItem"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:paddingLeft="4dp"
+                android:paddingRight="4dp"
+                android:layout_marginRight="16dp"
+                android:textAlignment="gravity"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toLeftOf="@+id/acivAuthTokenNext"
+                app:layout_constraintTop_toBottomOf="@+id/actvAuthTokenLabel"
+                tools:text="YscH0R-GcA7pnEG0WmnGujRkEVMJA6U9uybzJzAW23D0"
+                />
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/acivAuthTokenNext"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginRight="8dp"
+                app:srcCompat="@drawable/ic_navigate_next"
+                app:tint="@color/colorAccent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/actvAuthTokenLabel"
+                app:layout_constraintBottom_toTopOf="@+id/actvAuthTokenValue"
+                />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- App ID -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/containerAppId"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?android:attr/selectableItemBackgroundBorderless"
+            >
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/actvAppIdLabel"
+                style="@style/MyProfileItem"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:layout_marginRight="16dp"
+                android:textAlignment="gravity"
+                android:paddingLeft="4dp"
+                android:paddingRight="4dp"
+                android:text="@string/app_id"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/actvAppIdValue"
+                style="@style/MyProfileItem.SubItem"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:paddingLeft="4dp"
+                android:paddingRight="4dp"
+                android:layout_marginRight="16dp"
+                android:textAlignment="gravity"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toLeftOf="@+id/acivAppIdNext"
+                app:layout_constraintTop_toBottomOf="@+id/actvAppIdLabel"
+                tools:text="YscH0R-GcA7pnEG0WmnGujRkEVMJA6U9uybzJzAW23D0"
+                />
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/acivAppIdNext"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginRight="8dp"
+                app:srcCompat="@drawable/ic_navigate_next"
+                app:tint="@color/colorAccent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/actvAppIdLabel"
+                app:layout_constraintBottom_toTopOf="@+id/actvAppIdValue"
+                />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_margin="16dp"
+        >
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/actvAppVersion"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintLeft_toRightOf="parent"
+            app:layout_constraintRight_toLeftOf="parent"
+            tools:text="Version 1.0"
+            />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -89,5 +89,12 @@
     <string name="ban_handle" formatted="true">Ban %s</string>
     <string name="remove_ban_from_handle" formatted="true">Remove Ban from %s</string>
     <string name="are_you_sure">Are you sure?</string>
+    <string name="reset">Reset</string>
+    <string name="inapp_settings">In-app Settings</string>
+    <string name="url_endpoint">URL Endpoint</string>
+    <string name="auth_token">Auth Token</string>
+    <string name="app_id">App ID</string>
+    <string name="app_version" formatted="true">Version %s</string>
+    <string name="apply">Apply</string>
 
 </resources>
