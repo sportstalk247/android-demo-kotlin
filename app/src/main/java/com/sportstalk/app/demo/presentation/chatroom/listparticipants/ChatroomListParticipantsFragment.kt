@@ -3,11 +3,9 @@ package com.sportstalk.app.demo.presentation.chatroom.listparticipants
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -25,18 +23,34 @@ import com.sportstalk.models.users.User
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.rx2.asFlow
+import org.koin.android.ext.android.getKoin
+import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.koin.androidx.viewmodel.koin.getViewModel
 import org.koin.core.parameter.parametersOf
 
 class ChatroomListParticipantsFragment : BaseFragment() {
 
     private lateinit var binding: FragmentChatroomListParticipantsBinding
-    private val viewModel: ChatroomListParticipantsViewModel by viewModel {
-        parametersOf(
-            room,
-            user,
-            SportsTalk247.UserClient(config),
-            SportsTalk247.ChatClient(config)
+//    private val viewModel: ChatroomListParticipantsViewModel by sharedViewModel {
+//        parametersOf(
+//            room,
+//            user,
+//            SportsTalk247.UserClient(config),
+//            SportsTalk247.ChatClient(config)
+//        )
+//    }
+    private val viewModel: ChatroomListParticipantsViewModel by lazy {
+        getKoin().getViewModel<ChatroomListParticipantsViewModel>(
+            owner = requireParentFragment(),
+            parameters = {
+                parametersOf(
+                    room,
+                    user,
+                    SportsTalk247.UserClient(config),
+                    SportsTalk247.ChatClient(config)
+                )
+            }
         )
     }
     private val config: ClientConfig by lazy {
@@ -55,7 +69,7 @@ class ChatroomListParticipantsFragment : BaseFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setHasOptionsMenu(true)
+//        setHasOptionsMenu(true)
 
         user = requireArguments().getParcelable(INPUT_ARG_USER)!!
         room = requireArguments().getParcelable(INPUT_ARG_ROOM)!!
@@ -125,11 +139,11 @@ class ChatroomListParticipantsFragment : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        (requireActivity() as? AppCompatActivity)?.let { appActivity ->
-            appActivity.setSupportActionBar(binding.toolbar)
-            appActivity.supportActionBar?.setHomeButtonEnabled(true)
-            appActivity.supportActionBar?.setDisplayShowHomeEnabled(true)
-        }
+//        (requireActivity() as? AppCompatActivity)?.let { appActivity ->
+//            appActivity.setSupportActionBar(binding.toolbar)
+//            appActivity.supportActionBar?.setHomeButtonEnabled(true)
+//            appActivity.supportActionBar?.setDisplayShowHomeEnabled(true)
+//        }
 
         ///////////////////////////////
         // Bind ViewModel State
@@ -235,11 +249,11 @@ class ChatroomListParticipantsFragment : BaseFragment() {
         }
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean =
-        when (item.itemId) {
-            android.R.id.home -> appNavController.popBackStack()
-            else -> super.onOptionsItemSelected(item)
-        }
+//    override fun onOptionsItemSelected(item: MenuItem): Boolean =
+//        when (item.itemId) {
+//            android.R.id.home -> appNavController.popBackStack()
+//            else -> super.onOptionsItemSelected(item)
+//        }
 
     companion object {
         const val INPUT_ARG_ROOM = "input-arg-room"

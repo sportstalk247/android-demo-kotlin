@@ -9,6 +9,7 @@ import com.sportstalk.app.demo.presentation.inappsettings.InAppSettingsViewModel
 import com.sportstalk.app.demo.presentation.listrooms.AdminListChatRoomsViewModel
 import com.sportstalk.app.demo.presentation.listrooms.ListChatRoomsViewModel
 import com.sportstalk.app.demo.presentation.rooms.CreateChatroomViewModel
+import com.sportstalk.app.demo.presentation.rooms.UpdateChatroomViewModel
 import com.sportstalk.app.demo.presentation.users.AccountSettingsViewModel
 import com.sportstalk.app.demo.presentation.users.CreateAccountViewModel
 import com.sportstalk.models.chat.ChatRoom
@@ -92,6 +93,19 @@ class SportsTalkDemoApplication: Application() {
                     viewModel {
                         (room: ChatRoom, user: User, chatClient: ChatClient) ->
                         ChatRoomViewModel(
+                            room = room,
+                            user = user,
+                            chatClient = chatClient,
+                            preferences = get()
+                        )
+                    }
+
+                    /*
+                    * Update Chatroom
+                    */
+                    viewModel {
+                        (room: ChatRoom, user: User, chatClient: ChatClient) ->
+                        UpdateChatroomViewModel(
                             room = room,
                             user = user,
                             chatClient = chatClient,

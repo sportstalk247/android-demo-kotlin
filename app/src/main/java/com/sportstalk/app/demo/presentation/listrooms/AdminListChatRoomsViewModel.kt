@@ -105,8 +105,9 @@ class AdminListChatRoomsViewModel(
     }
 
     fun update(which: ChatRoom) {
+        val user = preferences.currentUser ?: return
         _effect.sendBlocking(
-            ViewEffect.NavigateToChatRoomDetails(which)
+            ViewEffect.NavigateToChatRoomDetails(user, which)
         )
     }
 
@@ -161,7 +162,7 @@ class AdminListChatRoomsViewModel(
         class ClearListChatrooms : ViewEffect()
         data class ErrorFetchListChatrooms(val err: SportsTalkException) : ViewEffect()
 
-        data class NavigateToChatRoomDetails(val which: ChatRoom) : ViewEffect()
+        data class NavigateToChatRoomDetails(val admin: User, val which: ChatRoom) : ViewEffect()
         data class SuccessDeleteRoom(val response: DeleteChatRoomResponse): ViewEffect()
         data class ErrorDeleteRoom(val err: SportsTalkException): ViewEffect()
     }

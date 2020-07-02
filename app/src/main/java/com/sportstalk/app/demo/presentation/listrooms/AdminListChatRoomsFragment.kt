@@ -5,6 +5,7 @@ import android.util.Log
 import android.view.*
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.os.bundleOf
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -16,6 +17,7 @@ import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.FragmentAdminListChatroomBinding
 import com.sportstalk.app.demo.presentation.BaseFragment
 import com.sportstalk.app.demo.presentation.listrooms.adapters.ItemAdminListChatRooms
+import com.sportstalk.app.demo.presentation.rooms.UpdateChatroomFragment
 import com.sportstalk.app.demo.presentation.utils.EndlessRecyclerViewScrollListener
 import com.sportstalk.models.ClientConfig
 import com.sportstalk.models.chat.ChatRoom
@@ -239,15 +241,16 @@ class AdminListChatRoomsFragment : BaseFragment() {
                 ).show()
             }
             is AdminListChatRoomsViewModel.ViewEffect.NavigateToChatRoomDetails -> {
-                // TODO:: Navigate to Chatroom Details Screen
-                /*if (appNavController.currentDestination?.id == R.id.fragmentHome) {
+                // Navigate to Update Chatroom Screen
+                if (appNavController.currentDestination?.id == R.id.fragmentHome) {
                     appNavController.navigate(
-                        R.id.action_fragmentHome_to_fragmentChatroomDetails,
+                        R.id.action_fragmentHome_to_fragmentUpdateChatroom,
                         bundleOf(
-                            CreateAccountFragment.INPUT_ARG_ROOM to effect.which
+                            UpdateChatroomFragment.INPUT_ARG_USER to effect.admin,
+                            UpdateChatroomFragment.INPUT_ARG_ROOM to effect.which
                         )
                     )
-                }*/
+                }
             }
             is AdminListChatRoomsViewModel.ViewEffect.SuccessDeleteRoom -> {
                 // Refresh list

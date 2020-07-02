@@ -28,6 +28,9 @@
         <action
             android:id="@+id/action_fragmentHome_to_fragmentAccountSettings"
             app:destination="@id/fragmentAccountSettings" />
+        <action
+            android:id="@+id/action_fragmentHome_to_fragmentUpdateChatroom"
+            app:destination="@id/fragmentUpdateChatroom" />
     </fragment>
 
     <fragment
@@ -48,9 +51,6 @@
         android:name="com.sportstalk.app.demo.presentation.chatroom.ChatRoomFragment"
         tools:layout="@layout/fragment_chatroom"
         >
-        <action
-            android:id="@+id/action_fragmentChatroom_to_fragmentChatRoomParticipants"
-            app:destination="@id/fragmentChatRoomParticipants" />
     </fragment>
 
     <fragment
@@ -61,16 +61,16 @@
     </fragment>
 
     <fragment
-        android:id="@+id/fragmentAccountSettings"
-        android:name="com.sportstalk.app.demo.presentation.users.AccountSettingsFragment"
-        tools:layout="@layout/fragment_account_settings"
+        android:id="@+id/fragmentUpdateChatroom"
+        android:name="com.sportstalk.app.demo.presentation.rooms.UpdateChatroomFragment"
+        tools:layout="@layout/fragment_update_chatroom"
         >
     </fragment>
 
     <fragment
-        android:id="@+id/fragmentChatRoomParticipants"
-        android:name="com.sportstalk.app.demo.presentation.chatroom.listparticipants.ChatroomListParticipantsFragment"
-        tools:layout="@layout/fragment_chatroom_list_participants"
+        android:id="@+id/fragmentAccountSettings"
+        android:name="com.sportstalk.app.demo.presentation.users.AccountSettingsFragment"
+        tools:layout="@layout/fragment_account_settings"
         >
     </fragment>
 
