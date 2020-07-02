@@ -20,9 +20,9 @@ import com.sportstalk.app.demo.presentation.chatroom.adapters.ItemChatEventAdapt
 import com.sportstalk.app.demo.presentation.utils.EndlessRecyclerViewScrollListener
 import com.sportstalk.models.chat.ChatEvent
 import com.sportstalk.models.chat.ChatRoom
+import com.sportstalk.models.chat.EventType
 import com.sportstalk.models.chat.ReportType
 import com.sportstalk.models.users.User
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.rx2.asFlow
@@ -250,11 +250,51 @@ class LiveChatFragment : BaseFragment() {
             is ChatRoomViewModel.ViewEffect.ReceiveChatEventUpdates -> {
                 // Dispatch update received new events
                 if (::adapter.isInitialized) {
-                    adapter.update(effect.eventUpdates)
+                    val chatEvents = effect.eventUpdates.filter {
+                        it.eventtype == EventType.SPEECH
+                                || it.eventtype == EventType.ACTION
+                                || it.eventtype == EventType.REACTION
+                                || it.eventtype == EventType.QUOTE
+                    }
+                    // Append to Chat list
+                    adapter.update(chatEvents)
+
+                    // Other events
+
+                    val purgeEvents = effect.eventUpdates.filter {
+                        it.eventtype == EventType.PURGE
+                    }
+                    // TODO:: Handle Purge Events
+
+                    val reactionEvents = effect.eventUpdates.filter {
+                        it.eventtype == EventType.REACTION
+                    }
+                    // TODO:: Handle Reaction Events
+
+                    val roomOpenEvents = effect.eventUpdates.filter {
+                        it.eventtype == EventType.ROOM_OPEN
+                    }
+                    // TODO:: Handle Room Open Events
+
+                    val roomClosedEvents = effect.eventUpdates.filter {
+                        it.eventtype == EventType.ROOM_CLOSED
+                    }
+                    // TODO:: Handle Room Closed Events
+
+                    val roomGoalEvents = effect.eventUpdates.filter {
+                        it.eventtype == EventType.GOAL
+                    }
+                    // TODO:: Handle Goal Events
+
+                    val roomAdvertisementEvents = effect.eventUpdates.filter {
+                        it.eventtype == EventType.ADVERTISEMENT
+                    }
+                    // TODO:: Handle Advertisement Events
+
                 }
             }
             is ChatRoomViewModel.ViewEffect.ChatMessageSent -> {
-
+                // Do nothing...
             }
             is ChatRoomViewModel.ViewEffect.ErrorSendChatMessage -> {
                 Toast.makeText(
@@ -264,7 +304,7 @@ class LiveChatFragment : BaseFragment() {
                 ).show()
             }
             is ChatRoomViewModel.ViewEffect.QuotedReplySent -> {
-
+                // Do nothing...
             }
             is ChatRoomViewModel.ViewEffect.ErrorSendQuotedReply -> {
                 Toast.makeText(
@@ -274,7 +314,7 @@ class LiveChatFragment : BaseFragment() {
                 ).show()
             }
             is ChatRoomViewModel.ViewEffect.ThreadedReplySent -> {
-
+                // TODO:: Success Threaded Reply
             }
             is ChatRoomViewModel.ViewEffect.ErrorSendThreadedReply -> {
                 Toast.makeText(
