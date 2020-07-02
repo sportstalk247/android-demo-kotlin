@@ -6,6 +6,8 @@ import com.sportstalk.api.ChatClient
 import com.sportstalk.api.UserClient
 import com.sportstalk.models.SportsTalkException
 import com.sportstalk.models.chat.ChatRoom
+import com.sportstalk.models.chat.ExecuteChatCommandRequest
+import com.sportstalk.models.chat.ExecuteChatCommandResponse
 import com.sportstalk.models.users.User
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
@@ -31,6 +33,7 @@ class ChatroomListParticipantsViewModel(
 
     private val progressFetchChatroomParticipants = Channel<Boolean>(Channel.RENDEZVOUS)
     private val progressUserSetBanStatus = Channel<Boolean>(Channel.RENDEZVOUS)
+    private val progressPurgeUserMessages = Channel<Boolean>(Channel.RENDEZVOUS)
 
     private val chatroomParticipants = ConflatedBroadcastChannel<List<User>>()
 
@@ -47,6 +50,9 @@ class ChatroomListParticipantsViewModel(
 
         override fun progressUserSetBanStatus(): Flow<Boolean> =
             progressUserSetBanStatus.receiveAsFlow()
+
+        override fun progressPurgeUserMessages(): Flow<Boolean> =
+            progressPurgeUserMessages.receiveAsFlow()
     }
 
     private val _effect = Channel<ViewEffect>(Channel.RENDEZVOUS)
@@ -119,6 +125,36 @@ class ChatroomListParticipantsViewModel(
         }
     }
 
+    fun purgeMessages(from: User) {
+        viewModelScope.launch {
+            try {
+                // DISPLAY Progress Indicator
+                progressPurgeUserMessages.send(true)
+
+                val response = withContext(Dispatchers.IO) {
+                    chatClient.executeChatCommand(
+                        chatRoomId = room.id!!,
+                        request = ExecuteChatCommandRequest(
+                            command = "*purge zola ${from.userid!!}",
+                            userid = user.userid!!
+                        )
+                    )
+                        .await()
+                }
+
+                // EMIT Success
+                _effect.send(ViewEffect.SuccessPurgeUserMessages(from, response))
+
+            } catch (err: SportsTalkException) {
+                // EMIT Error
+                _effect.send(ViewEffect.ErrorPurgeUserMessages(err))
+            } finally {
+                // HIDE Progress Indicator
+                progressPurgeUserMessages.send(false)
+            }
+        }
+    }
+
     interface ViewState {
         /**
          * Emits [true] upon start List Chatroom Participants SDK operation. Emits [false] when done.
@@ -135,12 +171,19 @@ class ChatroomListParticipantsViewModel(
          */
         fun progressUserSetBanStatus(): Flow<Boolean>
 
+        /**
+         * Emits [true] upon start Purge User Messages SDK operation. Emits [false] when done.
+         */
+        fun progressPurgeUserMessages(): Flow<Boolean>
+
     }
 
     sealed class ViewEffect {
         data class ErrorFetchChatroomParticipants(val err: SportsTalkException) : ViewEffect()
         data class SuccessUserSetBanStatus(val user: User) : ViewEffect()
         data class ErrorUserSetBanStatus(val err: SportsTalkException) : ViewEffect()
+        data class SuccessPurgeUserMessages(val who: User, val response: ExecuteChatCommandResponse): ViewEffect()
+        data class ErrorPurgeUserMessages(val err: SportsTalkException): ViewEffect()
     }
 
     companion object {

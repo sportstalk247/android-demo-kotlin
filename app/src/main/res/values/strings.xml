@@ -88,6 +88,8 @@
 
     <string name="ban_handle" formatted="true">Ban %s</string>
     <string name="remove_ban_from_handle" formatted="true">Remove Ban from %s</string>
+    <string name="purge_messages_from_handle" formatted="true">Purge messages from %s</string>
+
     <string name="are_you_sure">Are you sure?</string>
     <string name="reset">Reset</string>
     <string name="inapp_settings">In-app Settings</string>
@@ -109,5 +111,7 @@
     <string name="chatroom_successfully_updated" formatted="true">Chatroom \"%s\" successfully updated…</string>
     <string name="all_events_in_this_chatroom_successfully_deleted">All event(s) in this Chatroom has been successfully deleted…</string>
     <string name="chatroom_successfully_deleted" formatted="true">Chatroom \"%s\" successfully deleted…</string>
+
+    <string name="chatevents_from_handle_successfully_purged" formatted="true">Chat Events from \"%s\" successfully purged…</string>
 
 </resources>
