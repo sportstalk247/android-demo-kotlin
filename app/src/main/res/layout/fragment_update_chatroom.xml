@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/AppTheme.AppBarOverlay">
+
+        <com.google.android.material.appbar.CollapsingToolbarLayout
+            android:id="@+id/collapsingToolbarLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fitsSystemWindows="true"
+            app:titleEnabled="false"
+            app:layout_scrollFlags="scroll|exitUntilCollapsed|snap">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/containerUpdateRoomDetails"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@android:color/white"
+                android:theme="@style/AppTheme.NoActionBar"
+                app:layout_collapseMode="parallax"
+                android:paddingLeft="8dp"
+                android:paddingTop="?attr/actionBarSize"
+                android:paddingRight="8dp"
+                android:paddingBottom="16dp"
+                >
+
+                <!-- Room Name -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilName"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:hint="@string/room_name"
+                    app:hintAnimationEnabled="true"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/tietName"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textCapWords"
+                        android:maxLines="1"
+                        tools:text="War room" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Description -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilDescription"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:hint="@string/room_description"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/tilName">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/tietDescription"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textCapSentences"
+                        />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Custom ID -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilCustomId"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:hint="@string/room_custom_id"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/tilDescription">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/tietCustomId"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textUri"
+                        android:maxLines="1"/>
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Enable Actions -->
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/switchEnableActions"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:textOn="@string/action_enabled"
+                    android:textOff="@string/action_disabled"
+                    tools:text="@string/action_enabled"
+                    android:layoutDirection="rtl"
+                    app:layout_constraintTop_toBottomOf="@+id/tilCustomId"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintRight_toLeftOf="@+id/guideline"
+                    />
+
+                <!-- Enable Enter/Exit -->
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/switchEnableEnterExit"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:textOn="@string/enter_exit_enabled"
+                    android:textOff="@string/enter_exit_disabled"
+                    tools:text="@string/enter_exit_enabled"
+                    android:layoutDirection="rtl"
+                    app:layout_constraintTop_toBottomOf="@+id/tilCustomId"
+                    app:layout_constraintLeft_toRightOf="@+id/guideline"
+                    app:layout_constraintRight_toRightOf="parent"
+                    />
+
+                <!-- Room is open? -->
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/switchRoomOpen"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:textOn="@string/room_is_open"
+                    android:textOff="@string/room_is_closed"
+                    tools:text="@string/room_is_closed"
+                    tools:checked="false"
+                    android:layoutDirection="rtl"
+                    app:layout_constraintTop_toBottomOf="@+id/switchEnableActions"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintRight_toLeftOf="@+id/guideline"
+                    />
+
+                <!-- Profanity Filter -->
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/switchProfanityFilter"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:textOn="@string/profanity_filter_enabled"
+                    android:textOff="@string/profanity_filter_disabled"
+                    tools:text="@string/profanity_filter_enabled"
+                    android:layoutDirection="rtl"
+                    app:layout_constraintTop_toBottomOf="@+id/switchEnableEnterExit"
+                    app:layout_constraintLeft_toRightOf="@+id/guideline"
+                    app:layout_constraintRight_toRightOf="parent"
+                    />
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/guideline"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_percent="0.5"
+                    />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:id="@+id/actvAdded"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="left|center_vertical"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginBottom="4dp"
+                    android:textAlignment="gravity"
+                    android:textSize="14sp"
+                    android:textColor="@android:color/secondary_text_light"
+                    app:layout_constraintTop_toBottomOf="@+id/switchRoomOpen"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintRight_toLeftOf="@+id/guideline"
+                    android:text="Added:\n06:22 AM May 24, 2020"
+                    />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:id="@+id/actvModified"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="left|center_vertical"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginBottom="4dp"
+                    android:textAlignment="gravity"
+                    android:textSize="14sp"
+                    android:textColor="@android:color/secondary_text_light"
+                    app:layout_constraintTop_toBottomOf="@+id/switchRoomOpen"
+                    app:layout_constraintLeft_toRightOf="@+id/guideline"
+                    app:layout_constraintRight_toRightOf="parent"
+                    android:text="Modified:\n06:22 AM May 24, 2020"
+                    />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:id="@+id/actvModeration"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="left|center_vertical"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginBottom="4dp"
+                    android:textAlignment="gravity"
+                    android:textSize="14sp"
+                    android:textColor="@android:color/secondary_text_light"
+                    app:layout_constraintTop_toBottomOf="@+id/actvAdded"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintRight_toLeftOf="@+id/guideline"
+                    tools:text="Moderation: POST"
+                    />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:id="@+id/actvMaxReports"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="left|center_vertical"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginBottom="4dp"
+                    android:textAlignment="gravity"
+                    android:textSize="14sp"
+                    android:textColor="@android:color/secondary_text_light"
+                    app:layout_constraintTop_toBottomOf="@+id/actvModified"
+                    app:layout_constraintLeft_toRightOf="@+id/guideline"
+                    app:layout_constraintRight_toRightOf="parent"
+                    tools:text="Max Reports: 3"
+                    />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:id="@+id/actvAttendance"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginBottom="4dp"
+                    app:drawableLeftCompat="@android:drawable/ic_menu_info_details"
+                    app:drawableTint="@android:color/secondary_text_light"
+                    android:textAlignment="gravity"
+                    android:textSize="14sp"
+                    android:textColor="@android:color/secondary_text_light"
+                    app:layout_constraintTop_toBottomOf="@+id/actvModeration"
+                    app:layout_constraintLeft_toRightOf="@+id/guideline"
+                    app:layout_constraintRight_toLeftOf="@+id/guideline"
+                    tools:text="In-room: 22,956"
+                    />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                android:background="?attr/colorPrimary"
+                app:layout_collapseMode="pin"
+                app:navigationIcon="@drawable/ic_clear_white"
+                app:popupTheme="@style/AppTheme.PopupOverlay"
+                app:menu="@menu/update_chatroom"
+                tools:title="War room"
+                />
+
+        </com.google.android.material.appbar.CollapsingToolbarLayout>
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="match_parent"
+            android:layout_height="8dp"
+            android:visibility="gone"
+            android:indeterminate="true"
+            android:indeterminateTint="@color/colorAccent"
+            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            tools:indeterminate="false"
+            tools:progress="75"
+            tools:visibility="visible"
+            />
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/fragmentChatroomParticipants"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"
+        />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

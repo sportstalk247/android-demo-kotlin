@@ -11,9 +11,4 @@
         app:showAsAction="always"
         />
 
-    <item android:id="@+id/action_chatroom_participants"
-        android:title="@string/chatroom_participants"
-        app:showAsAction="never"
-        />
-
 </menu>

@@ -240,18 +240,8 @@ class ChatRoomFragment : BaseFragment() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean =
         when (item.itemId) {
             android.R.id.home -> {
-                // TODO:: Call Exit Chatroom Operation
+                // Call Exit Chatroom Operation
                 appNavController.popBackStack()
-                true
-            }
-            R.id.action_chatroom_participants -> {
-                appNavController.navigate(
-                    R.id.action_fragmentChatroom_to_fragmentChatRoomParticipants,
-                    bundleOf(
-                        ChatroomListParticipantsFragment.INPUT_ARG_ROOM to room,
-                        ChatroomListParticipantsFragment.INPUT_ARG_USER to user
-                    )
-                )
                 true
             }
             R.id.action_leave_room -> {

@@ -292,7 +292,7 @@ class ChatRoomViewModel(
         this@ChatRoomViewModel.quotedReply.sendBlocking(PLACEHOLDER_CLEAR_REPLY)
 
     /**
-     * Perform `Reply to a Message (Threaded)` SDK Operation
+     * Perform `Reply to a Message (Quoted)` SDK Operation
      */
     fun sendQuotedReply(
         message: String,

@@ -3,11 +3,9 @@ package com.sportstalk.app.demo.presentation.chatroom.listparticipants
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -25,18 +23,26 @@ import com.sportstalk.models.users.User
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.rx2.asFlow
+import org.koin.android.ext.android.getKoin
+import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.koin.androidx.viewmodel.koin.getViewModel
 import org.koin.core.parameter.parametersOf
 
 class ChatroomListParticipantsFragment : BaseFragment() {
 
     private lateinit var binding: FragmentChatroomListParticipantsBinding
-    private val viewModel: ChatroomListParticipantsViewModel by viewModel {
-        parametersOf(
-            room,
-            user,
-            SportsTalk247.UserClient(config),
-            SportsTalk247.ChatClient(config)
+    private val viewModel: ChatroomListParticipantsViewModel by lazy {
+        getKoin().getViewModel<ChatroomListParticipantsViewModel>(
+            owner = requireParentFragment(),
+            parameters = {
+                parametersOf(
+                    room,
+                    user,
+                    SportsTalk247.UserClient(config),
+                    SportsTalk247.ChatClient(config)
+                )
+            }
         )
     }
     private val config: ClientConfig by lazy {
@@ -55,7 +61,6 @@ class ChatroomListParticipantsFragment : BaseFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setHasOptionsMenu(true)
 
         user = requireArguments().getParcelable(INPUT_ARG_USER)!!
         room = requireArguments().getParcelable(INPUT_ARG_ROOM)!!
@@ -72,16 +77,21 @@ class ChatroomListParticipantsFragment : BaseFragment() {
             onTapChatParticipantItem = { participant: User ->
                 Log.d(TAG, "onTapChatParticipantItem() -> participant = $participant")
 
+                val optionBan = getString(R.string.ban_handle, user.handle ?: "")
+                val optionRemoveBan = getString(R.string.remove_ban_from_handle, user.handle ?: "")
+                val optionPurgeMessages = getString(R.string.purge_messages_from_handle, user.handle ?: "")
+
                 val options = mutableListOf<String>().apply {
-                    if (participant.banned == true) add(getString(R.string.remove_ban_from_handle, user.handle ?: ""))
-                    else add(getString(R.string.ban_handle, user.handle ?: ""))
+                    if (participant.banned == true) add(optionRemoveBan)
+                    else add(optionBan)
+                    add(optionPurgeMessages)
                 }.toTypedArray()
 
                 MaterialAlertDialogBuilder(requireContext())
                     .setItems(options) { _, index ->
-                        when (index) {
+                        when (options[index]) {
                             // Ban/Remove Ban
-                            0 -> {
+                            optionBan, optionRemoveBan -> {
                                 MaterialAlertDialogBuilder(requireContext())
                                     .setMessage(R.string.are_you_sure)
                                     .setPositiveButton(android.R.string.ok) { dialog, which ->
@@ -90,6 +100,20 @@ class ChatroomListParticipantsFragment : BaseFragment() {
                                             isBanned = !(participant.banned ?: false)
                                         )
 
+                                        dialog.dismiss()
+                                    }
+                                    .setNegativeButton(android.R.string.cancel) { dialog, which ->
+                                        dialog.dismiss()
+                                    }
+                                    .show()
+                            }
+                            // Purge Message from User
+                            optionPurgeMessages -> {
+                                MaterialAlertDialogBuilder(requireContext())
+                                    .setMessage(R.string.are_you_sure)
+                                    .setPositiveButton(android.R.string.ok) { dialog, which ->
+                                        // Attempt Perform Purge Operation
+                                        viewModel.purgeMessages(from = participant)
                                         dialog.dismiss()
                                     }
                                     .setNegativeButton(android.R.string.cancel) { dialog, which ->
@@ -125,12 +149,6 @@ class ChatroomListParticipantsFragment : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        (requireActivity() as? AppCompatActivity)?.let { appActivity ->
-            appActivity.setSupportActionBar(binding.toolbar)
-            appActivity.supportActionBar?.setHomeButtonEnabled(true)
-            appActivity.supportActionBar?.setDisplayShowHomeEnabled(true)
-        }
-
         ///////////////////////////////
         // Bind ViewModel State
         ///////////////////////////////
@@ -154,6 +172,13 @@ class ChatroomListParticipantsFragment : BaseFragment() {
          */
         viewModel.state.progressUserSetBanStatus()
             .onEach(::takeProgressUserSetBanStatus)
+            .launchIn(lifecycleScope)
+
+        /**
+         * Emits [true] upon start Purge User Messages SDK operation. Emits [false] when done.
+         */
+        viewModel.state.progressPurgeUserMessages()
+            .onEach(::takeProgressPurgeUserMessages)
             .launchIn(lifecycleScope)
 
         ///////////////////////////////
@@ -210,6 +235,21 @@ class ChatroomListParticipantsFragment : BaseFragment() {
         }
     }
 
+    private suspend fun takeProgressPurgeUserMessages(inProgress: Boolean) {
+        Log.d(TAG, "takeProgressPurgeUserMessages() -> inProgress = $inProgress")
+
+        when (inProgress) {
+            true -> {
+                binding.progressBar.visibility = View.VISIBLE
+                binding.rvListParticipants.isEnabled = false
+            }
+            false -> {
+                binding.progressBar.visibility = View.GONE
+                binding.rvListParticipants.isEnabled = true
+            }
+        }
+    }
+
     private suspend fun takeViewEffect(effect: ChatroomListParticipantsViewModel.ViewEffect) {
         Log.d(TAG, "takeViewEffect() -> effect = ${effect::class.java.simpleName}")
 
@@ -232,14 +272,22 @@ class ChatroomListParticipantsFragment : BaseFragment() {
                     Toast.LENGTH_SHORT
                 ).show()
             }
+            is ChatroomListParticipantsViewModel.ViewEffect.SuccessPurgeUserMessages -> {
+                Toast.makeText(
+                    requireContext(),
+                    getString(R.string.chatevents_from_handle_successfully_purged, effect.who.handle),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+            is ChatroomListParticipantsViewModel.ViewEffect.ErrorPurgeUserMessages -> {
+                Toast.makeText(
+                    requireContext(),
+                    effect.err.message ?: getString(R.string.something_went_wrong_please_try_again),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
         }
     }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean =
-        when (item.itemId) {
-            android.R.id.home -> appNavController.popBackStack()
-            else -> super.onOptionsItemSelected(item)
-        }
 
     companion object {
         const val INPUT_ARG_ROOM = "input-arg-room"

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    >
+
+    <item android:id="@+id/action_save"
+        app:showAsAction="always"
+        android:title="@string/save"
+        />
+
+    <item android:id="@+id/action_delete_all_events"
+        android:title="Delete All Events"
+        app:showAsAction="never"
+        />
+
+    <item android:id="@+id/action_delete_room"
+        android:title="@string/delete_room"
+        app:showAsAction="never"
+        />
+
+</menu>
