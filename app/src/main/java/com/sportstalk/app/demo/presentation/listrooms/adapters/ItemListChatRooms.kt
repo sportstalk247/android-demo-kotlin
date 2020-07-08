@@ -23,9 +23,10 @@ object ItemListChatRooms {
                     val binding = ItemListChatroomBinding.bind(view)
                     val decimalFormat = DecimalFormat("###,###,###,###,###")
                     bind { index, item ->
-                        binding.actvScore.text = "0-0"
+                        val context = binding.root.context
                         binding.actvRoomName.text = item.name
-                        binding.actvAttendance.text = decimalFormat.format(item.inroom ?: 0L)
+                        binding.actvRoomDescription.text = item.description
+                        binding.actvRoomFansCount.text = context.getString(R.string.n_fans_inside, decimalFormat.format(item.inroom ?: 0L))
 
                         // Click Listener
                         binding.btnJoin.setOnClickListener {

@@ -66,6 +66,7 @@
 
     <string name="something_went_wrong_please_try_again">Something went wrong. Please try again later…</string>
     <string name="unable_to_join_room_please_try_again">Unable to join room. Please try again…</string>
+    <string name="join">Join</string>
     <string name="join_room">Join Room</string>
     <string name="leave_room">Leave Room</string>
     <string name="reply_to" formatted="true">Reply to %s</string>
