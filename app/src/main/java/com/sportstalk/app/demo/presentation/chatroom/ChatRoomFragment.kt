@@ -50,8 +50,6 @@ class ChatRoomFragment : BaseFragment() {
 
     private lateinit var errorJoinSnackBar: Snackbar
 
-    private lateinit var viewPager2PageChangeCallback: ViewPager2.OnPageChangeCallback
-
     private val config: ClientConfig by lazy {
         ClientConfig(
             appId = getString(R.string.sportstalk247_appid),
@@ -82,41 +80,21 @@ class ChatRoomFragment : BaseFragment() {
         )
             .setAction(R.string.join_room) {
                 // TODO:: Retry Join
+                viewModel.joinRoom()
             }
 
-        // Setup ViewPager2 and TabLayout
-        binding.viewPager2.adapter = ViewPager2Adapter(childFragmentManager, lifecycle)
-        viewPager2PageChangeCallback = object : ViewPager2.OnPageChangeCallback() {
-            override fun onPageSelected(position: Int) {
-                super.onPageSelected(position)
-                // Also sync tab layout selected tab
-                binding.tabLayoutChatroom.selectTab(
-                    binding.tabLayoutChatroom.getTabAt(position)
-                )
-            }
-        }
-        // Register page change callback
-        binding.viewPager2.registerOnPageChangeCallback(viewPager2PageChangeCallback)
-
-        binding.tabLayoutChatroom.addOnTabSelectedListener(object :
-            TabLayout.OnTabSelectedListener {
-            override fun onTabReselected(tab: TabLayout.Tab?) {}
-            override fun onTabUnselected(tab: TabLayout.Tab?) {}
-            override fun onTabSelected(tab: TabLayout.Tab?) {
-                val position = tab?.position ?: return
-                binding.viewPager2.currentItem = position
-
-                binding.layoutInputMessage.visibility = when (position) {
-                    TAB_LIVE_CHAT -> View.VISIBLE
-                    else -> View.GONE
+        childFragmentManager
+            .beginTransaction()
+            .replace(
+                R.id.fragmentContainer,
+                LiveChatFragment().apply {
+                    arguments = bundleOf(
+                        LiveChatFragment.INPUT_ARG_ROOM to room,
+                        LiveChatFragment.INPUT_ARG_USER to user
+                    )
                 }
-            }
-        })
-
-        // Initially set selected tab to `Live Chat`
-        binding.tabLayoutChatroom.selectTab(
-            binding.tabLayoutChatroom.getTabAt(2)
-        )
+            )
+            .commit()
 
         return binding.root
     }
@@ -126,22 +104,8 @@ class ChatRoomFragment : BaseFragment() {
 
         (requireActivity() as? AppCompatActivity)?.let { appActivity ->
             appActivity.setSupportActionBar(binding.toolbar)
+            appActivity.supportActionBar?.title = room.name
             appActivity.supportActionBar?.setHomeButtonEnabled(true)
-            appActivity.supportActionBar?.setDisplayShowHomeEnabled(true)
-
-            // Setup AppBar Expand/Collapse Behavior
-            binding.appBarLayout.addOnOffsetChangedListener(
-                object : AppBarStateChangedListener() {
-                    override fun onStateChanged(appBarLayout: AppBarLayout, state: State) {
-                        when (state) {
-                            State.COLLAPSED -> appActivity.supportActionBar?.title = room.name
-                            State.EXPANDED -> appActivity.supportActionBar?.title = ""
-                            else -> {
-                            }
-                        }
-                    }
-                }
-            )
         }
 
         ///////////////////////////////
@@ -226,12 +190,6 @@ class ChatRoomFragment : BaseFragment() {
 
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        // Unregister page change callback
-        binding.viewPager2.unregisterOnPageChangeCallback(viewPager2PageChangeCallback)
-    }
-
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
         inflater.inflate(R.menu.chatroom, menu)
@@ -254,13 +212,15 @@ class ChatRoomFragment : BaseFragment() {
 
     private suspend fun takeRoomName(name: String) {
         Log.d(TAG, "takeRoomName() -> name = $name")
-        binding.actvRoomName.text = name
+        (requireActivity() as? AppCompatActivity)?.let { act ->
+            act.supportActionBar?.title = name
+        }
     }
 
     private val attendanceFormatter = DecimalFormat("###,###,###,###,###,###")
     private suspend fun takeAttendeesCount(count: Long) {
         Log.d(TAG, "takeAttendeesCount() -> count = $count")
-        binding.actvAttendance.text = attendanceFormatter.format(count)
+        // TODO:: takeAttendeesCount()
     }
 
     private suspend fun takeProgressJoinRoom(inProgress: Boolean) {
@@ -372,31 +332,7 @@ class ChatRoomFragment : BaseFragment() {
         }
     }
 
-    inner class ViewPager2Adapter(
-        fragmentManager: FragmentManager,
-        lifecycle: Lifecycle
-    ) : FragmentStateAdapter(fragmentManager, lifecycle) {
-        override fun getItemCount(): Int = TAB_COUNT
-
-        override fun createFragment(position: Int): Fragment =
-            when (position) {
-                TAB_TEAM -> Fragment()
-                TAB_STATISTICS -> Fragment()
-                TAB_LIVE_CHAT -> LiveChatFragment.newInstance(room, user)
-                TAB_HIGHLIGHTS -> Fragment()
-                TAB_VIDEOS -> Fragment()
-                else -> Fragment()
-            }
-    }
-
     companion object {
-        private const val TAB_COUNT = 5
-        private const val TAB_TEAM = 0
-        private const val TAB_STATISTICS = 1
-        private const val TAB_LIVE_CHAT = 2
-        private const val TAB_HIGHLIGHTS = 3
-        private const val TAB_VIDEOS = 4
-
         const val INPUT_ARG_ROOM = "input-arg-room"
         const val INPUT_ARG_USER = "input-arg-user"
     }

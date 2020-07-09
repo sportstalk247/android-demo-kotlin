@@ -146,17 +146,6 @@ class ListChatRoomsFragment : BaseFragment() {
             }
             .launchIn(lifecycleScope)
 
-        binding.fabAdd.clicks()
-            .throttleFirst(1000, TimeUnit.MILLISECONDS)
-            .asFlow()
-            .onEach {
-                // Navigate to Create Chatroom
-                appNavController.navigate(
-                    R.id.action_fragmentHome_to_fragmentCreateChatroom
-                )
-            }
-            .launchIn(lifecycleScope)
-
         // Then, fetch initial list
         viewModel.fetchInitial()
     }

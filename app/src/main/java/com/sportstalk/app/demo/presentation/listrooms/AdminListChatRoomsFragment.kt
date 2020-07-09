@@ -10,6 +10,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 import com.jakewharton.rxbinding3.swiperefreshlayout.refreshes
 import com.jakewharton.rxbinding3.view.clicks
 import com.sportstalk.SportsTalk247
@@ -88,6 +90,34 @@ class AdminListChatRoomsFragment : BaseFragment() {
                         dialog.dismiss()
                     }
                     .show()
+            },
+            onItemSendAnnouncement = { which ->
+                Log.d(TAG,"ItemAdminListChatRooms.adopt() -> onItemSendAnnouncement() -> which = $which")
+
+                val textInputLayout = LayoutInflater.from(requireContext())
+                    .inflate(
+                        R.layout.layout_inapp_settings_input_text,
+                        binding.root,
+                        false
+                    ) as TextInputLayout
+                val tietInputText =
+                    textInputLayout.findViewById<TextInputEditText>(R.id.tietInputText)
+
+                // Display Alert Prompt With Input Text
+                MaterialAlertDialogBuilder(requireContext())
+                    .setTitle(R.string.send_announcement)
+                    .setView(textInputLayout)
+                    .setPositiveButton(R.string.apply) { _, _ ->
+                        // Attempt send announcement
+                        viewModel.sendAnnouncement(
+                            message = tietInputText.text?.toString() ?: "",
+                            which = which
+                        )
+                    }
+                    .setNegativeButton(android.R.string.cancel) { dialog, _ ->
+                        dialog.dismiss()
+                    }
+                    .show()
             }
         )
 
@@ -146,6 +176,13 @@ class AdminListChatRoomsFragment : BaseFragment() {
             .onEach { inProgress: Boolean ->
                 takeProgressDeleteChatRoom(inProgress)
             }
+            .launchIn(lifecycleScope)
+
+        /**
+         * Emits [true] upon start SDK Execute Chat Command Operation(Announcement). Emits [false] when done.
+         */
+        viewModel.state.progressSendAnnouncement()
+            .onEach(::takeProgressSendAnnouncement)
             .launchIn(lifecycleScope)
 
         // View Effect
@@ -226,6 +263,12 @@ class AdminListChatRoomsFragment : BaseFragment() {
         binding.recyclerView.isEnabled = !inProgress
     }
 
+    private suspend fun takeProgressSendAnnouncement(inProgress: Boolean) {
+        Log.d(TAG, "takeProgressSendAnnouncement() -> inProgress = $inProgress")
+        binding.swipeRefresh.isRefreshing = inProgress
+        binding.recyclerView.isEnabled = !inProgress
+    }
+
     private fun takeViewEffect(effect: AdminListChatRoomsViewModel.ViewEffect) {
         Log.d(TAG, "takeViewEffect() -> effect = ${effect::class.java.simpleName}")
 
@@ -257,6 +300,21 @@ class AdminListChatRoomsFragment : BaseFragment() {
                 viewModel.fetchInitial()
             }
             is AdminListChatRoomsViewModel.ViewEffect.ErrorDeleteRoom -> {
+                Toast.makeText(
+                    requireContext(),
+                    effect.err.message ?: getString(R.string.something_went_wrong_please_try_again),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+
+            is AdminListChatRoomsViewModel.ViewEffect.SuccessSendAnnouncement -> {
+                Toast.makeText(
+                    requireContext(),
+                    R.string.announcement_successfully_sent,
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+            is AdminListChatRoomsViewModel.ViewEffect.ErrorSendAnnouncement -> {
                 Toast.makeText(
                     requireContext(),
                     effect.err.message ?: getString(R.string.something_went_wrong_please_try_again),

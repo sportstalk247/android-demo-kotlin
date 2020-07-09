@@ -7,6 +7,8 @@ import com.sportstalk.app.demo.SportsTalkDemoPreferences
 import com.sportstalk.models.SportsTalkException
 import com.sportstalk.models.chat.ChatRoom
 import com.sportstalk.models.chat.DeleteChatRoomResponse
+import com.sportstalk.models.chat.ExecuteChatCommandRequest
+import com.sportstalk.models.chat.ExecuteChatCommandResponse
 import com.sportstalk.models.users.User
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BroadcastChannel
@@ -35,6 +37,7 @@ class AdminListChatRoomsViewModel(
     private val chatRooms = Channel<List<ChatRoom>>(Channel.RENDEZVOUS)
     private val progressFetchRooms = Channel<Boolean>(Channel.RENDEZVOUS)
     private val progressDeleteChatRoom = Channel<Boolean>(Channel.RENDEZVOUS)
+    private val progressSendAnnouncement = Channel<Boolean>(Channel.RENDEZVOUS)
     // Keep track of cursor
     private val cursor = ConflatedBroadcastChannel<String>("")
     val state = object: ViewState {
@@ -48,6 +51,10 @@ class AdminListChatRoomsViewModel(
 
         override fun progressDeleteChatRoom(): Flow<Boolean> =
             progressDeleteChatRoom
+                .consumeAsFlow()
+
+        override fun progressSendAnnouncement(): Flow<Boolean> =
+            progressSendAnnouncement
                 .consumeAsFlow()
     }
 
@@ -141,6 +148,37 @@ class AdminListChatRoomsViewModel(
         }
     }
 
+    fun sendAnnouncement(message: String, which: ChatRoom) {
+        viewModelScope.launch {
+            try {
+                // DISPLAY Progress Indicator
+                progressSendAnnouncement.send(true)
+
+                val response = withContext(Dispatchers.IO) {
+                    chatClient.executeChatCommand(
+                        chatRoomId = which.id!!,
+                        request = ExecuteChatCommandRequest(
+                            command = message,
+                            // TODO:: ADMIN ID For Send Announcement
+                            userid = preferences.currentUser?.userid ?: "0M5fL2WAbQGiiMS4", // This is just a temporary ID
+                            customtype = "announcement"
+                        )
+                    )
+                        .await()
+                }
+
+                // EMIT Response
+                _effect.send(ViewEffect.SuccessSendAnnouncement(response))
+            } catch (err: SportsTalkException) {
+                // EMIT Error
+                _effect.send(ViewEffect.ErrorSendAnnouncement(err))
+            } finally {
+                // DISPLAY Progress Indicator
+                progressSendAnnouncement.send(false)
+            }
+        }
+    }
+
     interface ViewState {
         /**
          * Emits [true] upon start SDK List Chatrooms Operation. Emits [false] when done.
@@ -156,6 +194,11 @@ class AdminListChatRoomsViewModel(
          * Emits [true] upon start SDK Delete Chatroom Operation. Emits [false] when done.
          */
         fun progressDeleteChatRoom(): Flow<Boolean>
+
+        /**
+         * Emits [true] upon start SDK Execute Chat Command Operation(Announcement). Emits [false] when done.
+         */
+        fun progressSendAnnouncement(): Flow<Boolean>
     }
 
     sealed class ViewEffect {
@@ -165,6 +208,9 @@ class AdminListChatRoomsViewModel(
         data class NavigateToChatRoomDetails(val admin: User, val which: ChatRoom) : ViewEffect()
         data class SuccessDeleteRoom(val response: DeleteChatRoomResponse): ViewEffect()
         data class ErrorDeleteRoom(val err: SportsTalkException): ViewEffect()
+
+        data class SuccessSendAnnouncement(val response: ExecuteChatCommandResponse): ViewEffect()
+        data class ErrorSendAnnouncement(val err: SportsTalkException): ViewEffect()
     }
 
     companion object {
