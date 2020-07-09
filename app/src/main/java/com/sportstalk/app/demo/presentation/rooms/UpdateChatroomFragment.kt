@@ -9,6 +9,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 import com.jakewharton.rxbinding3.widget.checkedChanges
 import com.jakewharton.rxbinding3.widget.textChanges
 import com.sportstalk.SportsTalk247
@@ -207,6 +209,13 @@ class UpdateChatroomFragment: BaseFragment() {
          */
         updateChatroomViewModel.state.progressDeleteRoom()
             .onEach(::takeProgressDeleteRoom)
+            .launchIn(lifecycleScope)
+
+        /**
+         * Emits [true] upon start SDK Execute Chat Command Operation(Announcement). Emits [false] when done.
+         */
+        updateChatroomViewModel.state.progressSendAnnouncement()
+            .onEach(::takeProgressSendAnnouncement)
             .launchIn(lifecycleScope)
 
         ///////////////////////////////
@@ -425,6 +434,14 @@ class UpdateChatroomFragment: BaseFragment() {
         }
     }
 
+    private suspend fun takeProgressSendAnnouncement(inProgress: Boolean) {
+        Log.d(TAG, "takeProgressSendAnnouncement() -> inProgress = $inProgress")
+        binding.progressBar.visibility = when(inProgress) {
+            true -> View.VISIBLE
+            else -> View.GONE
+        }
+    }
+
     private fun takeViewEffect(effect: UpdateChatroomViewModel.ViewEffect) {
         Log.d(TAG, "takeViewEffect() -> effect = ${effect::class.java.simpleName}")
 
@@ -494,6 +511,20 @@ class UpdateChatroomFragment: BaseFragment() {
                     Toast.LENGTH_LONG
                 ).show()
             }
+            is UpdateChatroomViewModel.ViewEffect.SuccessSendAnnouncement -> {
+                Toast.makeText(
+                    requireContext(),
+                    R.string.announcement_successfully_sent,
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+            is UpdateChatroomViewModel.ViewEffect.ErrorSendAnnouncement -> {
+                Toast.makeText(
+                    requireContext(),
+                    effect.err.message ?: getString(R.string.something_went_wrong_please_try_again),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
         }
     }
 
@@ -511,6 +542,33 @@ class UpdateChatroomFragment: BaseFragment() {
             }
             R.id.action_save -> {
                 updateChatroomViewModel.save()
+                true
+            }
+            R.id.action_send_announcement -> {
+                val textInputLayout = LayoutInflater.from(requireContext())
+                    .inflate(
+                        R.layout.layout_inapp_settings_input_text,
+                        binding.root,
+                        false
+                    ) as TextInputLayout
+                val tietInputText =
+                    textInputLayout.findViewById<TextInputEditText>(R.id.tietInputText)
+
+                // Display Alert Prompt With Input Text
+                MaterialAlertDialogBuilder(requireContext())
+                    .setTitle(R.string.send_announcement)
+                    .setView(textInputLayout)
+                    .setPositiveButton(R.string.apply) { _, _ ->
+                        // Attempt send announcement
+                        updateChatroomViewModel.sendAnnouncement(
+                            message = tietInputText.text?.toString() ?: ""
+                        )
+                    }
+                    .setNegativeButton(android.R.string.cancel) { dialog, _ ->
+                        dialog.dismiss()
+                    }
+                    .show()
+
                 true
             }
             R.id.action_delete_all_events -> {

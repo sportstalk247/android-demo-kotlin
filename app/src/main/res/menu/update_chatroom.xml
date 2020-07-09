@@ -10,8 +10,13 @@
         android:title="@string/save"
         />
 
+    <item android:id="@+id/action_send_announcement"
+        android:title="@string/send_announcement"
+        app:showAsAction="never"
+        />
+
     <item android:id="@+id/action_delete_all_events"
-        android:title="Delete All Events"
+        android:title="@string/delete_all_events"
         app:showAsAction="never"
         />
 

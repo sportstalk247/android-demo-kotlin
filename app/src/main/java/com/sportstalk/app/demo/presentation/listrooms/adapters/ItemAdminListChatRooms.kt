@@ -11,13 +11,15 @@ import java.text.DecimalFormat
 
 typealias OnItemUpdateChatRoom = ((ChatRoom) -> Unit)
 typealias OnItemDeleteChatRoom = ((ChatRoom) -> Unit)
+typealias OnItemSendAnnouncement = ((ChatRoom) -> Unit)
 
 object ItemAdminListChatRooms {
 
     inline fun adopt(
         recyclerView: RecyclerView,
         crossinline onItemUpdateChatRoom: OnItemUpdateChatRoom = {},
-        crossinline onItemDeleteChatRoom: OnItemDeleteChatRoom = {}
+        crossinline onItemDeleteChatRoom: OnItemDeleteChatRoom = {},
+        crossinline onItemSendAnnouncement: OnItemSendAnnouncement = {}
     ): Recycler<ChatRoom> =
         Recycler.adopt(recyclerView) {
             row<ChatRoom, MaterialCardView> {
@@ -35,6 +37,9 @@ object ItemAdminListChatRooms {
                         }
                         binding.btnDelete.setOnClickListener {
                             onItemDeleteChatRoom(item)
+                        }
+                        binding.btnSendAnnouncement.setOnClickListener {
+                            onItemSendAnnouncement(item)
                         }
                     }
                 }

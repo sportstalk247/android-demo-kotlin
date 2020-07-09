@@ -59,6 +59,8 @@
     <string name="highlights">Highlights</string>
     <string name="videos">Videos</string>
     <string name="search">Search</string>
+    <string name="send_announcement">Send Announcement</string>
+    <string name="announcement_successfully_sent">Announcement successfully sent…</string>
     <string name="account_successfully_updated">Account successfully updated…</string>
     <string name="account_successfully_deleted">Account successfully deleted…</string>
     <string name="account_successfully_banned">Account successfully banned…</string>
@@ -103,6 +105,8 @@
     <string name="reset_was_successful">Reset was successful…</string>
     <string name="n_fans_inside" formatted="true">%s fans inside</string>
     <string name="delete_room">Delete Room</string>
+
+    <string name="delete_all_events">Delete All Events</string>
 
     <string name="added_date" formatted="true">Added\n%s</string>
     <string name="modified_date" formatted="true">Modified\n%s</string>
