@@ -93,7 +93,6 @@ class ListChatRoomsViewModel(
                         cursor = cursor,
                         limit = LIMIT_FETCH_ROOMS
                     )
-                        .await()
                 }
 
             // Emit update room list

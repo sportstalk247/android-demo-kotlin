@@ -75,7 +75,6 @@ class ChatroomListParticipantsViewModel(
                         cursor = cursor,
                         limit = LIMIT_CHATROOM_PARTICIPANTS
                     )
-                        .await()
                 }
 
                 // EMIT SUCCESS
@@ -105,7 +104,6 @@ class ChatroomListParticipantsViewModel(
                         userId = of.userid!!,
                         banned = isBanned
                     )
-                        .await()
                 }
 
                 // EMIT Success
@@ -139,7 +137,6 @@ class ChatroomListParticipantsViewModel(
                             userid = user.userid!!
                         )
                     )
-                        .await()
                 }
 
                 // EMIT Success
