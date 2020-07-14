@@ -1,68 +1,71 @@
-# sdk-android-kotlin 
-## Implementing the SDK  
-You can download the latest SportsTalk Android SDK from the following location:        
-https://gitlab.com/sportstalk247/sdk-android-kotlin        
-You need to register SportsTalk API with 'Appkey' and 'Token'.        
-How to get API Key and Token        
-You need to visit the dashboard with the following URL:        
-https://dashboard.sportstalk247.com        
-Then click on ''Application Management'' link to generate the above        
+# sdk-android-kotlin
+
+## Implementing the SDK
+You can download the latest SportsTalk Android SDK from the following location:
+https://gitlab.com/sportstalk247/sdk-android-kotlin
+You need to register SportsTalk API with 'Appkey' and 'Token'.
+How to get API Key and Token
+You need to visit the dashboard with the following URL:
+https://dashboard.sportstalk247.com
+Then click on ''Application Management'' link to generate the above
+
 ## How to download the SDK from public repository
-The SportsTalk SDK has been published into **jitpack.io**.        
-In order to use it in your application, just do the following:        
+The SportsTalk SDK has been published into **jitpack.io**.
+In order to use it in your application, just do the following:
 
-### Add the following in root  **build.gradle** file        
-```groovy        
-allprojects {  
-   repositories {  
-      // ...  
-      maven {  
-         url "https://jitpack.io"  
-      }  
-   }  
-}  
-```              
-### Then, under **local.properties** file, provide the following property entries:    
-```properties    
-sportstalk247.urlEndpoint=<Your PROD URL Endpoint>    
-sportstalk247.authToken=<Your PROD Auth Token generated from above>    
-sportstalk247.appid=<Your PROD App ID generated from above>    
-    
-sportstalk247.qa.urlEndpoint=<Your QA URL Endpoint>    
-sportstalk247.qa.authToken=<Your QA Auth Token generated from above>    
-sportstalk247.qa.appid=<Your QA App ID generated from above>    
-```  
-NOTE: Make sure the url end point must have a trailing '/' character.  
+### Add the following in root  **build.gradle** file
+```groovy
+allprojects {
+   repositories {
+      // ...
+      maven {
+         url "https://jitpack.io"
+      }
+   }
+}
+```
 
-### Add the following lines in your module **build.gradle** file:  
-Before `android {}` declaration  
-```groovy  
-def localProperties = new Properties()  
-localProperties.load(new FileInputStream(rootProject.file("local.properties")))  
-```  
+### Then, under **local.properties** file, provide the following property entries:
+```properties
+sportstalk247.urlEndpoint=<Your PROD URL Endpoint>
+sportstalk247.authToken=<Your PROD Auth Token generated from above>
+sportstalk247.appid=<Your PROD App ID generated from above>
+
+sportstalk247.qa.urlEndpoint=<Your QA URL Endpoint>
+sportstalk247.qa.authToken=<Your QA Auth Token generated from above>
+sportstalk247.qa.appid=<Your QA App ID generated from above>
+```
+NOTE: Make sure the url end point must have a trailing '/' character.
+
+### Add the following lines in your module **build.gradle** file:
+Before `android {}` declaration
+```groovy
+def localProperties = new Properties()
+localProperties.load(new FileInputStream(rootProject.file("local.properties")))
+```
 From your `android.buildTypes`
-```groovy  
-buildTypes {  
-    debug {  
-        // ...  
-        resValue "string", "sportstalk247_urlEndpoint", localProperties.getProperty("sportstalk247.qa.urlEndpoint", "")  
-        resValue "string", "sportstalk247_authToken", localProperties.getProperty("sportstalk247.qa.authToken", "")  
-        resValue "string", "sportstalk247_appid", localProperties.getProperty("sportstalk247.qa.appid", "")  
-    }  
-    release {  
-        // ...  
-        resValue "string", "sportstalk247_urlEndpoint", localProperties.getProperty("sportstalk247.urlEndpoint", "")  
-        resValue "string", "sportstalk247_authToken", localProperties.getProperty("sportstalk247.authToken", "")  
-        resValue "string", "sportstalk247_appid", localProperties.getProperty("sportstalk247.appid", "")  
-    }  
-}  
-```  
+```groovy
+buildTypes {
+    debug {
+        // ...
+        resValue "string", "sportstalk247_urlEndpoint", localProperties.getProperty("sportstalk247.qa.urlEndpoint", "")
+        resValue "string", "sportstalk247_authToken", localProperties.getProperty("sportstalk247.qa.authToken", "")
+        resValue "string", "sportstalk247_appid", localProperties.getProperty("sportstalk247.qa.appid", "")
+    }
+    release {
+        // ...
+        resValue "string", "sportstalk247_urlEndpoint", localProperties.getProperty("sportstalk247.urlEndpoint", "")
+        resValue "string", "sportstalk247_authToken", localProperties.getProperty("sportstalk247.authToken", "")
+        resValue "string", "sportstalk247_appid", localProperties.getProperty("sportstalk247.appid", "")
+    }
+}
+```
 NOTE: Above can also be applied under `android.productFlavors`, depending on client project build setup
 
-### Under dependencies section        
-```groovy        
-implementation 'com.gitlab.sportstalk247:sdk-android-kotlin:master-SNAPSHOT'        
-```  
+### Under dependencies section
+```groovy
+implementation 'com.gitlab.sportstalk247:sdk-android-kotlin:master-SNAPSHOT'
+```
 
 Then sync again. The gradle build should now be successful.
     
@@ -70,17 +73,16 @@ Then sync again. The gradle build should now be successful.
 ## Instantiate SportsTalkManager Client
 This Sportstalk SDK is meant to power custom chat applications. Sportstalk does not enforce any restricitons on your UI design, but instead empowers your developers to focus on the user experience without worrying about the underlying chat behavior.    
     
-Android Sportstalk SDK is a Reactive and Asynchronous-driven API, powered by Java 8's CompletableFuture to handle asynchronous operation with direct compatibility to Kotlin [Coroutines]([https://developer.android.com/kotlin/coroutines](https://developer.android.com/kotlin/coroutines)) and [Flow](https://kotlinlang.org/docs/reference/coroutines/flow.html). Additionally, provides bridge support to wrap this API with [Rx2Java](https://github.com/Kotlin/kotlinx.coroutines/blob/master/reactive/kotlinx-coroutines-rx2/README.md) or [LiveData](https://developer.android.com/kotlin/ktx\#livedata) extensions. This gives enough flexibility to any developers whichever framework they are familiar with.    
-    
-```kotlin    
+Android Sportstalk SDK is an Asynchronous-driven API, powered by Kotlin [Coroutines]([https://developer.android.com/kotlin/coroutines](https://developer.android.com/kotlin/coroutines)) to gracefully handle asynchronous operations.
+
+```kotlin
 class MyFragment: Fragment() {  
   
-    //...  
-    //...  
-    // Build script generates string resource values for appId, authToken, and urlEndpoint   
-   val appId = getString(R.string.sportstalk247_appid)    
-   val apiToken = getString(R.string.sportstalk247_authToken)     
-   val endpoint = getString(R.string.sportstalk247_urlEndpoint) // please ensure out of the box the SDKs are configured for production URL  
+    //...
+    //...
+   val appId = "c84cb9c852932a6b0411e75e"    
+   val apiToken = "5MGq3XbsspBEQf3kj154_OSQV-jygEKwHJyuHjuAeWHA"     
+   val endpoint = "http://api.custom.endpoint/v1/" // please ensure out of the box the SDKs are configured for production URL  
        
    val userClient = SportsTalk247.UserClient(    
       config = ClientConfig(    
@@ -102,120 +104,27 @@ class MyFragment: Fragment() {
                         pictureurl = "<Image URL>", // OPTIONAL    
                         profileurl = "<Image URL>" // OPTIONAL    
                     )   
-         )  
-            // CompletableFuture -> Await Deferred    
-            .await()    
-      }    
+         )   
+      }
           
-      // Resolve `createdUser` from HERE onwards(ex. update UI displaying the response data)...    
-   }  
-    
+      // Resolve `createdUser` from HERE onwards(ex. update UI displaying the response data)...
+   }
 }  
-```    
-    
-    
-## How to Integrate Reactive Frameworks
-### Using Coroutine Flow
-Below are the following dependencies in order to make the SDK compatible to Coroutines:    
-```gradle    
-implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.1"      
-implementation "org.jetbrains.kotlinx:kotlinx-coroutines-rx2:1.3.1"      
-implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.1"      
-implementation "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.3.1"    
-```    
-Java 8's CompletableFuture can be turned into Deferred action by using coroutine `await()` extension function.  
-```kotlin  
-// Execute from within any coroutine scope  
-lifecycleScope.launch {  
-   userClient.createOrUpdateUser(  
-      request = CreateUpdateUserRequest(  
-          userid = "<USERID>",  
-          handle = "sample_handle_123",  
-          displayname = "Test Name 123", // OPTIONAL  
-          pictureurl = "<Image URL>", // OPTIONAL  
-          profileurl = "<Image URL>" // OPTIONAL   
-      )  
-   )  
-        // CompletableFuture -> Await Deferred    
-      .await()  
-}  
-```  
-  
-### Using Rx2Java
-Below are the following dependencies in order to make the SDK compatible to Rx2Java:    
-```gradle    
-implementation "io.reactivex.rxjava2:rxandroid:2.1.1"    
-implementation "io.reactivex.rxjava2:rxkotlin:2.4.0"    
-```  
-Java 8's CompletableFuture can be turned into Rx Single.  
-```kotlin  
-// Execute from within any coroutine scope  
-Single.fromFuture(  
-   userClient.createOrUpdateUser(  
-      request = CreateUpdateUserRequest(  
-      userid = "<USERID>",  
-      handle = "sample_handle_123",  
-      displayname = "Test Name 123", // OPTIONAL  
-      pictureurl = "<Image URL>", // OPTIONAL  
-      profileurl = "<Image URL>" // OPTIONAL   
-      )  
-   ),   
-   // Indicate which Rx Scheduler will the CompletableFuture be executed(use IO(non-UI) scheduler)  
-   Schedulers.IO  
-)  
-.subscribeOn(Schedulers.IO)  
-.observeOn(AndroidSchedulers.mainThread())  
-.subscribe { response -> /* Handle response from here... */ }  
-// Although Rx Single is already disposes itself, it is still a good practice to explicitly manage this disposable  
-.addTo(rxDisposeBag)  
-```  
+```
+
    
-### Using LiveData Below are the following dependencies in order to make the SDK compatible to LiveData:    
-```gradle    
-implementation "androidx.lifecycle:lifecycle-extensions:2.2.0"      
-kapt "androidx.lifecycle:lifecycle-common-java8:2.2.0"      
-implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.2.0"      
-implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.2.0"    
-```    
-This is a bit more of a combination of coroutines and livedata where CompletableFuture will be subjected into deferred action by using coroutine `await()` extension function and emitting the response value to livedata.  
-```kotlin  
-// Execute from within any coroutine scope  
-lifecycleScope.launch {  
-   liveData {
-      val createdUserResponse = withContext(Dispatchers.IO) {  
-            userClient.createOrUpdateUser(  
-               request = CreateUpdateUserRequest(  
-               userid = "<USERID>",  
-               handle = "sample_handle_123",  
-               displayname = "Test Name 123", // OPTIONAL  
-               pictureurl = "<Image URL>", // OPTIONAL  
-               profileurl = "<Image URL>" // OPTIONAL  
-            )  
-            // CompletableFuture -> Await Deferred  
-            .await()  
-         )  
-      }  
-      // Emit to livedata the response  
-      emit(createdUserResponse)  
-   }  
-   .observe(viewLifecycleOwner, Observer { createdUserResponse ->  
-      // Resolve emitted response from here...  
-   })
-}  
-```  
-   
-## How to use Chat Client 
+## How to use Chat Client
 ```kotlin  
 // Under Fragment class  
 val chatClient = SportsTalk247.ChatClient(    
    config = ClientConfig(    
-      appId = getString(R.string.sportstalk247_appid),    
-      apiToken = getString(R.string.sportstalk247_authToken),    
-      endpoint = getString(R.string.sportstalk247_urlEndpoint)    
+      appId = "c84cb9c852932a6b0411e75e",    
+      apiToken = "5MGq3XbsspBEQf3kj154_OSQV-jygEKwHJyuHjuAeWHA",    
+      endpoint = "http://api.custom.endpoint/v1/"    
    )    
 )    
 ```  
-### Join Chat Room  
+### Join Chat Room
 ```kotlin  
 // Under Fragment class  
 lifecycleScope.launch {    
@@ -231,16 +140,45 @@ lifecycleScope.launch {
             userid = testUser.userid!!,    
             handle = testUser.handle!!    
          )    
-      )  
-      .await()    
-   }  
-     
-   // Once joined, the developer may immediately access the join response's `eventscursor.events` field, which contains an initial list of messages of the chat room  
-   val initialMessages: List<ChatEvent> = joinResponse.eventscursor?.events ?: listOf()  
-   // ex. display in UI the initial chat messages/events  
+      )
+   }
+   
+   // Once joined, the developer may immediately access the join response's `eventscursor.events` field, which contains an initial list of messages of the chat room
+   val initialMessages: List<ChatEvent> = joinResponse.eventscursor?.events ?: listOf()
+   // ex. display in UI the initial chat messages/events
 }  
-```  
-### Listen to Event Updates  
+```
+### Listen to Event Updates
+
+The Chat service provides a polling mechanism to dispatch chat event/message updates every N milliseconds(provided as frequency argument). Chat event/message updates are dispatched in a reactive pattern. The SDK exposes 3 Reactive framework types for the developer to use in order implement this feature, namely as follows:
+
+* [Flow](https://kotlinlang.org/docs/reference/coroutines/flow.html)
+Below are the following dependencies in order to use this framework:
+```gradle
+implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.1"
+implementation "org.jetbrains.kotlinx:kotlinx-coroutines-rx2:1.3.1"
+implementation "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.3.1"
+```
+
+* [Rx2Java](https://github.com/Kotlin/kotlinx.coroutines/blob/master/reactive/kotlinx-coroutines-rx2/README.md)
+Below are the following dependencies in order to use this framework:
+```gradle
+implementation "io.reactivex.rxjava2:rxandroid:2.1.1"
+implementation "io.reactivex.rxjava2:rxkotlin:2.4.0"
+```
+
+* [LiveData](https://developer.android.com/kotlin/ktx\#livedata) extensions
+Below are the following dependencies in order to use this framework:
+```gradle
+implementation "androidx.lifecycle:lifecycle-extensions:2.2.0"
+kapt "androidx.lifecycle:lifecycle-common-java8:2.2.0"
+implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.2.0"
+implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.2.0"
+```
+
+This gives enough flexibility to any developers whichever framework they are familiar with.
+
+
 ```kotlin  
 import com.sportstalk.api.polling.coroutines.allEventUpdates    
   
@@ -282,12 +220,12 @@ lifecycleScope.launch {
    .launchIn(lifecycleScope /* Already provided by androidx.Fragment */)    
        
    // Then, perform start listening to event updates    
-   chatClient.startEventUpdates(forRoomId = testChatRoom.id!!)    
+   chatClient.startListeningToChatUpdates(forRoomId = testChatRoom.id!!)    
        
    // At some point in time, the developer might want to explicitly stop listening to event updates    
-   chatClient.stopEventUpdates(forRoomId = testChatRoom.id!!)    
+   chatClient.stopListeningToChatUpdates(forRoomId = testChatRoom.id!!)    
 ```  
-### Send a Chat Message  
+### Send a Chat Message
 ```kotlin  
    // To Send a Chat Message    
    val executeChatResponse = withContext(Dispatchers.IO) {    
@@ -297,13 +235,12 @@ lifecycleScope.launch {
            command = "Yow Jessy, how are you doin'?",      
            userid = testUser.userid!!     
          )    
-      )  
-      .await()    
+      )
    }    
    // Resolve `executeChatResponse` (ex. Display prompt OR Update UI)    
 }  
 ```    
-### Set Message/Event as Deleted  
+### Set Message/Event as Deleted
 ```kotlin  
 // Execute within coroutine scope  
 lifecycleScope.launch {  
@@ -316,27 +253,27 @@ lifecycleScope.launch {
       chatClient.flagEventLogicallyDeleted(    
                   chatRoomId = testChatRoom.id!!,    
                   eventId = testEvent.id!!,  
-                  userid = testUser.userid!!
+                  userid = testUser.userid!!,
+                  permanentifnoreplies = false // OPTIONAL
       )
-      .await()  
-   }  
-     
-   // Resolve `removeMessageResponse`, ex. update UI or display a prompt  
+   }
+   
+   // Resolve `removeMessageResponse`, ex. update UI or display a prompt
 }  
 ```  
   
-## How to use Comment Client  
+## How to use Comment Client
 ```kotlin  
 // Under Fragment class  
-val commentClient = SportsTalk247.CommentClient(    
+val commentClient = SportsTalk247.CommentClient(
    config = ClientConfig(    
-      appId = getString(R.string.sportstalk247_appid),    
-      apiToken = getString(R.string.sportstalk247_authToken),    
-      endpoint = getString(R.string.sportstalk247_urlEndpoint)    
+      appId = "c84cb9c852932a6b0411e75e",    
+      apiToken = "5MGq3XbsspBEQf3kj154_OSQV-jygEKwHJyuHjuAeWHA",    
+      endpoint = "http://api.custom.endpoint/v1/"    
    )    
 )    
 ```  
-### Create a Conversation  
+### Create a Conversation
 ```kotlin  
 // Under Fragment class  
 // Execute within coroutine scope  
@@ -357,15 +294,13 @@ lifecycleScope.launch {
             customtags = listOf("taga", "tagb"),  
             custompayload = "{ num : 0 }"  
          )  
-      )  
-          // CompletableFuture -> Await Deferred  
-         .await()  
-   }  
+      )
+   }
      
    // Resolve `createConversationResponse` from HERE(ex. Display Prompt, update UI)  
 }  
 ```  
-### Create/Publish a comment against a Conversation  
+### Create/Publish a comment against a Conversation
 ```kotlin  
 // Under Fragment class  
 // Execute within coroutine scope  
@@ -382,18 +317,16 @@ lifecycleScope.launch {
             added = "2020-05-02T08:51:53.8140055Z"  
          )  
       )  
-      // CompletableFuture -> Await Deferred  
-      .await()  
-   }  
-     
-   // Resolve `publishCommentResponse` from HERE(ex. Display Prompt, update UI)  
+   }
+   
+   // Resolve `publishCommentResponse` from HERE(ex. Display Prompt, update UI)
 }  
 ```  
-### Reply to a comment  
+### Reply to a comment
 ```kotlin  
 // Under Fragment class  
 // Execute within coroutine scope  
-lifecycleScope.launch {  
+lifecycleScope.launch {
    // Assuming that there is already a created conversation  
    val testConversation = Conversation(conversationid = "1234567890",...)  
    // Assuming that there is already atleast 1 comment under the conversation  
@@ -408,15 +341,13 @@ lifecycleScope.launch {
             body = "This is a reply...",  
             added = "2020-05-21T07:14:19.2424561Z"  
          )  
-      )  
-      // CompletableFuture -> Await Deferred  
-      .await()  
+      ) 
    }  
      
    // Resolve `replyToCommentResponse` from HERE(ex. Display Prompt, update UI)  
-}  
-```  
-### Flag comment logically deleted / Permanently Delete Comment  
+}
+```
+### Flag comment logically deleted / Permanently Delete Comment
 ```kotlin  
 // Under Fragment class  
 // Execute within coroutine scope  
@@ -430,46 +361,42 @@ lifecycleScope.launch {
       commentClient.permanentlyDeleteComment(  
          conversationid = testConversation.conversationid!!,  
          commentid = testComment.id!!  
-      )  
-      // CompletableFuture -> Await Deferred  
-      .await()  
+      )
    }  
      
-   // Resolve `setCommentDeletedResponse` from HERE(ex. Display Prompt, update UI)  
+   // Resolve `setCommentDeletedResponse` from HERE(ex. Display Prompt, update UI)
 }  
-```  
+```
   
-## Handling SDK Exception  
+## Handling SDK Exception
 If any client operations receive an error response, whether it be Network, Server, or Validation Error, these functions will throw an instance of `SportsTalkException`.  
-```kotlin  
-data class SportsTalkException(  
+```kotlin
+data class SportsTalkException(
    val kind: String? = null, // "api.result"  
    val message: String? = null, // ex. "The specified comment was not found."  
    val code: Int? = null // ex. 404,
    val data: Map<String, String?>? = null,
    val err: Throwable? = null
-)  
+)
   
-// Under Fragment class  
-// Execute within coroutine scope  
-lifecycleScope.launch {  
-   val testComment = Comment(id = "0987654321",...)  
-     
+// Under Fragment class
+// Execute within coroutine scope
+lifecycleScope.launch {
+   val testComment = Comment(id = "0987654321",...)
+   
    val setCommentDeletedResponse = try {  
       withContext(Dispatchers.IO) {  
          // These should throw Error 404 - "The specified conversation was not found and was not deleted.".  
          commentClient.permanentlyDeleteComment(  
             conversationid = "Non-existent-Conversation-ID",  
             commentid = testComment.id!!  
-         )  
-         // CompletableFuture -> Await Deferred  
-         .await()  
-      }  
-   } catch(err: SportsTalkException) {  
-      // Resolve ERROR from HERE.  
-      return  
-   }  
-}  
-```  
-  
+         )
+      }
+   } catch(err: SportsTalkException) {
+      // Resolve ERROR from HERE.
+      return
+   }
+}
+```
+
 ## Work-in-progress...
