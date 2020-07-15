@@ -6,8 +6,10 @@ ext {
     compileSdkVersion = 29
     buildToolsVersion = '29.0.3'
 
-    kotlinx_serialization_version = '0.20.0'
+    // SportsTalk247 SDK Version
+    sportstalk247SdkVersion = '0.1.0'
 
+    kotlinx_serialization_version = '0.20.0'
 
     junitVersion = '4.12'
     mockitoVersion = '3.1.0'
