@@ -92,7 +92,6 @@ class AdminListChatRoomsViewModel(
                         cursor = cursor,
                         limit = LIMIT_FETCH_ROOMS
                     )
-                        .await()
                 }
 
             // Emit update room list
@@ -128,7 +127,6 @@ class AdminListChatRoomsViewModel(
                     chatClient.deleteRoom(
                         chatRoomId = which.id!!
                     )
-                        .await()
                 }
 
                 // Emit Success
@@ -164,7 +162,6 @@ class AdminListChatRoomsViewModel(
                             customtype = "announcement"
                         )
                     )
-                        .await()
                 }
 
                 // EMIT Response

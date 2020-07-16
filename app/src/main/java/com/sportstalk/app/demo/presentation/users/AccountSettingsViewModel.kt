@@ -144,7 +144,6 @@ class AccountSettingsViewModel(
                 userClient.getUserDetails(
                     userId = preferences.currentUser?.userid!!
                 )
-                    .await()
             }
 
             // EMIT Success
@@ -198,7 +197,6 @@ class AccountSettingsViewModel(
                         pictureurl = photoLink.valueOrNull ?: preferences.currentUser?.pictureurl
                     )
                 )
-                    .await()
             }
 
             // EMIT Success
@@ -234,7 +232,6 @@ class AccountSettingsViewModel(
                 userClient.deleteUser(
                     userId = preferences.currentUser?.userid!!
                 )
-                    .await()
             }
 
             // EMIT Success
@@ -273,7 +270,6 @@ class AccountSettingsViewModel(
                     // `false` - if already banned
                     banned = !(preferences.currentUser?.banned ?: false)
                 )
-                    .await()
             }
 
             // EMIT Success

@@ -180,7 +180,7 @@ class UpdateChatroomViewModel(
 
             val response = withContext(Dispatchers.IO) {
                 // Get Room Details
-                val getRoomDetails = chatClient.getRoomDetails(chatRoomId = roomId).await()
+                val getRoomDetails = chatClient.getRoomDetails(chatRoomId = roomId)
                 // Then, Perform Join Room Operation
                 chatClient.joinRoom(
                     chatRoomId = getRoomDetails.id!!,
@@ -189,7 +189,6 @@ class UpdateChatroomViewModel(
                         handle = user.handle
                     )
                 )
-                    .await()
             }
 
 
@@ -228,7 +227,6 @@ class UpdateChatroomViewModel(
                         enableprofanityfilter = roomProfanityEnabled.valueOrNull
                     )
                 )
-                    .await()
             }
 
             // EMIT response
@@ -267,7 +265,6 @@ class UpdateChatroomViewModel(
                         userid = user.userid!!
                     )
                 )
-                    .await()
             }
 
             // Emit Success
@@ -297,7 +294,6 @@ class UpdateChatroomViewModel(
                 chatClient.deleteRoom(
                     chatRoomId = chatroomDetails.valueOrNull?.id!!
                 )
-                    .await()
             }
 
             // EMIT Success
@@ -328,7 +324,6 @@ class UpdateChatroomViewModel(
                             customtype = "announcement"
                         )
                     )
-                        .await()
                 }
 
                 // EMIT Response

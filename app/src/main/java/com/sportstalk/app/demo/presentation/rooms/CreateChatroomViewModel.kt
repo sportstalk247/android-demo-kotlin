@@ -109,7 +109,6 @@ class CreateChatroomViewModel(
                         enableprofanityfilter = roomProfanityEnabled.valueOrNull
                     )
                 )
-                    .await()
             }
 
             // EMIT response

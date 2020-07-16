@@ -110,7 +110,7 @@ class ChatRoomViewModel(
                             userid = user.userid!!,
                             handle = user.handle
                         )
-                    ).await()
+                    )
                 }
 
                 // Emit join initial events list
@@ -210,7 +210,6 @@ class ChatRoomViewModel(
                         limit = LIST_LIMIT,
                         cursor = previouseventscursor
                     )
-                        .await()
                 }
 
                 // EMIT Success
@@ -266,7 +265,7 @@ class ChatRoomViewModel(
                                     custompayload = null,
                                     customtype = null
                                 )
-                            ).await()
+                            )
                         }
 
                         // Emit SUCCESS Send Chat Message
@@ -322,7 +321,6 @@ class ChatRoomViewModel(
                         ),
                         replyTo = replyTo.id!!
                     )
-                        .await()
                 }
 
                 // EMIT SUCCESS Quoted Reply
@@ -372,7 +370,6 @@ class ChatRoomViewModel(
                             customtype = customtype
                         )
                     )
-                        .await()
                 }
 
                 // EMIT SUCCESS Quoted Reply
@@ -407,7 +404,6 @@ class ChatRoomViewModel(
                             userid = user.userid!!
                         )
                     )
-                        .await()
                 }
 
                 // EMIT Success
@@ -439,7 +435,6 @@ class ChatRoomViewModel(
                             reacted = !hasAlreadyReacted
                         )
                     )
-                        .await()
                 }
 
                 // Emit Success
@@ -494,7 +489,6 @@ class ChatRoomViewModel(
                             )
                         }
                     }
-                        .await()
                 }
 
                 // EMIT Success
@@ -529,7 +523,6 @@ class ChatRoomViewModel(
                         chatRoomId = room.id!!,
                         userId = user.userid!!
                     )
-                        .await()
                 }
 
                 // EMIT Success

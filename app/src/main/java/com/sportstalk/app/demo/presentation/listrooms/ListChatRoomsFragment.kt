@@ -9,32 +9,28 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.jakewharton.rxbinding3.swiperefreshlayout.refreshes
-import com.jakewharton.rxbinding3.view.clicks
 import com.sportstalk.SportsTalk247
 import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.FragmentListChatroomBinding
 import com.sportstalk.app.demo.presentation.BaseFragment
 import com.sportstalk.app.demo.presentation.chatroom.ChatRoomFragment
-import com.sportstalk.app.demo.presentation.listrooms.adapters.ItemListChatRooms
+import com.sportstalk.app.demo.presentation.listrooms.adapters.ItemListChatRoomAdapter
 import com.sportstalk.app.demo.presentation.users.CreateAccountFragment
 import com.sportstalk.app.demo.presentation.utils.EndlessRecyclerViewScrollListener
 import com.sportstalk.models.ClientConfig
 import com.sportstalk.models.chat.ChatRoom
-import com.squareup.cycler.Recycler
-import com.squareup.cycler.toDataSource
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.rx2.asFlow
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
-import java.util.concurrent.TimeUnit
 
 class ListChatRoomsFragment : BaseFragment() {
 
     private lateinit var binding: FragmentListChatroomBinding
     private lateinit var menu: Menu
 
-    private lateinit var adapter: Recycler<ChatRoom>
+    private lateinit var adapter: ItemListChatRoomAdapter
     private lateinit var scrollListener: RecyclerView.OnScrollListener
 
     private val config: ClientConfig by lazy {
@@ -65,16 +61,17 @@ class ListChatRoomsFragment : BaseFragment() {
 
         binding.recyclerView.layoutManager =
             LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, false)
-        adapter = ItemListChatRooms.adopt(
-            binding.recyclerView,
+        adapter = ItemListChatRoomAdapter(
             onSelectItemChatRoom = { chatRoom: ChatRoom ->
                 Log.d(TAG, "onSelectItemChatRoom() -> chatRoom = $chatRoom")
                 // Attempt Join Chatroom
                 viewModel.join(which = chatRoom)
             }
         )
+        binding.recyclerView.adapter = adapter
 
-        scrollListener = object : EndlessRecyclerViewScrollListener(binding.recyclerView.layoutManager!! as LinearLayoutManager) {
+        scrollListener = object :
+            EndlessRecyclerViewScrollListener(binding.recyclerView.layoutManager!! as LinearLayoutManager) {
             override fun onLoadMore(page: Int, totalItemsCount: Int, view: RecyclerView?) {
                 Log.d(
                     TAG,
@@ -158,14 +155,14 @@ class ListChatRoomsFragment : BaseFragment() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean =
-        when(item.itemId) {
+        when (item.itemId) {
             R.id.action_search -> {
                 // TODO:: R.id.action_search
                 true
             }
             R.id.action_account_settings -> {
                 // Navigate to Account Settings Screen
-                if(appNavController.currentDestination?.id == R.id.fragmentHome) {
+                if (appNavController.currentDestination?.id == R.id.fragmentHome) {
                     appNavController.navigate(
                         R.id.action_fragmentHome_to_fragmentAccountSettings
                     )
@@ -192,13 +189,7 @@ class ListChatRoomsFragment : BaseFragment() {
     private fun takeChatRooms(chatRooms: List<ChatRoom>) {
         Log.d(TAG, "takeChatRooms() -> chatRooms = $chatRooms")
 
-        adapter.update {
-            if (data.isEmpty) {
-                data = chatRooms.toDataSource()
-            } else {
-                addChunk(chatRooms)
-            }
-        }
+        adapter.update(chatRooms)
     }
 
     private fun takeEnableAccountSettings(isEnabled: Boolean) {

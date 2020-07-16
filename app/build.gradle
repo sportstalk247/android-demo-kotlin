@@ -17,6 +17,7 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
+        multiDexEnabled true
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -25,6 +26,7 @@ android {
 
         debug {
             debuggable true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
 
             resValue "string", "sportstalk247_urlEndpoint", localProperties.getProperty("sportstalk247.qa.urlEndpoint", "")
             resValue "string", "sportstalk247_authToken", localProperties.getProperty("sportstalk247.qa.authToken", "")
@@ -88,7 +90,10 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    implementation "com.gitlab.sportstalk247:sdk-android-kotlin:master-SNAPSHOT"
+    implementation("com.gitlab.sportstalk247:sdk-android-kotlin:v$sportstalk247SdkVersion")
+
+    // Multi-DEX
+    implementation "androidx.multidex:multidex:$multidex_version"
 
     // Jetbrains Kotlin Dependencies
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
@@ -186,9 +191,6 @@ dependencies {
 
     // RxPermission
     implementation "com.github.tbruyelle:rxpermissions:$rxPermissionVersion"
-
-    // Square Cycler(More convenient recyclerview adapter)
-    implementation "com.github.square:cycler:$squareCycler"
 
     // Circle ImageView
     implementation "de.hdodenhof:circleimageview:$hdodenhofcircleimageview"

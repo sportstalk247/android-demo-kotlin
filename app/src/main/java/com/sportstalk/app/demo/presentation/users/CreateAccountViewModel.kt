@@ -149,7 +149,6 @@ class CreateAccountViewModel(
                         pictureurl = photoLink.valueOrNull ?: ""
                     )
                 )
-                    .await()
             }
 
             // Store to app preference the created user
