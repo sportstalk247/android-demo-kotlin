@@ -64,8 +64,9 @@ NOTE: Above can also be applied under `android.productFlavors`, depending on cli
 
 ### Under dependencies section
 ```groovy
-implementation 'com.gitlab.sportstalk247:sdk-android-kotlin:master-SNAPSHOT'
+implementation 'com.gitlab.sportstalk247:sdk-android-kotlin:vX.Y.Z'
 ```
+[![Release](https://jitpack.io/v/com.gitlab.sportstalk247/sdk-android-kotlin.svg)](https://jitpack.io/#com.gitlab.sportstalk247/sdk-android-kotlin)
 
 Then sync again. The gradle build should now be successful.
     
