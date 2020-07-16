@@ -11,6 +11,8 @@ ext {
 
     kotlinx_serialization_version = '0.20.0'
 
+    multidex_version = "2.0.1"
+
     junitVersion = '4.12'
     mockitoVersion = '3.1.0'
     androidXCoreTesting = '2.0.0'
@@ -55,8 +57,7 @@ ext {
 
     // Dependency Injection Framework
     koinVersion = '2.1.5'
-
-    squareCycler = '0.1.4'
+    
     hdodenhofcircleimageview = '3.1.0'
 
     glideVersion='4.11.0'

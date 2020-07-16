@@ -18,13 +18,11 @@ import com.sportstalk.SportsTalk247
 import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.FragmentAdminListChatroomBinding
 import com.sportstalk.app.demo.presentation.BaseFragment
-import com.sportstalk.app.demo.presentation.listrooms.adapters.ItemAdminListChatRooms
+import com.sportstalk.app.demo.presentation.listrooms.adapters.ItemAdminListChatRoomAdapter
 import com.sportstalk.app.demo.presentation.rooms.UpdateChatroomFragment
 import com.sportstalk.app.demo.presentation.utils.EndlessRecyclerViewScrollListener
 import com.sportstalk.models.ClientConfig
 import com.sportstalk.models.chat.ChatRoom
-import com.squareup.cycler.Recycler
-import com.squareup.cycler.toDataSource
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.rx2.asFlow
@@ -36,7 +34,7 @@ class AdminListChatRoomsFragment : BaseFragment() {
 
     private lateinit var binding: FragmentAdminListChatroomBinding
 
-    private lateinit var adapter: Recycler<ChatRoom>
+    private lateinit var adapter: ItemAdminListChatRoomAdapter
     private lateinit var scrollListener: RecyclerView.OnScrollListener
 
     private val config: ClientConfig by lazy {
@@ -67,8 +65,7 @@ class AdminListChatRoomsFragment : BaseFragment() {
 
         binding.recyclerView.layoutManager =
             LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, false)
-        adapter = ItemAdminListChatRooms.adopt(
-            recyclerView = binding.recyclerView,
+        adapter = ItemAdminListChatRoomAdapter(
             onItemUpdateChatRoom = { selected ->
                 Log.d(
                     TAG,
@@ -78,7 +75,10 @@ class AdminListChatRoomsFragment : BaseFragment() {
                 viewModel.update(which = selected)
             },
             onItemDeleteChatRoom = { selected ->
-                Log.d(TAG,"ItemAdminListChatRooms.adopt() -> onItemDeleteChatRoom() -> selected = $selected")
+                Log.d(
+                    TAG,
+                    "ItemAdminListChatRooms.adopt() -> onItemDeleteChatRoom() -> selected = $selected"
+                )
 
                 MaterialAlertDialogBuilder(requireContext())
                     .setTitle("Delete Chatroom")
@@ -92,7 +92,10 @@ class AdminListChatRoomsFragment : BaseFragment() {
                     .show()
             },
             onItemSendAnnouncement = { which ->
-                Log.d(TAG,"ItemAdminListChatRooms.adopt() -> onItemSendAnnouncement() -> which = $which")
+                Log.d(
+                    TAG,
+                    "ItemAdminListChatRooms.adopt() -> onItemSendAnnouncement() -> which = $which"
+                )
 
                 val textInputLayout = LayoutInflater.from(requireContext())
                     .inflate(
@@ -120,6 +123,7 @@ class AdminListChatRoomsFragment : BaseFragment() {
                     .show()
             }
         )
+        binding.recyclerView.adapter = adapter
 
         scrollListener = object :
             EndlessRecyclerViewScrollListener(binding.recyclerView.layoutManager!! as LinearLayoutManager) {
@@ -247,14 +251,7 @@ class AdminListChatRoomsFragment : BaseFragment() {
 
     private fun takeChatRooms(chatRooms: List<ChatRoom>) {
         Log.d(TAG, "takeChatRooms() -> chatRooms = $chatRooms")
-
-        adapter.update {
-            if (data.isEmpty) {
-                data = chatRooms.toDataSource()
-            } else {
-                addChunk(chatRooms)
-            }
-        }
+        adapter.update(chatRooms)
     }
 
     private fun takeProgressDeleteChatRoom(inProgress: Boolean) {
