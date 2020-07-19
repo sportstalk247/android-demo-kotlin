@@ -149,8 +149,8 @@ class ItemChatEventAdapter(
     override fun getItemViewType(position: Int): Int {
         val item = items[position]
         return when {
-            // Temporary "Announcement" implementation
-            item.customtype == "announcement" -> VIEW_TYPE_ANNOUNCEMENT
+            // "Announcement" implementation
+            item.eventtype == EventType.ANNOUNCEMENT -> VIEW_TYPE_ANNOUNCEMENT
             item.eventtype == EventType.ACTION -> VIEW_TYPE_ACTION
             item.userid == me.userid -> VIEW_TYPE_SENT
             item.userid != me.userid -> VIEW_TYPE_RECEIVED
