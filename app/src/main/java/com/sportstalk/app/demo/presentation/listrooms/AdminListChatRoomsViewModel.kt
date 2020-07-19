@@ -5,10 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.sportstalk.api.ChatClient
 import com.sportstalk.app.demo.SportsTalkDemoPreferences
 import com.sportstalk.models.SportsTalkException
-import com.sportstalk.models.chat.ChatRoom
-import com.sportstalk.models.chat.DeleteChatRoomResponse
-import com.sportstalk.models.chat.ExecuteChatCommandRequest
-import com.sportstalk.models.chat.ExecuteChatCommandResponse
+import com.sportstalk.models.chat.*
 import com.sportstalk.models.users.User
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BroadcastChannel
@@ -157,9 +154,9 @@ class AdminListChatRoomsViewModel(
                         chatRoomId = which.id!!,
                         request = ExecuteChatCommandRequest(
                             command = message,
-                            // TODO:: ADMIN ID For Send Announcement
-                            userid = preferences.currentUser?.userid ?: "0M5fL2WAbQGiiMS4", // This is just a temporary ID
-                            customtype = "announcement"
+                            // TODO:: Hard-coded ADMIN ID
+                            userid = "admin",
+                            eventtype = EventType.ANNOUNCEMENT
                         )
                     )
                 }
