@@ -260,10 +260,7 @@ class ChatRoomViewModel(
                                 chatRoomId = room.id!!,
                                 request = ExecuteChatCommandRequest(
                                     command = message,
-                                    userid = user.userid!!,
-                                    customid = null,
-                                    custompayload = null,
-                                    customtype = null
+                                    userid = user.userid!!
                                 )
                             )
                         }

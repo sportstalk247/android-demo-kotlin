@@ -308,6 +308,13 @@ class ChatRoomFragment : BaseFragment() {
                 // Clear text
                 binding.tietChatMessage.setText("")
             }
+            is ChatRoomViewModel.ViewEffect.ErrorSendChatMessage -> {
+                Toast.makeText(
+                    requireContext(),
+                    effect.err.message ?: getString(R.string.something_went_wrong_please_try_again),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
             is ChatRoomViewModel.ViewEffect.ErrorRemoveMessage -> {
                 Toast.makeText(
                     requireContext(),
