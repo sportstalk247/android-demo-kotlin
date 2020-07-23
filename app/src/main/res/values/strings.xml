@@ -75,11 +75,15 @@
     <string name="others_replied_to" formatted="true">%s replied to %s</string>
     <string name="you_replied_to" formatted="true">You replied to %s</string>
 
+    <string name="chat_message_tap_option_reply">Reply</string>
+    <string name="chat_message_tap_option_report">Report</string>
+    <string name="chat_message_tap_option_flag_as_deleted">Flag as Deleted</string>
+    <string name="chat_message_tap_option_delete_permanently">Delete Permanently</string>
     <string-array name="chat_message_tap_options">
-        <item>Reply</item>
-        <item>Report</item>
-        <item>Flag as Deleted</item>
-        <item>Delete Permanently</item>
+        <item>@string/chat_message_tap_option_reply</item>
+        <item>@string/chat_message_tap_option_report</item>
+        <item>@string/chat_message_tap_option_flag_as_deleted</item>
+        <item>@string/chat_message_tap_option_delete_permanently</item>
     </string-array>
 
     <string name="message_successfully_removed">Message successfully removed…</string>

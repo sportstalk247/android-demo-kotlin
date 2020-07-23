@@ -153,14 +153,14 @@ class LiveChatFragment : BaseFragment() {
 
                 MaterialAlertDialogBuilder(requireContext())
                     .setItems(options) { dialog, which ->
-                        when(which) {
+                        when(options[which]) {
                             // Reply
-                            0 -> {
+                            getString(R.string.chat_message_tap_option_reply) -> {
                                 // Prepare Quoted Reply
                                 viewModel.prepareQuotedReply(replyTo = chatEvent)
                             }
                             // Report
-                            1 -> {
+                            getString(R.string.chat_message_tap_option_report) -> {
                                 // Perform Report Message
                                 viewModel.reportMessage(which = chatEvent, reporttype = ReportType.ABUSE)
                             }
@@ -182,9 +182,9 @@ class LiveChatFragment : BaseFragment() {
                                         dialog.dismiss()
                                     }
                                     .setOnDismissListener {
-                                        when(which) {
+                                        when(options[which]) {
                                             // Flag as Deleted
-                                            1 -> {
+                                            getString(R.string.chat_message_tap_option_flag_as_deleted) -> {
                                                 viewModel.removeMessage(
                                                     which = chatEvent,
                                                     isPermanentDelete = false,
@@ -192,7 +192,7 @@ class LiveChatFragment : BaseFragment() {
                                                 )
                                             }
                                             // Delete Permanently
-                                            2 -> {
+                                            getString(R.string.chat_message_tap_option_delete_permanently) -> {
                                                 viewModel.removeMessage(
                                                     which = chatEvent,
                                                     isPermanentDelete = true,

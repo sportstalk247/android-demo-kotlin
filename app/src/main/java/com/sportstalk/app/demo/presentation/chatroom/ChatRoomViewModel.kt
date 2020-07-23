@@ -11,6 +11,7 @@ import com.sportstalk.models.chat.*
 import com.sportstalk.models.users.User
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.channels.sendBlocking
@@ -84,10 +85,11 @@ class ChatRoomViewModel(
                 .take(1)
     }
 
-    private val _effect = Channel<ViewEffect>(Channel.RENDEZVOUS)
+    private val _effect = BroadcastChannel<ViewEffect>(Channel.BUFFERED)/*Channel<ViewEffect>(Channel.RENDEZVOUS)*/
     val effect: Flow<ViewEffect>
         get() = _effect
-            .receiveAsFlow()
+            /*.receiveAsFlow()*/
+            .asFlow()
 
     init {
         // Emit Room Name
