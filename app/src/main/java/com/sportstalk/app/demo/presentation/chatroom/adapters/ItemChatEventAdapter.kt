@@ -265,7 +265,7 @@ class ItemChatEventAdapter(
             if(item.replyto != null) {
                 binding.actvRepliedTo.text = context.getString(
                     R.string.you_replied_to,
-                    "@${item.user?.handle ?: ""}"
+                    "@${item.replyto?.user?.handle ?: ""}"
                 )
                 binding.actvRepliedMessage.text = item.replyto?.body
 
