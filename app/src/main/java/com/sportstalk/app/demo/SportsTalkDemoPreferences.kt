@@ -83,7 +83,7 @@ class SportsTalkDemoPreferences(
             if(key == KEY_AUTH_TOKEN) {
                 sendBlocking(
                     pref.getString(key, "")!!.takeIf { it.isNotEmpty() }
-                        ?: KEY_AUTH_TOKEN
+                        ?: ORIGINAL_AUTH_TOKEN
                 )
             }
         }

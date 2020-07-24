@@ -89,7 +89,6 @@ class InAppSettingsFragment : BaseFragment() {
                     textInputLayout.findViewById<TextInputEditText>(R.id.tietInputText)
                         .apply {
                             setText(binding.actvUrlEndpointValue.text)
-                            selectAll()
                         }
 
                 // Display Alert Prompt With Input Text
@@ -122,7 +121,6 @@ class InAppSettingsFragment : BaseFragment() {
                     textInputLayout.findViewById<TextInputEditText>(R.id.tietInputText)
                         .apply {
                             setText(binding.actvAuthTokenValue.text)
-                            selectAll()
                         }
 
                 // Display Alert Prompt With Input Text
@@ -155,7 +153,6 @@ class InAppSettingsFragment : BaseFragment() {
                     textInputLayout.findViewById<TextInputEditText>(R.id.tietInputText)
                         .apply {
                             setText(binding.actvAppIdValue.text)
-                            selectAll()
                         }
 
                 // Display Alert Prompt With Input Text

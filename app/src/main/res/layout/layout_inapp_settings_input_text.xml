@@ -21,6 +21,8 @@
         android:id="@+id/tietInputText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:textColor="@android:color/black"
+        android:selectAllOnFocus="true"
         />
 
 </com.google.android.material.textfield.TextInputLayout>
