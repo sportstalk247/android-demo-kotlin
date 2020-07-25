@@ -3,13 +3,13 @@ package com.sportstalk.app.demo.presentation.listrooms
 import android.os.Bundle
 import android.util.Log
 import android.view.*
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.jakewharton.rxbinding3.swiperefreshlayout.refreshes
-import com.sportstalk.SportsTalk247
 import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.FragmentListChatroomBinding
 import com.sportstalk.app.demo.presentation.BaseFragment
@@ -17,13 +17,11 @@ import com.sportstalk.app.demo.presentation.chatroom.ChatRoomFragment
 import com.sportstalk.app.demo.presentation.listrooms.adapters.ItemListChatRoomAdapter
 import com.sportstalk.app.demo.presentation.users.CreateAccountFragment
 import com.sportstalk.app.demo.presentation.utils.EndlessRecyclerViewScrollListener
-import com.sportstalk.models.ClientConfig
 import com.sportstalk.models.chat.ChatRoom
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.rx2.asFlow
 import org.koin.androidx.viewmodel.ext.android.viewModel
-import org.koin.core.parameter.parametersOf
 
 class ListChatRoomsFragment : BaseFragment() {
 
@@ -33,19 +31,7 @@ class ListChatRoomsFragment : BaseFragment() {
     private lateinit var adapter: ItemListChatRoomAdapter
     private lateinit var scrollListener: RecyclerView.OnScrollListener
 
-    private val config: ClientConfig by lazy {
-        ClientConfig(
-            appId = getString(R.string.sportstalk247_appid),
-            apiToken = getString(R.string.sportstalk247_authToken),
-            endpoint = getString(R.string.sportstalk247_urlEndpoint)
-        )
-    }
-
-    private val viewModel: ListChatRoomsViewModel by viewModel {
-        parametersOf(
-            SportsTalk247.ChatClient(config = config)
-        )
-    }
+    private val viewModel: ListChatRoomsViewModel by viewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -225,6 +211,14 @@ class ListChatRoomsFragment : BaseFragment() {
                         )
                     )
                 }
+            }
+            is ListChatRoomsViewModel.ViewEffect.ErrorFetchListChatrooms -> {
+                Toast.makeText(
+                    requireContext(),
+                    effect.err.message ?: getString(R.string.something_went_wrong_please_try_again),
+                    Toast.LENGTH_LONG
+                )
+                    .show()
             }
         }
     }

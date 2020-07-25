@@ -6,24 +6,12 @@ import android.view.*
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.viewpager2.adapter.FragmentStateAdapter
-import androidx.viewpager2.widget.ViewPager2
-import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.snackbar.Snackbar
-import com.google.android.material.tabs.TabLayout
 import com.jakewharton.rxbinding3.view.clicks
-import com.sportstalk.SportsTalk247
 import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.FragmentChatroomBinding
 import com.sportstalk.app.demo.presentation.BaseFragment
-import com.sportstalk.app.demo.presentation.chatroom.listparticipants.ChatroomListParticipantsFragment
-import com.sportstalk.app.demo.presentation.utils.AppBarStateChangedListener
-import com.sportstalk.models.ClientConfig
-import com.sportstalk.models.chat.ChatEvent
 import com.sportstalk.models.chat.ChatRoom
 import com.sportstalk.models.users.User
 import kotlinx.coroutines.flow.launchIn
@@ -40,8 +28,7 @@ class ChatRoomFragment : BaseFragment() {
     private val viewModel: ChatRoomViewModel by viewModel {
         parametersOf(
             room,
-            user,
-            SportsTalk247.ChatClient(config)
+            user
         )
     }
 
@@ -49,14 +36,6 @@ class ChatRoomFragment : BaseFragment() {
     private lateinit var room: ChatRoom
 
     private lateinit var errorJoinSnackBar: Snackbar
-
-    private val config: ClientConfig by lazy {
-        ClientConfig(
-            appId = getString(R.string.sportstalk247_appid),
-            apiToken = getString(R.string.sportstalk247_authToken),
-            endpoint = getString(R.string.sportstalk247_urlEndpoint)
-        )
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

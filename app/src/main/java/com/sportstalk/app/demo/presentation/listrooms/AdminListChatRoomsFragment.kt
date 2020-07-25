@@ -14,20 +14,17 @@ import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import com.jakewharton.rxbinding3.swiperefreshlayout.refreshes
 import com.jakewharton.rxbinding3.view.clicks
-import com.sportstalk.SportsTalk247
 import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.FragmentAdminListChatroomBinding
 import com.sportstalk.app.demo.presentation.BaseFragment
 import com.sportstalk.app.demo.presentation.listrooms.adapters.ItemAdminListChatRoomAdapter
 import com.sportstalk.app.demo.presentation.rooms.UpdateChatroomFragment
 import com.sportstalk.app.demo.presentation.utils.EndlessRecyclerViewScrollListener
-import com.sportstalk.models.ClientConfig
 import com.sportstalk.models.chat.ChatRoom
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.rx2.asFlow
 import org.koin.androidx.viewmodel.ext.android.viewModel
-import org.koin.core.parameter.parametersOf
 import java.util.concurrent.TimeUnit
 
 class AdminListChatRoomsFragment : BaseFragment() {
@@ -37,19 +34,7 @@ class AdminListChatRoomsFragment : BaseFragment() {
     private lateinit var adapter: ItemAdminListChatRoomAdapter
     private lateinit var scrollListener: RecyclerView.OnScrollListener
 
-    private val config: ClientConfig by lazy {
-        ClientConfig(
-            appId = getString(R.string.sportstalk247_appid),
-            apiToken = getString(R.string.sportstalk247_authToken),
-            endpoint = getString(R.string.sportstalk247_urlEndpoint)
-        )
-    }
-
-    private val viewModel: AdminListChatRoomsViewModel by viewModel {
-        parametersOf(
-            SportsTalk247.ChatClient(config = config)
-        )
-    }
+    private val viewModel: AdminListChatRoomsViewModel by viewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

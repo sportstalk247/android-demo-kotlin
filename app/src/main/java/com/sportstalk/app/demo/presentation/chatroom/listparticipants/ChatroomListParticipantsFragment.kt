@@ -38,18 +38,9 @@ class ChatroomListParticipantsFragment : BaseFragment() {
             parameters = {
                 parametersOf(
                     room,
-                    user,
-                    SportsTalk247.UserClient(config),
-                    SportsTalk247.ChatClient(config)
+                    user
                 )
             }
-        )
-    }
-    private val config: ClientConfig by lazy {
-        ClientConfig(
-            appId = getString(R.string.sportstalk247_appid),
-            apiToken = getString(R.string.sportstalk247_authToken),
-            endpoint = getString(R.string.sportstalk247_urlEndpoint)
         )
     }
 
