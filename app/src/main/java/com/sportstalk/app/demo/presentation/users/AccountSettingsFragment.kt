@@ -97,9 +97,9 @@ class AccountSettingsFragment : BaseFragment() {
         /**
          * Emits [true] if handlename value is valid. Otherwise, emits [false].
          */
-        viewModel.state.validationHandleName()
-            .onEach { takeValidationHandleName(it) }
-            .launchIn(lifecycleScope)
+//        viewModel.state.validationHandleName()
+//            .onEach { takeValidationHandleName(it) }
+//            .launchIn(lifecycleScope)
 
         /**
          * Emits [true] if Profile Link value is valid. Otherwise, emits [false].

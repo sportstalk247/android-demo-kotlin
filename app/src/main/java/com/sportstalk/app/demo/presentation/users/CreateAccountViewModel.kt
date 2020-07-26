@@ -33,40 +33,44 @@ class CreateAccountViewModel(
     private val profileLink = ConflatedBroadcastChannel<String>()
     private val photoLink = ConflatedBroadcastChannel<String>()
 
-    private val validationDisplayName = Channel<Boolean>(Channel.RENDEZVOUS)
-    private val validationHandleName = Channel<Boolean>(Channel.RENDEZVOUS)
-    private val validationProfileLink = Channel<Boolean>(Channel.RENDEZVOUS)
-    private val validationPhotoLink = Channel<Boolean>(Channel.RENDEZVOUS)
-    private val progressCreateUser = Channel<Boolean>(Channel.RENDEZVOUS)
+    private val validationDisplayName = ConflatedBroadcastChannel/*Channel*/<Boolean>(false/*Channel.RENDEZVOUS*/)
+    private val validationHandleName = ConflatedBroadcastChannel/*Channel*/<Boolean>(false/*Channel.RENDEZVOUS*/)
+    private val validationProfileLink = ConflatedBroadcastChannel/*Channel*/<Boolean>(false/*Channel.RENDEZVOUS*/)
+    private val validationPhotoLink = ConflatedBroadcastChannel/*Channel*/<Boolean>(false/*Channel.RENDEZVOUS*/)
+    private val progressCreateUser = ConflatedBroadcastChannel/*Channel*/<Boolean>(false/*Channel.RENDEZVOUS*/)
 
     val state = object : ViewState {
         override fun validationDisplayName(): Flow<Boolean> =
             validationDisplayName
-                .consumeAsFlow()
+                /*.consumeAsFlow()*/
+                .asFlow()
 
         override fun validationHandleName(): Flow<Boolean> =
             validationHandleName
-                .consumeAsFlow()
+                /*.consumeAsFlow()*/
+                .asFlow()
 
         override fun validationProfileLink(): Flow<Boolean> =
             validationProfileLink
-                .consumeAsFlow()
+                /*.consumeAsFlow()*/
+                .asFlow()
 
         override fun validationPhotoLink(): Flow<Boolean> =
             validationPhotoLink
-                .consumeAsFlow()
+                /*.consumeAsFlow()*/
+                .asFlow()
 
         override fun enableSubmit(): Flow<Boolean> =
             /*combine(
                 validationDisplayName.consumeAsFlow(),
                 validationHandleName.consumeAsFlow()
             ) { validDisplayName, validHandle -> validDisplayName && validHandle }*/
-            validationDisplayName.consumeAsFlow()
-                .onStart { emit(false) }
+            validationDisplayName.asFlow()
 
         override fun progressCreateUser(): Flow<Boolean> =
             progressCreateUser
-                .receiveAsFlow()
+                /*.receiveAsFlow()*/
+                .asFlow()
     }
 
     private val _effect = Channel<ViewEffect>(Channel.RENDEZVOUS)

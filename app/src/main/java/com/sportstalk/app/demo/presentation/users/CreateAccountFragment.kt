@@ -89,9 +89,9 @@ class CreateAccountFragment: BaseFragment() {
         /**
          * Emits [true] if display name value is valid. Otherwise, emits [false].
          */
-        viewModel.state.validationHandleName()
-            .onEach { takeValidationHandleName(it) }
-            .launchIn(lifecycleScope)
+//        viewModel.state.validationHandleName()
+//            .onEach { takeValidationHandleName(it) }
+//            .launchIn(lifecycleScope)
 
         /**
          * Emits [true] if Photo Link value is valid. Otherwise, emits [false].

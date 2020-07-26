@@ -5,6 +5,7 @@ import android.util.Log
 import android.view.*
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.core.os.bundleOf
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -18,6 +19,7 @@ import com.sportstalk.app.demo.presentation.listrooms.adapters.ItemListChatRoomA
 import com.sportstalk.app.demo.presentation.users.CreateAccountFragment
 import com.sportstalk.app.demo.presentation.utils.EndlessRecyclerViewScrollListener
 import com.sportstalk.models.chat.ChatRoom
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.rx2.asFlow
@@ -104,13 +106,6 @@ class ListChatRoomsFragment : BaseFragment() {
             }
             .launchIn(lifecycleScope)
 
-        /**
-         * Emits [true] if account was already created. Emits [false] otherwise.
-         */
-        viewModel.state.enableAccountSettings()
-            .onEach { takeEnableAccountSettings(it) }
-            .launchIn(lifecycleScope)
-
         // View Effect
         viewModel.effect
             .onEach {
@@ -138,6 +133,13 @@ class ListChatRoomsFragment : BaseFragment() {
         inflater.inflate(R.menu.list_chatroom, menu)
 
         this.menu = menu
+        /**
+         * Emits [true] if account was already created. Emits [false] otherwise.
+         */
+        viewModel.state.enableAccountSettings()
+            .distinctUntilChanged()
+            .onEach { takeEnableAccountSettings(it) }
+            .launchIn(lifecycleScope)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean =
@@ -170,6 +172,10 @@ class ListChatRoomsFragment : BaseFragment() {
     private fun takeProgressFetchChatRooms(inProgress: Boolean) {
         Log.d(TAG, "takeProgressFetchChatRooms() -> inProgress = $inProgress")
         binding.swipeRefresh.isRefreshing = inProgress
+
+        if(!inProgress) {
+            requireActivity().invalidateOptionsMenu()
+        }
     }
 
     private fun takeChatRooms(chatRooms: List<ChatRoom>) {
@@ -181,7 +187,12 @@ class ListChatRoomsFragment : BaseFragment() {
     private fun takeEnableAccountSettings(isEnabled: Boolean) {
         Log.d(TAG, "takeEnableAccountSettings() -> isEnabled = $isEnabled")
         // Toggle menu action
-        this.menu.findItem(R.id.action_account_settings)?.isEnabled = isEnabled
+        if(::menu.isInitialized) {
+            this.menu.findItem(R.id.action_account_settings)?.let { item ->
+                item.isEnabled = isEnabled
+                /*requireActivity().invalidateOptionsMenu()*/
+            }
+        }
     }
 
     private fun takeViewEffect(effect: ListChatRoomsViewModel.ViewEffect) {
