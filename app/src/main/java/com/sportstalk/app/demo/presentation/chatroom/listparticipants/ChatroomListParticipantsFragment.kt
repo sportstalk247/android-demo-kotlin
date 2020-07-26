@@ -68,9 +68,13 @@ class ChatroomListParticipantsFragment : BaseFragment() {
             onTapChatParticipantItem = { participant: User ->
                 Log.d(TAG, "onTapChatParticipantItem() -> participant = $participant")
 
-                val optionBan = getString(R.string.ban_handle, user.handle ?: "")
-                val optionRemoveBan = getString(R.string.remove_ban_from_handle, user.handle ?: "")
-                val optionPurgeMessages = getString(R.string.purge_messages_from_handle, user.handle ?: "")
+                val participantHandle = if(participant.handle?.isNotEmpty() == true && participant.handle!!.first() != '@') {
+                    "@${participant.handle}"
+                } else participant.handle
+
+                val optionBan = getString(R.string.ban_handle, participantHandle ?: "")
+                val optionRemoveBan = getString(R.string.remove_ban_from_handle, participantHandle ?: "")
+                val optionPurgeMessages = getString(R.string.purge_messages_from_handle, participantHandle ?: "")
 
                 val options = mutableListOf<String>().apply {
                     if (participant.banned == true) add(optionRemoveBan)
@@ -81,7 +85,7 @@ class ChatroomListParticipantsFragment : BaseFragment() {
                 MaterialAlertDialogBuilder(requireContext())
                     .setItems(options) { _, index ->
                         when (options[index]) {
-                            // Ban/Remove Ban
+                            // Ban selected participant/Remove Ban from selected participant
                             optionBan, optionRemoveBan -> {
                                 MaterialAlertDialogBuilder(requireContext())
                                     .setMessage(R.string.are_you_sure)
@@ -98,7 +102,7 @@ class ChatroomListParticipantsFragment : BaseFragment() {
                                     }
                                     .show()
                             }
-                            // Purge Message from User
+                            // Purge Message from selected participant
                             optionPurgeMessages -> {
                                 MaterialAlertDialogBuilder(requireContext())
                                     .setMessage(R.string.are_you_sure)
