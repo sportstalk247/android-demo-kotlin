@@ -311,7 +311,7 @@ class ChatRoomFragment : BaseFragment() {
             is ChatRoomViewModel.ViewEffect.ErrorReportMessage -> {
                 Toast.makeText(
                     requireContext(),
-                    effect.err.message ?: getString(R.string.something_went_wrong_please_try_again),
+                    effect.err.message?.takeIf { it.isNotEmpty() } ?: getString(R.string.something_went_wrong_please_try_again),
                     Toast.LENGTH_SHORT
                 ).show()
             }
