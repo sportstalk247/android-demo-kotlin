@@ -1,6 +1,7 @@
 package com.sportstalk.app.demo.presentation
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -12,17 +13,20 @@ import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.jakewharton.rxbinding3.viewpager2.pageSelections
 import com.sportstalk.app.demo.R
+import com.sportstalk.app.demo.SportsTalkDemoPreferences
 import com.sportstalk.app.demo.databinding.FragmentHomeBinding
 import com.sportstalk.app.demo.presentation.inappsettings.InAppSettingsFragment
 import com.sportstalk.app.demo.presentation.listrooms.AdminListChatRoomsFragment
 import com.sportstalk.app.demo.presentation.listrooms.ListChatRoomsFragment
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.rx2.asFlow
+import org.koin.android.ext.android.get
+import org.koin.android.ext.android.inject
 
 class HomeFragment : BaseFragment() {
 
     private lateinit var binding: FragmentHomeBinding
+    private val preferences by inject<SportsTalkDemoPreferences>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -33,6 +37,7 @@ class HomeFragment : BaseFragment() {
 
         // Setup ViewPager2 and BottomNavigationView
         binding.viewPager2.adapter = ViewPager2Adapter(childFragmentManager, lifecycle)
+        binding.viewPager2.offscreenPageLimit = 1
         binding.viewPager2.pageSelections()
             .skipInitialValue()
             .asFlow()
@@ -64,6 +69,28 @@ class HomeFragment : BaseFragment() {
         }
 
         return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        // Observe for preference changes. Notify viewpager refresh to re-create config
+        combine(
+            preferences.appIdChanges().distinctUntilChanged(),
+            preferences.authTokenChanges().distinctUntilChanged(),
+            preferences.urlEndpointChanges().distinctUntilChanged()
+        ) { _appId, _authToken, _url -> Triple(_appId, _authToken, _url) }
+            .distinctUntilChanged()
+            .drop(1)
+            .debounce(250)
+            .onEach { (_appId, _authToken, _url) ->
+                Log.d(TAG, "onViewCreated() -> _appId = $_appId")
+                Log.d(TAG, "onViewCreated() -> _authToken = $_authToken")
+                Log.d(TAG, "onViewCreated() -> _url = $_url")
+                binding.viewPager2.adapter?.notifyItemRangeChanged(0, 2)
+            }
+            .launchIn(lifecycleScope)
+
     }
 
     inner class ViewPager2Adapter(
