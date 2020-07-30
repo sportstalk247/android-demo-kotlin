@@ -1,7 +1,6 @@
 package com.sportstalk.app.demo.presentation.chatroom.adapters
 
 import android.annotation.SuppressLint
-import android.content.res.ColorStateList
 import android.os.AsyncTask
 import android.text.format.DateUtils
 import android.view.LayoutInflater
@@ -33,7 +32,7 @@ class ItemChatEventAdapter(
     private val onTapReactChatEventItem: OnTapReactChatEventItem = { _, _ -> }
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    private val UTC_BIRTHDAY_FORMATTER: SimpleDateFormat =
+    private val UTC_MSG_SENT_FORMATTER: SimpleDateFormat =
         /*SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX", Locale.getDefault())*/
         SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
 
@@ -259,7 +258,7 @@ class ItemChatEventAdapter(
             }
             // ChatEvent Relative Time Sent: ex. "Just now"
             binding.actvSent.text = item.added?.let { added ->
-                val date = UTC_BIRTHDAY_FORMATTER.parse(added) ?: return@let null
+                val date = UTC_MSG_SENT_FORMATTER.parse(added) ?: return@let null
                 DateUtils.getRelativeDateTimeString(
                     context,
                     date.time,
@@ -330,7 +329,7 @@ class ItemChatEventAdapter(
             }
             // ChatEvent Relative Time Sent: ex. "Just now"
             binding.actvSent.text = item.added?.let { added ->
-                val date = UTC_BIRTHDAY_FORMATTER.parse(added) ?: return@let null
+                val date = UTC_MSG_SENT_FORMATTER.parse(added) ?: return@let null
                 DateUtils.getRelativeDateTimeString(
                     context,
                     date.time,
