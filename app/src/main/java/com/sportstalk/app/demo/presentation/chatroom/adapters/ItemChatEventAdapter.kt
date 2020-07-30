@@ -9,14 +9,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
 import androidx.core.content.ContextCompat
+import androidx.core.widget.ImageViewCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.sportstalk.app.demo.R
-import com.sportstalk.app.demo.databinding.ItemChatroomLiveChatActionBinding
-import com.sportstalk.app.demo.databinding.ItemChatroomLiveChatAnnouncementBinding
-import com.sportstalk.app.demo.databinding.ItemChatroomLiveChatReceivedBinding
-import com.sportstalk.app.demo.databinding.ItemChatroomLiveChatSentBinding
+import com.sportstalk.app.demo.databinding.*
 import com.sportstalk.models.chat.ChatEvent
 import com.sportstalk.models.chat.EventType
 import com.sportstalk.models.users.User
@@ -152,6 +150,7 @@ class ItemChatEventAdapter(
             // "Announcement" implementation
             item.eventtype == EventType.ANNOUNCEMENT -> VIEW_TYPE_ANNOUNCEMENT
             item.eventtype == EventType.ACTION -> VIEW_TYPE_ACTION
+            item.eventtype == EventType.CUSTOM -> VIEW_TYPE_UNKNOWN_EVENTTYPE
             item.userid == me.userid -> VIEW_TYPE_SENT
             item.userid != me.userid -> VIEW_TYPE_RECEIVED
             else -> super.getItemViewType(position)
@@ -188,6 +187,13 @@ class ItemChatEventAdapter(
                     false
                 )
             )
+            VIEW_TYPE_UNKNOWN_EVENTTYPE -> ItemChatEventUnknownEventTypeViewHolder(
+                ItemChatroomLiveChatUnknownEventtypeBinding.inflate(
+                    LayoutInflater.from(parent.context),
+                    parent,
+                    false
+                )
+            )
             else -> object: RecyclerView.ViewHolder(parent) {}
         }
 
@@ -214,6 +220,10 @@ class ItemChatEventAdapter(
                 }
             }
             is ItemChatEventAnnouncementViewHolder -> {
+                holder.bind(item)
+                holder.binding.cardViewMessage.setOnClickListener(null)
+            }
+            is ItemChatEventUnknownEventTypeViewHolder -> {
                 holder.bind(item)
                 holder.binding.cardViewMessage.setOnClickListener(null)
             }
@@ -299,19 +309,17 @@ class ItemChatEventAdapter(
                     rxn.users.any { usr -> usr.userid == me.userid }
                 }
 
-            with(binding.btnLike) {
-                imageTintList = when (iReactedToThisMessage) {
-                    true -> ColorStateList.valueOf(
-                        ContextCompat.getColor(context, R.color.blue_like)
-                    )
-                    false -> ColorStateList.valueOf(
-                        ContextCompat.getColor(context, android.R.color.tertiary_text_light)
+            ImageViewCompat.setImageTintList(
+                binding.btnLike,
+                when (iReactedToThisMessage) {
+                    true -> ContextCompat.getColorStateList(context, R.color.blue_like)
+                    false -> ContextCompat.getColorStateList(
+                        context,
+                        android.R.color.tertiary_text_light
                     )
                 }
-
-                /*isEnabled = !iReactedToThisMessage*/
-                requestLayout()
-            }
+            )
+            binding.btnLike.requestLayout()
 
             // ChatEvent Reaction Count
             binding.actvReactionCount.text = when (item.reactions.size) {
@@ -367,11 +375,20 @@ class ItemChatEventAdapter(
         }
     }
 
+    inner class ItemChatEventUnknownEventTypeViewHolder(
+        val binding: ItemChatroomLiveChatUnknownEventtypeBinding
+    ): RecyclerView.ViewHolder(binding.root) {
+        fun bind(item: ChatEvent) {
+            binding.actvChatMessage.text = item.body
+        }
+    }
+
     companion object {
         private const val VIEW_TYPE_SENT = 0x04
         private const val VIEW_TYPE_RECEIVED = 0x08
         private const val VIEW_TYPE_ACTION = 0x00
         private const val VIEW_TYPE_ANNOUNCEMENT = 0x01
+        private const val VIEW_TYPE_UNKNOWN_EVENTTYPE = 0xFF
 
     }
 }

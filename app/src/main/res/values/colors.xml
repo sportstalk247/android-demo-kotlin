@@ -9,6 +9,7 @@
 
     <color name="bg_replied_message">#FFDDDDDD</color>
     <color name="bg_announcement">#FCF8E3</color>
+    <color name="bg_unknown_eventtype">#FFFFFF</color>
 
 
 </resources>
