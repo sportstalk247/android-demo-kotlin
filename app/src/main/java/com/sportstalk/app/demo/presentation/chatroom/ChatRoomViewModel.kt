@@ -155,6 +155,8 @@ class ChatRoomViewModel(
             frequency = 500L,
             lifecycleOwner = lifecycleOwner
         )
+                // Filter out empty message(s) generated when performing LIKE action
+            .map { it.filter { msg -> msg.body?.isNotEmpty() == true } }
             .onEach { newEvents ->
                 val updatedChatEventList = ArrayList(chatEvents.valueOrNull ?: listOf()).apply {
                     newEvents.forEach { newEvent ->
