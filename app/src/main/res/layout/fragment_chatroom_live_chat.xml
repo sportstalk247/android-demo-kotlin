@@ -55,7 +55,7 @@
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardViewReply"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginLeft="8dp"
             app:cardBackgroundColor="@color/bg_replied_message"
@@ -97,7 +97,10 @@
                     android:layout_marginRight="12dp"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintLeft_toRightOf="@+id/divider"
+                    app:layout_constraintRight_toRightOf="parent"
                     android:textSize="16sp"
+                    android:maxLines="3"
+                    android:ellipsize="end"
                     android:textAppearance="?attr/textAppearanceHeadline1"
                     android:textColor="@android:color/tertiary_text_light"
                     tools:text="I'm good. How are you doing???"
