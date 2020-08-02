@@ -87,7 +87,8 @@ class HomeFragment : BaseFragment() {
                 Log.d(TAG, "onViewCreated() -> _appId = $_appId")
                 Log.d(TAG, "onViewCreated() -> _authToken = $_authToken")
                 Log.d(TAG, "onViewCreated() -> _url = $_url")
-                binding.viewPager2.adapter?.notifyItemRangeChanged(0, 2)
+                binding.viewPager2.adapter?.notifyItemChanged(0)
+                binding.viewPager2.adapter?.notifyItemChanged(1)
             }
             .launchIn(lifecycleScope)
 
