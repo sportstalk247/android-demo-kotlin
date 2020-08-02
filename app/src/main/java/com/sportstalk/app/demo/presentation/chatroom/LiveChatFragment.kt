@@ -165,43 +165,21 @@ class LiveChatFragment : BaseFragment() {
                                 viewModel.reportMessage(which = chatEvent, reporttype = ReportType.ABUSE)
                             }
                             // Flag as Deleted
+                            getString(R.string.chat_message_tap_option_flag_as_deleted) -> {
+                                viewModel.removeMessage(
+                                    which = chatEvent,
+                                    isPermanentDelete = true,
+                                    permanentifnoreplies = false/*true*/
+                                )
+                            }
                             // Delete Permanently
-                            else -> {
-                                /*
-                                * [Y/N] Do you want this message to get permanently deleted if no replies were received?
-                                */
-                                var permanentifnoreplies: Boolean? = null
-                                MaterialAlertDialogBuilder(requireContext())
-                                    .setMessage(R.string.permanent_if_no_replies)
-                                    .setPositiveButton(android.R.string.yes) { dialog, _ ->
-                                        permanentifnoreplies = true
-                                        dialog.dismiss()
-                                    }
-                                    .setNegativeButton(android.R.string.no) { dialog, _ ->
-                                        permanentifnoreplies = false
-                                        dialog.dismiss()
-                                    }
-                                    .setOnDismissListener {
-                                        when(options[which]) {
-                                            // Flag as Deleted
-                                            getString(R.string.chat_message_tap_option_flag_as_deleted) -> {
-                                                viewModel.removeMessage(
-                                                    which = chatEvent,
-                                                    isPermanentDelete = false,
-                                                    permanentifnoreplies = permanentifnoreplies
-                                                )
-                                            }
-                                            // Delete Permanently
-                                            getString(R.string.chat_message_tap_option_delete_permanently) -> {
-                                                viewModel.removeMessage(
-                                                    which = chatEvent,
-                                                    isPermanentDelete = true,
-                                                    permanentifnoreplies = permanentifnoreplies
-                                                )
-                                            }
-                                        }
-                                    }
-                                    .show()
+                            getString(R.string.chat_message_tap_option_delete_permanently) -> {
+                                // Delete Permanently
+                                viewModel.removeMessage(
+                                    which = chatEvent,
+                                    isPermanentDelete = true,
+                                    permanentifnoreplies = true
+                                )
                             }
                         }
                         dialog.dismiss()
@@ -347,10 +325,17 @@ class LiveChatFragment : BaseFragment() {
                 ).show()
             }
             is ChatRoomViewModel.ViewEffect.SuccessRemoveMessage -> {
+                Log.d(TAG, "ChatRoomViewModel.ViewEffect.SuccessRemoveMessage:: permanentdelete = ${effect.response.permanentdelete}")
+                Log.d(TAG, "ChatRoomViewModel.ViewEffect.SuccessRemoveMessage:: removedEvent = ${effect.response.event}")
+
                 // Pre-emptively Remove ChatEvent
                 if (::adapter.isInitialized) {
                     effect.response.event?.let { removedEvent ->
-                        adapter.remove(removedEvent)
+                        if(effect.response.permanentdelete == true) {
+                            adapter.remove(removedEvent)
+                        } else {
+                            adapter.update(removedEvent)
+                        }
                     }
                 }
 
