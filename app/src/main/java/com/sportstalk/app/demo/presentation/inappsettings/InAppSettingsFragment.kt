@@ -1,10 +1,10 @@
 package com.sportstalk.app.demo.presentation.inappsettings
 
 import android.os.Bundle
-import android.util.Log
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
@@ -17,17 +17,15 @@ import com.sportstalk.app.demo.presentation.BaseFragment
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.rx2.asFlow
-import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.koin.android.ext.android.getKoin
+import org.koin.androidx.viewmodel.koin.getViewModel
 import java.util.concurrent.TimeUnit
 
 class InAppSettingsFragment : BaseFragment() {
 
     private lateinit var binding: FragmentInappSettingsBinding
-    private val viewModel: InAppSettingsViewModel by viewModel()
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setHasOptionsMenu(true)
+    private val viewModel: InAppSettingsViewModel by lazy {
+        getKoin().getViewModel<InAppSettingsViewModel>(owner = requireParentFragment())
     }
 
     override fun onCreateView(
@@ -44,11 +42,6 @@ class InAppSettingsFragment : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        (activity as? AppCompatActivity)?.let { actv ->
-            actv.setSupportActionBar(binding.toolbar)
-            actv.supportActionBar?.title = getString(R.string.inapp_settings)
-        }
-
         viewModel.state.urlEndpoint()
             .onEach { binding.actvUrlEndpointValue.text = it }
             .launchIn(lifecycleScope)
@@ -63,7 +56,7 @@ class InAppSettingsFragment : BaseFragment() {
 
         viewModel.effect
             .onEach { effect ->
-                when(effect) {
+                when (effect) {
                     is InAppSettingsViewModel.ViewEffect.SuccessReset -> {
                         Toast.makeText(
                             requireContext(),
@@ -171,30 +164,27 @@ class InAppSettingsFragment : BaseFragment() {
             }
             .launchIn(lifecycleScope)
 
-    }
+        binding.toolbar.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                R.id.action_reset -> {
+                    // Display Alert Prompt With Input Text
+                    MaterialAlertDialogBuilder(requireContext())
+                        .setTitle(R.string.reset)
+                        .setMessage(R.string.are_you_sure)
+                        .setPositiveButton(android.R.string.yes) { _, _ ->
+                            viewModel.reset()
+                        }
+                        .setNegativeButton(android.R.string.cancel) { dialog, _ ->
+                            dialog.dismiss()
+                        }
+                        .show()
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        super.onCreateOptionsMenu(menu, inflater)
-        inflater.inflate(R.menu.inapp_settings, menu)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean =
-        when(item.itemId) {
-            R.id.action_reset -> {
-                // Display Alert Prompt With Input Text
-                MaterialAlertDialogBuilder(requireContext())
-                    .setTitle(R.string.reset)
-                    .setMessage(R.string.are_you_sure)
-                    .setPositiveButton(android.R.string.yes) { _, _ ->
-                        viewModel.reset()
-                    }
-                    .setNegativeButton(android.R.string.cancel) { dialog, _ ->
-                        dialog.dismiss()
-                    }
-                    .show()
-                true
+                    true
+                }
+                else -> false
             }
-            else -> super.onOptionsItemSelected(item)
         }
+
+    }
 
 }

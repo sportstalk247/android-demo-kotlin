@@ -20,7 +20,6 @@ import com.sportstalk.app.demo.presentation.listrooms.AdminListChatRoomsFragment
 import com.sportstalk.app.demo.presentation.listrooms.ListChatRoomsFragment
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.rx2.asFlow
-import org.koin.android.ext.android.get
 import org.koin.android.ext.android.inject
 
 class HomeFragment : BaseFragment() {

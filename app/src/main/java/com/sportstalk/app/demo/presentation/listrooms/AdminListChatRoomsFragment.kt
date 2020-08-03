@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.util.Log
 import android.view.*
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -24,7 +23,8 @@ import com.sportstalk.models.chat.ChatRoom
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.rx2.asFlow
-import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.koin.android.ext.android.getKoin
+import org.koin.androidx.viewmodel.koin.getViewModel
 import java.util.concurrent.TimeUnit
 
 class AdminListChatRoomsFragment : BaseFragment() {
@@ -34,11 +34,8 @@ class AdminListChatRoomsFragment : BaseFragment() {
     private lateinit var adapter: ItemAdminListChatRoomAdapter
     private lateinit var scrollListener: RecyclerView.OnScrollListener
 
-    private val viewModel: AdminListChatRoomsViewModel by viewModel()
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setHasOptionsMenu(true)
+    private val viewModel: AdminListChatRoomsViewModel by lazy {
+        getKoin().getViewModel<AdminListChatRoomsViewModel>(owner = requireParentFragment())
     }
 
     override fun onCreateView(
@@ -129,12 +126,6 @@ class AdminListChatRoomsFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        // Setup Toolbar
-        (requireActivity() as? AppCompatActivity)?.let { actv ->
-            actv.setSupportActionBar(binding.toolbar)
-            actv.supportActionBar?.title = getString(R.string.rooms)
-        }
 
         ///////////////////////////////
         // Bind ViewModel State
@@ -261,7 +252,8 @@ class AdminListChatRoomsFragment : BaseFragment() {
             is AdminListChatRoomsViewModel.ViewEffect.ErrorFetchListChatrooms -> {
                 Toast.makeText(
                     requireContext(),
-                    effect.err.message?.takeIf { it.isNotEmpty() } ?: getString(R.string.something_went_wrong_please_try_again),
+                    effect.err.message?.takeIf { it.isNotEmpty() }
+                        ?: getString(R.string.something_went_wrong_please_try_again),
                     Toast.LENGTH_SHORT
                 ).show()
             }
@@ -284,7 +276,8 @@ class AdminListChatRoomsFragment : BaseFragment() {
             is AdminListChatRoomsViewModel.ViewEffect.ErrorDeleteRoom -> {
                 Toast.makeText(
                     requireContext(),
-                    effect.err.message?.takeIf { it.isNotEmpty() } ?: getString(R.string.something_went_wrong_please_try_again),
+                    effect.err.message?.takeIf { it.isNotEmpty() }
+                        ?: getString(R.string.something_went_wrong_please_try_again),
                     Toast.LENGTH_SHORT
                 ).show()
             }
@@ -299,7 +292,8 @@ class AdminListChatRoomsFragment : BaseFragment() {
             is AdminListChatRoomsViewModel.ViewEffect.ErrorSendAnnouncement -> {
                 Toast.makeText(
                     requireContext(),
-                    effect.err.message?.takeIf { it.isNotEmpty() } ?: getString(R.string.something_went_wrong_please_try_again),
+                    effect.err.message?.takeIf { it.isNotEmpty() }
+                        ?: getString(R.string.something_went_wrong_please_try_again),
                     Toast.LENGTH_SHORT
                 ).show()
             }

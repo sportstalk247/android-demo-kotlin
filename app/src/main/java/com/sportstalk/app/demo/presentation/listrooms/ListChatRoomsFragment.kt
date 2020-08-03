@@ -2,10 +2,10 @@ package com.sportstalk.app.demo.presentation.listrooms
 
 import android.os.Bundle
 import android.util.Log
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
 import androidx.core.os.bundleOf
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -23,21 +23,18 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.rx2.asFlow
-import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.koin.android.ext.android.getKoin
+import org.koin.androidx.viewmodel.koin.getViewModel
 
 class ListChatRoomsFragment : BaseFragment() {
 
     private lateinit var binding: FragmentListChatroomBinding
-    private lateinit var menu: Menu
 
     private lateinit var adapter: ItemListChatRoomAdapter
     private lateinit var scrollListener: RecyclerView.OnScrollListener
 
-    private val viewModel: ListChatRoomsViewModel by viewModel()
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setHasOptionsMenu(true)
+    private val viewModel: ListChatRoomsViewModel by lazy {
+        getKoin().getViewModel<ListChatRoomsViewModel>(owner = requireParentFragment())
     }
 
     override fun onCreateView(
@@ -78,12 +75,6 @@ class ListChatRoomsFragment : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Setup Toolbar
-        (requireActivity() as? AppCompatActivity)?.let { actv ->
-            actv.setSupportActionBar(binding.toolbar)
-            actv.supportActionBar?.title = getString(R.string.rooms)
-        }
-
         ///////////////////////////////
         // Bind ViewModel State
         ///////////////////////////////
@@ -104,6 +95,14 @@ class ListChatRoomsFragment : BaseFragment() {
             .onEach { chatRooms ->
                 takeChatRooms(chatRooms)
             }
+            .launchIn(lifecycleScope)
+
+        /**
+         * Emits [true] if account was already created. Emits [false] otherwise.
+         */
+        viewModel.state.enableAccountSettings()
+            .distinctUntilChanged()
+            .onEach { takeEnableAccountSettings(it) }
             .launchIn(lifecycleScope)
 
         // View Effect
@@ -128,40 +127,6 @@ class ListChatRoomsFragment : BaseFragment() {
         viewModel.fetchInitial()
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        super.onCreateOptionsMenu(menu, inflater)
-        inflater.inflate(R.menu.list_chatroom, menu)
-
-        this.menu = menu
-        /**
-         * Emits [true] if account was already created. Emits [false] otherwise.
-         */
-        viewModel.state.enableAccountSettings()
-            .distinctUntilChanged()
-            .onEach { takeEnableAccountSettings(it) }
-            .launchIn(lifecycleScope)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean =
-        when (item.itemId) {
-            R.id.action_search -> {
-                // TODO:: R.id.action_search
-                true
-            }
-            R.id.action_account_settings -> {
-                // Navigate to Account Settings Screen
-                if (appNavController.currentDestination?.id == R.id.fragmentHome) {
-                    appNavController.navigate(
-                        R.id.action_fragmentHome_to_fragmentAccountSettings
-                    )
-                }
-
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
-        }
-
-
     override fun onDestroyView() {
         super.onDestroyView()
 
@@ -173,7 +138,7 @@ class ListChatRoomsFragment : BaseFragment() {
         Log.d(TAG, "takeProgressFetchChatRooms() -> inProgress = $inProgress")
         binding.swipeRefresh.isRefreshing = inProgress
 
-        if(!inProgress) {
+        if (!inProgress) {
             requireActivity().invalidateOptionsMenu()
         }
     }
@@ -186,13 +151,23 @@ class ListChatRoomsFragment : BaseFragment() {
 
     private fun takeEnableAccountSettings(isEnabled: Boolean) {
         Log.d(TAG, "takeEnableAccountSettings() -> isEnabled = $isEnabled")
-        // Toggle menu action
-        if(::menu.isInitialized) {
-            this.menu.findItem(R.id.action_account_settings)?.let { item ->
-                item.isEnabled = isEnabled
-                /*requireActivity().invalidateOptionsMenu()*/
+        binding.toolbar.menu.findItem(R.id.action_account_settings)?.let { item ->
+            // Toggle menu action
+            item.isEnabled = isEnabled
+
+            item.setOnMenuItemClickListener {
+                // Navigate to Account Settings Screen
+                if (appNavController.currentDestination?.id == R.id.fragmentHome) {
+                    appNavController.navigate(
+                        R.id.action_fragmentHome_to_fragmentAccountSettings
+                    )
+                }
+
+                true
             }
+
         }
+
     }
 
     private fun takeViewEffect(effect: ListChatRoomsViewModel.ViewEffect) {
