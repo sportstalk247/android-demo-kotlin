@@ -136,8 +136,10 @@
 
             <androidx.appcompat.widget.AppCompatTextView
                 android:id="@+id/actvDisplayName"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:gravity="left|center_vertical"
+                android:textAlignment="gravity"
                 android:layout_marginLeft="12dp"
                 android:textStyle="bold"
                 android:textSize="14sp"
@@ -147,14 +149,14 @@
                 android:ellipsize="end"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintLeft_toRightOf="@+id/btnLike"
-                app:layout_constraintRight_toLeftOf="@+id/actvDisplayHandle"
-                app:layout_constraintHorizontal_bias="0.95"
+                app:layout_constraintRight_toLeftOf="@+id/guidelineNameHandle"
+                app:layout_constraintHorizontal_bias="0.0"
                 tools:text="Bobby Axelrod"
                 />
 
             <androidx.appcompat.widget.AppCompatTextView
                 android:id="@+id/actvDisplayHandle"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginRight="8dp"
                 android:textSize="12sp"
@@ -164,6 +166,7 @@
                 android:ellipsize="end"
                 app:layout_constraintTop_toBottomOf="@+id/actvDisplayName"
                 app:layout_constraintBottom_toTopOf="@+id/actvDisplayName"
+                app:layout_constraintLeft_toRightOf="@+id/guidelineNameHandle"
                 app:layout_constraintRight_toRightOf="parent"
                 tools:text="\@bobby_axelrod"
                 />
@@ -228,11 +231,11 @@
                 />
 
             <androidx.constraintlayout.widget.Guideline
-                android:id="@+id/guideline"
+                android:id="@+id/guidelineNameHandle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                app:layout_constraintHeight_percent="0.5"
+                android:orientation="vertical"
+                app:layout_constraintGuide_percent="0.65"
                 />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
