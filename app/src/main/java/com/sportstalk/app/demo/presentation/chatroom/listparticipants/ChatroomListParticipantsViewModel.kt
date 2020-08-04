@@ -133,7 +133,7 @@ class ChatroomListParticipantsViewModel(
                     chatClient.executeChatCommand(
                         chatRoomId = room.id!!,
                         request = ExecuteChatCommandRequest(
-                            command = "*purge zola ${from.userid!!}",
+                            command = "*purge zola ${from.handle!!}",
                             userid = user.userid!!
                         )
                     )
