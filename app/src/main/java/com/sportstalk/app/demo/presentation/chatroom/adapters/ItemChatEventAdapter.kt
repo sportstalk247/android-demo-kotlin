@@ -205,7 +205,11 @@ class ItemChatEventAdapter(
             }
             is ItemChatEventSentViewHolder -> {
                 holder.bind(me, item)
-                holder.binding.cardViewMessage.setOnClickListener { onTapChatEventItem(item) }
+                val onClickItem = when {
+                    item.deleted == null || item.deleted == false -> View.OnClickListener { onTapChatEventItem(item) }
+                    else -> null
+                }
+                holder.binding.cardViewMessage.setOnClickListener(onClickItem)
             }
             is ItemChatEventReceivedViewHolder -> {
                 holder.bind(me, item)
