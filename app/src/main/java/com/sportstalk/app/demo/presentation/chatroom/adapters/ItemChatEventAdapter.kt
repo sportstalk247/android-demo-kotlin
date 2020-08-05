@@ -249,8 +249,19 @@ class ItemChatEventAdapter(
                 .into(binding.civProfile)
 
             // Display Name
-            binding.actvDisplayName.text = item.user?.displayname
-            binding.actvDisplayHandle.text = "@${item.user?.handle ?: ""}"
+            item.user?.displayname?.takeIf { it.isNotEmpty() }?.let { displayname ->
+                binding.actvDisplayName.text = displayname
+                binding.actvDisplayName.visibility = View.VISIBLE
+            } ?: run {
+                binding.actvDisplayName.visibility = View.GONE
+            }
+            // Handle
+            item.user?.handle?.takeIf { it.isNotEmpty() }?.let { handle ->
+                binding.actvDisplayHandle.text = "@${item.user?.handle ?: ""}"
+                binding.actvDisplayHandle.visibility = View.VISIBLE
+            } ?: run {
+                binding.actvDisplayHandle.visibility = View.GONE
+            }
             binding.actvChatMessage.text = item.body
 
             // ChatEvent Reaction Count
@@ -303,8 +314,20 @@ class ItemChatEventAdapter(
                 .into(binding.civProfile)
 
             // Display Name
-            binding.actvDisplayName.text = item.user?.displayname
-            binding.actvDisplayHandle.text = "@${item.user?.handle ?: ""}"
+            item.user?.displayname?.takeIf { it.isNotEmpty() }?.let { displayname ->
+                binding.actvDisplayName.text = displayname
+                binding.actvDisplayName.visibility = View.VISIBLE
+            } ?: run {
+                binding.actvDisplayName.visibility = View.GONE
+            }
+            // Handle
+            item.user?.handle?.takeIf { it.isNotEmpty() }?.let { handle ->
+                binding.actvDisplayHandle.text = "@${item.user?.handle ?: ""}"
+                binding.actvDisplayHandle.visibility = View.VISIBLE
+            } ?: run {
+                binding.actvDisplayHandle.visibility = View.GONE
+            }
+
             binding.actvChatMessage.text = item.body
 
             val iReactedToThisMessage = item.reactions

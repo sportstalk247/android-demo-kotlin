@@ -133,44 +133,46 @@
             android:layout_height="wrap_content"
             >
 
-            <androidx.appcompat.widget.AppCompatTextView
-                android:id="@+id/actvDisplayName"
+            <com.google.android.flexbox.FlexboxLayout
+                android:id="@+id/containerDisplayHandlename"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:gravity="right|center_vertical"
-                android:textAlignment="gravity"
+                android:orientation="horizontal"
                 android:layout_marginLeft="12dp"
                 android:layout_marginRight="8dp"
-                android:textStyle="bold"
-                android:textSize="14sp"
-                android:textAppearance="?attr/textAppearanceHeadline5"
-                android:textColor="@android:color/primary_text_dark_nodisable"
-                android:maxLines="1"
-                android:ellipsize="end"
+                android:layoutDirection="rtl"
+                app:flow_maxElementsWrap="2"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintLeft_toRightOf="@+id/btnLike"
-                app:layout_constraintRight_toLeftOf="@+id/guidelineNameHandle"
-                app:layout_constraintHorizontal_bias="0.0"
-                tools:text="Bobby Axelrod"
-                />
-
-            <androidx.appcompat.widget.AppCompatTextView
-                android:id="@+id/actvDisplayHandle"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginRight="8dp"
-                android:gravity="right|center_vertical"
-                android:textSize="12sp"
-                android:textAppearance="?attr/textAppearanceHeadline6"
-                android:textColor="@android:color/primary_text_dark"
-                android:maxLines="1"
-                android:ellipsize="end"
-                app:layout_constraintTop_toBottomOf="@+id/actvDisplayName"
-                app:layout_constraintBottom_toTopOf="@+id/actvDisplayName"
-                app:layout_constraintLeft_toRightOf="@+id/guidelineNameHandle"
                 app:layout_constraintRight_toRightOf="parent"
-                tools:text="\@bobby_axelrod"
-                />
+                >
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:id="@+id/actvDisplayHandle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="8dp"
+                    android:gravity="left|center_vertical"
+                    android:textSize="12sp"
+                    android:textAppearance="?attr/textAppearanceHeadline6"
+                    android:textColor="@android:color/primary_text_dark"
+                    tools:text="\@bobby_axelrod"
+                    />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:id="@+id/actvDisplayName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="right|center_vertical"
+                    android:textAlignment="gravity"
+                    android:textStyle="bold"
+                    android:textSize="14sp"
+                    android:textAppearance="?attr/textAppearanceHeadline5"
+                    android:textColor="@android:color/primary_text_dark_nodisable"
+                    tools:text="Bobby Axelrod"
+                    />
+
+            </com.google.android.flexbox.FlexboxLayout>
 
             <androidx.appcompat.widget.AppCompatTextView
                 android:id="@+id/actvChatMessage"
@@ -185,7 +187,7 @@
                 android:textSize="16sp"
                 android:textAppearance="?attr/textAppearanceHeadline1"
                 android:textColor="@android:color/primary_text_dark"
-                app:layout_constraintTop_toBottomOf="@+id/actvDisplayHandle"
+                app:layout_constraintTop_toBottomOf="@+id/containerDisplayHandlename"
                 app:layout_constraintLeft_toRightOf="@+id/btnLike"
                 app:layout_constraintRight_toRightOf="parent"
                 tools:text="What's up???\nWhat's up???\nWhat's up???\nWhat's up???\nWhat's up???\nWhat's up???\n"

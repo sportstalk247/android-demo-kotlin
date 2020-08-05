@@ -36,6 +36,7 @@ ext {
     androidXCardViewVersion = '1.0.0'
     constraintLayoutVersion = '2.0.0-beta4'
     viewPager2Version = '1.0.0-rc01'
+    googleFlexBoxVersion = '2.0.1'
     // Material Components
     androidMaterialComponentsVersion = '1.1.0'
     // AndroidX Activity

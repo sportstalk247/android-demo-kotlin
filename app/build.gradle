@@ -153,6 +153,9 @@ dependencies {
     implementation "androidx.constraintlayout:constraintlayout:$constraintLayoutVersion"
     // ViewPager2
     implementation "androidx.viewpager2:viewpager2:$viewPager2Version"
+    // Google FlexboxLayout
+    implementation "com.google.android:flexbox:$googleFlexBoxVersion"
+
     // AndroidX Navigation
     implementation "androidx.navigation:navigation-fragment:$rootProject.androidXNavigationVersion"
     implementation "androidx.navigation:navigation-fragment-ktx:$rootProject.androidXNavigationVersion"
