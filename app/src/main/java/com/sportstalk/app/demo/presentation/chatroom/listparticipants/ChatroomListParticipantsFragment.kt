@@ -256,28 +256,28 @@ class ChatroomListParticipantsFragment : BaseFragment() {
             is ChatroomListParticipantsViewModel.ViewEffect.ErrorFetchChatroomParticipants -> {
                 Toast.makeText(
                     requireContext(),
-                    effect.err.message ?: getString(R.string.something_went_wrong_please_try_again),
+                    effect.err.message?.takeIf { it.isNotEmpty() } ?: getString(R.string.something_went_wrong_please_try_again),
                     Toast.LENGTH_SHORT
                 ).show()
             }
             is ChatroomListParticipantsViewModel.ViewEffect.ErrorUserSetBanStatus -> {
                 Toast.makeText(
                     requireContext(),
-                    effect.err.message ?: getString(R.string.something_went_wrong_please_try_again),
+                    effect.err.message?.takeIf { it.isNotEmpty() } ?: getString(R.string.something_went_wrong_please_try_again),
                     Toast.LENGTH_SHORT
                 ).show()
             }
             is ChatroomListParticipantsViewModel.ViewEffect.SuccessPurgeUserMessages -> {
                 Toast.makeText(
                     requireContext(),
-                    getString(R.string.chatevents_from_handle_successfully_purged, effect.who.handle),
+                    effect.response.message?.takeIf { it.isNotEmpty() } ?: getString(R.string.chatevents_from_handle_successfully_purged, effect.who.handle),
                     Toast.LENGTH_SHORT
                 ).show()
             }
             is ChatroomListParticipantsViewModel.ViewEffect.ErrorPurgeUserMessages -> {
                 Toast.makeText(
                     requireContext(),
-                    effect.err.message ?: getString(R.string.something_went_wrong_please_try_again),
+                    effect.err.message?.takeIf { it.isNotEmpty() } ?: getString(R.string.something_went_wrong_please_try_again),
                     Toast.LENGTH_SHORT
                 ).show()
             }
