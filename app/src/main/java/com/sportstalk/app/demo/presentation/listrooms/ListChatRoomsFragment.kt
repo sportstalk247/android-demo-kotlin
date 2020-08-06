@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.rx2.asFlow
 import org.koin.android.ext.android.getKoin
+import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.androidx.viewmodel.koin.getViewModel
 
 class ListChatRoomsFragment : BaseFragment() {
@@ -33,9 +34,7 @@ class ListChatRoomsFragment : BaseFragment() {
     private lateinit var adapter: ItemListChatRoomAdapter
     private lateinit var scrollListener: RecyclerView.OnScrollListener
 
-    private val viewModel: ListChatRoomsViewModel by lazy {
-        getKoin().getViewModel<ListChatRoomsViewModel>(owner = requireParentFragment())
-    }
+    private val viewModel: ListChatRoomsViewModel by viewModel()
 
     override fun onCreateView(
         inflater: LayoutInflater,

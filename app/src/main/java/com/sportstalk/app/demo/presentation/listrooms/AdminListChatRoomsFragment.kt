@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.rx2.asFlow
 import org.koin.android.ext.android.getKoin
+import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.androidx.viewmodel.koin.getViewModel
 import java.util.concurrent.TimeUnit
 
@@ -34,9 +35,7 @@ class AdminListChatRoomsFragment : BaseFragment() {
     private lateinit var adapter: ItemAdminListChatRoomAdapter
     private lateinit var scrollListener: RecyclerView.OnScrollListener
 
-    private val viewModel: AdminListChatRoomsViewModel by lazy {
-        getKoin().getViewModel<AdminListChatRoomsViewModel>(owner = requireParentFragment())
-    }
+    private val viewModel: AdminListChatRoomsViewModel by viewModel()
 
     override fun onCreateView(
         inflater: LayoutInflater,

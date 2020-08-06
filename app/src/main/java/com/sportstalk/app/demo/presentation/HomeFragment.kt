@@ -35,37 +35,7 @@ class HomeFragment : BaseFragment() {
         binding = FragmentHomeBinding.inflate(inflater)
 
         // Setup ViewPager2 and BottomNavigationView
-        binding.viewPager2.adapter = ViewPager2Adapter(childFragmentManager, lifecycle)
         binding.viewPager2.offscreenPageLimit = 1
-        binding.viewPager2.pageSelections()
-            .skipInitialValue()
-            .asFlow()
-            .onEach { position ->
-                when (position) {
-                    TAB_FAN -> binding.bottomNavView.selectedItemId = R.id.bottomNavFan
-                    TAB_ADMIN -> binding.bottomNavView.selectedItemId = R.id.bottomNavAdmin
-                    TAB_SETTINGS -> binding.bottomNavView.selectedItemId = R.id.bottomNavSettings
-                }
-            }
-            .launchIn(lifecycleScope)
-
-        binding.bottomNavView.setOnNavigationItemSelectedListener { item: MenuItem ->
-            when (item.itemId) {
-                R.id.bottomNavFan -> {
-                    binding.viewPager2.setCurrentItem(TAB_FAN, true)
-                    true
-                }
-                R.id.bottomNavAdmin -> {
-                    binding.viewPager2.setCurrentItem(TAB_ADMIN, true)
-                    true
-                }
-                R.id.bottomNavSettings -> {
-                    binding.viewPager2.setCurrentItem(TAB_SETTINGS, true)
-                    true
-                }
-                else -> false
-            }
-        }
 
         return binding.root
     }
@@ -80,14 +50,45 @@ class HomeFragment : BaseFragment() {
             preferences.urlEndpointChanges().distinctUntilChanged()
         ) { _appId, _authToken, _url -> Triple(_appId, _authToken, _url) }
             .distinctUntilChanged()
-            .drop(1)
             .debounce(250)
             .onEach { (_appId, _authToken, _url) ->
                 Log.d(TAG, "onViewCreated() -> _appId = $_appId")
                 Log.d(TAG, "onViewCreated() -> _authToken = $_authToken")
-                Log.d(TAG, "onViewCreated() -> _url = $_url")
-                binding.viewPager2.adapter?.notifyItemChanged(0)
-                binding.viewPager2.adapter?.notifyItemChanged(1)
+
+                val isFirstLoad = binding.viewPager2.adapter?.itemCount != TAB_COUNT
+
+                binding.viewPager2.adapter = ViewPager2Adapter(childFragmentManager, lifecycle)
+                binding.viewPager2.pageSelections()
+                    .skipInitialValue()
+                    .asFlow()
+                    .onEach { position ->
+                        when (position) {
+                            TAB_FAN -> binding.bottomNavView.selectedItemId = R.id.bottomNavFan
+                            TAB_ADMIN -> binding.bottomNavView.selectedItemId = R.id.bottomNavAdmin
+                            TAB_SETTINGS -> binding.bottomNavView.selectedItemId = R.id.bottomNavSettings
+                        }
+                    }
+                    .launchIn(lifecycleScope)
+
+                binding.bottomNavView.setOnNavigationItemSelectedListener { item: MenuItem ->
+                    when (item.itemId) {
+                        R.id.bottomNavFan -> {
+                            binding.viewPager2.setCurrentItem(TAB_FAN, true)
+                            true
+                        }
+                        R.id.bottomNavAdmin -> {
+                            binding.viewPager2.setCurrentItem(TAB_ADMIN, true)
+                            true
+                        }
+                        R.id.bottomNavSettings -> {
+                            binding.viewPager2.setCurrentItem(TAB_SETTINGS, true)
+                            true
+                        }
+                        else -> false
+                    }
+                }
+
+                if(!isFirstLoad) binding.bottomNavView.selectedItemId = R.id.bottomNavSettings
             }
             .launchIn(lifecycleScope)
 
