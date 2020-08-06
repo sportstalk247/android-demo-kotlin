@@ -319,9 +319,9 @@ class UpdateChatroomViewModel(
                         chatRoomId = room.id!!,
                         request = ExecuteChatCommandRequest(
                             command = message,
-                            // TODO:: ADMIN ID For Send Announcement
-                            userid = preferences.currentUser?.userid ?: "0M5fL2WAbQGiiMS4", // This is just a temporary ID
-                            customtype = "announcement"
+                            // TODO:: Hard-coded ADMIN ID
+                            userid = "admin",
+                            eventtype = EventType.ANNOUNCEMENT
                         )
                     )
                 }
