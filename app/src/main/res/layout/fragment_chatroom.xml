@@ -84,6 +84,8 @@
                 android:layout_marginBottom="28dp"
                 android:hint="@string/send_a_message"
                 app:boxCollapsedPaddingTop="8dp"
+                app:counterEnabled="true"
+                app:counterMaxLength="@integer/send_chat_message_max_char_limit"
                 >
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -92,6 +94,7 @@
                     android:layout_height="wrap_content"
                     android:textSize="14sp"
                     android:includeFontPadding="true"
+                    android:maxLength="@integer/send_chat_message_max_char_limit"
                     />
                 <ProgressBar
                     android:id="@+id/progressBarSendChat"
