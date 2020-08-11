@@ -5,9 +5,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     >
 
-    <item android:id="@+id/action_leave_room"
-        android:title="@string/leave_room"
-        android:icon="@drawable/ic_exit_to_app_white_24dp"
+    <item android:id="@+id/action_account_settings"
+        android:title="@string/account_settings"
+        android:icon="@drawable/ic_profile_default"
         app:showAsAction="always"
         />
 

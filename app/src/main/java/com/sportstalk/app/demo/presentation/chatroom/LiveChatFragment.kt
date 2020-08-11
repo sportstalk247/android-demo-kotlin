@@ -154,6 +154,13 @@ class LiveChatFragment : BaseFragment() {
                 MaterialAlertDialogBuilder(requireContext())
                     .setItems(options) { dialog, which ->
                         when(options[which]) {
+                            // Like
+                            getString(R.string.chat_message_tap_option_like) -> {
+                                // Perform React Operation
+                                viewModel.reactToAMessage(
+                                    event = chatEvent
+                                )
+                            }
                             // Reply
                             getString(R.string.chat_message_tap_option_reply) -> {
                                 // Prepare Quoted Reply
@@ -185,13 +192,6 @@ class LiveChatFragment : BaseFragment() {
                         dialog.dismiss()
                     }
                     .show()
-            },
-            onTapReactChatEventItem = { chatEvent: ChatEvent, hasAlreadyReacted: Boolean ->
-                // Perform React Operation
-                viewModel.reactToAMessage(
-                    event = chatEvent,
-                    hasAlreadyReacted = hasAlreadyReacted
-                )
             }
         )
 
@@ -271,6 +271,16 @@ class LiveChatFragment : BaseFragment() {
                     // TODO:: Handle Advertisement Events
 
                 }
+            }
+            is ChatRoomViewModel.ViewEffect.SuccessExitRoom -> {
+                Toast.makeText(
+                    requireContext(),
+                    "You've left the room.",
+                    Toast.LENGTH_SHORT
+                ).show()
+
+                // Navigate popback
+                appNavController.popBackStack()
             }
             is ChatRoomViewModel.ViewEffect.ChatMessageSent -> {
                 // Do nothing...

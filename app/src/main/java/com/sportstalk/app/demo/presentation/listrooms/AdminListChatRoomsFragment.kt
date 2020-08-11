@@ -9,8 +9,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.textfield.TextInputEditText
-import com.google.android.material.textfield.TextInputLayout
 import com.jakewharton.rxbinding3.swiperefreshlayout.refreshes
 import com.jakewharton.rxbinding3.view.clicks
 import com.sportstalk.app.demo.R
@@ -23,9 +21,7 @@ import com.sportstalk.models.chat.ChatRoom
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.rx2.asFlow
-import org.koin.android.ext.android.getKoin
 import org.koin.androidx.viewmodel.ext.android.viewModel
-import org.koin.androidx.viewmodel.koin.getViewModel
 import java.util.concurrent.TimeUnit
 
 class AdminListChatRoomsFragment : BaseFragment() {
@@ -68,37 +64,6 @@ class AdminListChatRoomsFragment : BaseFragment() {
                         viewModel.delete(which = selected)
                     }
                     .setNegativeButton(android.R.string.no) { dialog, _ ->
-                        dialog.dismiss()
-                    }
-                    .show()
-            },
-            onItemSendAnnouncement = { which ->
-                Log.d(
-                    TAG,
-                    "ItemAdminListChatRooms.adopt() -> onItemSendAnnouncement() -> which = $which"
-                )
-
-                val textInputLayout = LayoutInflater.from(requireContext())
-                    .inflate(
-                        R.layout.layout_inapp_settings_input_text,
-                        binding.root,
-                        false
-                    ) as TextInputLayout
-                val tietInputText =
-                    textInputLayout.findViewById<TextInputEditText>(R.id.tietInputText)
-
-                // Display Alert Prompt With Input Text
-                MaterialAlertDialogBuilder(requireContext())
-                    .setTitle(R.string.send_announcement)
-                    .setView(textInputLayout)
-                    .setPositiveButton(R.string.apply) { _, _ ->
-                        // Attempt send announcement
-                        viewModel.sendAnnouncement(
-                            message = tietInputText.text?.toString() ?: "",
-                            which = which
-                        )
-                    }
-                    .setNegativeButton(android.R.string.cancel) { dialog, _ ->
                         dialog.dismiss()
                     }
                     .show()

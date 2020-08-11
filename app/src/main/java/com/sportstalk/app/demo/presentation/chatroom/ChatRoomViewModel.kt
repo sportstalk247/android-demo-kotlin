@@ -85,12 +85,10 @@ class ChatRoomViewModel(
                 .take(1)
     }
 
-    private val _effect = BroadcastChannel<ViewEffect>(Channel.BUFFERED)/*Channel<ViewEffect>(Channel.RENDEZVOUS)*/
+    private val _effect = Channel<ViewEffect>(Channel.BUFFERED)
     val effect: Flow<ViewEffect>
         get() = _effect
-            /*.receiveAsFlow()*/
-            .asFlow()
-
+            .receiveAsFlow()
     init {
         // Emit Room Name
         roomName.sendBlocking(room.name ?: "")
@@ -421,7 +419,7 @@ class ChatRoomViewModel(
         }
     }
 
-    fun reactToAMessage(event: ChatEvent, hasAlreadyReacted: Boolean) {
+    fun reactToAMessage(event: ChatEvent/*, hasAlreadyReacted: Boolean*/) {
         viewModelScope.launch {
 
             try {
@@ -433,7 +431,7 @@ class ChatRoomViewModel(
                         request = ReactToAMessageRequest(
                             userid = user.userid!!,
                             reaction = EventReaction.LIKE,
-                            reacted = !hasAlreadyReacted
+                            reacted = true
                         )
                     )
                 }

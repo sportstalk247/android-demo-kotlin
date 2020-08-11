@@ -75,11 +75,13 @@
     <string name="others_replied_to" formatted="true">%s replied to %s</string>
     <string name="you_replied_to" formatted="true">You replied to %s</string>
 
+    <string name="chat_message_tap_option_like">Like</string>
     <string name="chat_message_tap_option_reply">Reply</string>
     <string name="chat_message_tap_option_report">Report</string>
     <string name="chat_message_tap_option_flag_as_deleted">Flag as Deleted</string>
     <string name="chat_message_tap_option_delete_permanently">Delete Permanently</string>
     <string-array name="chat_message_tap_options">
+        <item>@string/chat_message_tap_option_like</item>
         <item>@string/chat_message_tap_option_reply</item>
         <item>@string/chat_message_tap_option_report</item>
         <item>@string/chat_message_tap_option_flag_as_deleted</item>
@@ -124,5 +126,6 @@
     <string name="chatroom_successfully_deleted" formatted="true">Chatroom \"%s\" successfully deleted…</string>
 
     <string name="chatevents_from_handle_successfully_purged" formatted="true">Chat Events from \"%s\" successfully purged…</string>
+    <string name="chat_likes_count" formatted="true">👍 x%s</string>
 
 </resources>

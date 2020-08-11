@@ -5,19 +5,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     >
 
-    <item android:id="@+id/action_search"
+    <!--<item android:id="@+id/action_search"
         app:actionViewClass="androidx.appcompat.widget.SearchView"
         android:title="@string/search"
         android:icon="@drawable/ic_search"
         app:showAsAction="always"
-        />
-
-    <item android:id="@+id/action_account_settings"
-        android:title="@string/account_settings"
-        android:icon="@drawable/ic_profile_default"
-        app:showAsAction="never"
-        android:enabled="false"
-        tools:enabled="true"
-        />
+        />-->
 
 </menu>

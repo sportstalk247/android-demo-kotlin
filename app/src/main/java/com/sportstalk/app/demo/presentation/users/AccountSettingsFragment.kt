@@ -525,7 +525,7 @@ class AccountSettingsFragment : BaseFragment() {
                     .show()
 
                 // Navigate back
-                appNavController.popBackStack()
+                appNavController.popBackStack(R.id.fragmentHome, false)
             }
             is AccountSettingsViewModel.ViewEffect.ErrorDeleteAccount -> {
                 // Display Error Prompt

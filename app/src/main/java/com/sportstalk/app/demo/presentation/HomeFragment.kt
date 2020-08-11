@@ -6,18 +6,25 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.observe
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.jakewharton.rxbinding3.viewpager2.pageSelections
 import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.SportsTalkDemoPreferences
 import com.sportstalk.app.demo.databinding.FragmentHomeBinding
+import com.sportstalk.app.demo.presentation.chatroom.ChatRoomFragment
 import com.sportstalk.app.demo.presentation.inappsettings.InAppSettingsFragment
 import com.sportstalk.app.demo.presentation.listrooms.AdminListChatRoomsFragment
 import com.sportstalk.app.demo.presentation.listrooms.ListChatRoomsFragment
+import com.sportstalk.app.demo.presentation.users.CreateAccountFragment
+import com.sportstalk.models.chat.ChatRoom
+import com.sportstalk.models.users.User
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.rx2.asFlow
 import org.koin.android.ext.android.inject
@@ -26,6 +33,34 @@ class HomeFragment : BaseFragment() {
 
     private lateinit var binding: FragmentHomeBinding
     private val preferences by inject<SportsTalkDemoPreferences>()
+
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+
+        // Consume LiveData result from navigation popback Create Account
+        appNavController.currentBackStackEntry?.savedStateHandle
+            ?.getLiveData<Pair<User, ChatRoom>>(CreateAccountFragment.OUTPUT_ARG_CREATED_USER_FOR_ROOM)
+            ?.observe(viewLifecycleOwner) { (createdUser, forRoom) ->
+                Log.d(TAG, "savedStateHandle:: createdUser -> $createdUser")
+                Log.d(TAG, "savedStateHandle:: forRoom -> $forRoom")
+
+                // Remove result
+                appNavController.currentBackStackEntry?.savedStateHandle?.remove<Pair<User, ChatRoom>>(CreateAccountFragment.OUTPUT_ARG_CREATED_USER_FOR_ROOM)
+
+                lifecycleScope.launchWhenResumed {
+                    delay(500)
+                    if(appNavController.currentDestination?.id == R.id.fragmentHome) {
+                        appNavController.navigate(
+                            R.id.action_fragmentHome_to_fragmentChatroom,
+                            bundleOf(
+                                ChatRoomFragment.INPUT_ARG_ROOM to forRoom,
+                                ChatRoomFragment.INPUT_ARG_USER to createdUser
+                            )
+                        )
+                    }
+                }
+            }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,

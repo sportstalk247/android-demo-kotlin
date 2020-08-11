@@ -19,12 +19,13 @@ import org.koin.core.qualifier.Qualifier
 open class BaseFragment : Fragment() {
 
     // Top-level Nav Controller Instance
-    lateinit var appNavController: NavController
+    /*lateinit var appNavController: NavController*/
+    open val appNavController: NavController by lazy { findNavController() }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        appNavController = Navigation.findNavController(requireActivity(), R.id.navHostFragmentApp)
-    }
+//    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+//        super.onViewCreated(view, savedInstanceState)
+//        appNavController = Navigation.findNavController(requireActivity(), R.id.navHostFragmentApp)
+//    }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)

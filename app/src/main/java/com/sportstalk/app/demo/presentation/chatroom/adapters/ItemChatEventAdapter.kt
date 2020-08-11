@@ -23,17 +23,14 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 typealias OnTapChatEventItem = ((ChatEvent) -> Unit)
-typealias OnTapReactChatEventItem = ((ChatEvent, Boolean) -> Unit)
 
 class ItemChatEventAdapter(
     private val me: User,
     initialItems: List<ChatEvent> = listOf(),
-    private val onTapChatEventItem: OnTapChatEventItem = {},
-    private val onTapReactChatEventItem: OnTapReactChatEventItem = { _, _ -> }
+    private val onTapChatEventItem: OnTapChatEventItem = {}
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private val UTC_MSG_SENT_FORMATTER: SimpleDateFormat =
-        /*SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX", Locale.getDefault())*/
         SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
 
     private var items: List<ChatEvent> = ArrayList(initialItems)
@@ -209,18 +206,11 @@ class ItemChatEventAdapter(
                     item.deleted == null || item.deleted == false -> View.OnClickListener { onTapChatEventItem(item) }
                     else -> null
                 }
-                holder.binding.cardViewMessage.setOnClickListener(onClickItem)
+                holder.binding.btnMore.setOnClickListener { onTapChatEventItem(item) }
             }
             is ItemChatEventReceivedViewHolder -> {
                 holder.bind(me, item)
-                holder.binding.cardViewMessage.setOnClickListener { onTapChatEventItem(item) }
-                val iReactedToThisMessage = item.reactions
-                    .any { rxn ->
-                        rxn.users.any { usr -> usr.userid == me.userid }
-                    }
-                holder.binding.btnLike.setOnClickListener {
-                    onTapReactChatEventItem.invoke(item, iReactedToThisMessage)
-                }
+                holder.binding.btnMore.setOnClickListener { onTapChatEventItem(item) }
             }
             is ItemChatEventAnnouncementViewHolder -> {
                 holder.bind(item)
@@ -264,13 +254,14 @@ class ItemChatEventAdapter(
             }
             binding.actvChatMessage.text = item.body
 
-            // ChatEvent Reaction Count
-            binding.actvReactionCount.text = when (item.reactions.size) {
-                in 1..999 -> reactionCountFormatter.format(item.reactions.size)
-                in 1000..999_999 -> "${reactionCountFormatter.format((item.reactions.size.toFloat() / 1_000f))}K"
-                in 1_000_000..999_999_999 -> "${reactionCountFormatter.format((item.reactions.size.toFloat() / 1_000_000f))}M"
-                else -> null
+            if(item.reactions.isNotEmpty()) {
+                binding.actvLikes.text = context.getString(R.string.chat_likes_count, item.reactions.size.toString(10))
+                binding.actvLikes.visibility = View.VISIBLE
+            } else {
+                binding.actvLikes.visibility = View.GONE
             }
+
+
             // ChatEvent Relative Time Sent: ex. "Just now"
             binding.actvSent.text = item.added?.let { added ->
                 val date = UTC_MSG_SENT_FORMATTER.parse(added) ?: return@let null
@@ -330,30 +321,13 @@ class ItemChatEventAdapter(
 
             binding.actvChatMessage.text = item.body
 
-            val iReactedToThisMessage = item.reactions
-                .any { rxn ->
-                    rxn.users.any { usr -> usr.userid == me.userid }
-                }
-
-            ImageViewCompat.setImageTintList(
-                binding.btnLike,
-                when (iReactedToThisMessage) {
-                    true -> ContextCompat.getColorStateList(context, R.color.blue_like)
-                    false -> ContextCompat.getColorStateList(
-                        context,
-                        android.R.color.tertiary_text_light
-                    )
-                }
-            )
-            binding.btnLike.requestLayout()
-
-            // ChatEvent Reaction Count
-            binding.actvReactionCount.text = when (item.reactions.size) {
-                in 1..999 -> reactionCountFormatter.format(item.reactions.size)
-                in 1000..999_999 -> "${reactionCountFormatter.format((item.reactions.size.toFloat() / 1_000f))}K"
-                in 1_000_000..999_999_999 -> "${reactionCountFormatter.format((item.reactions.size.toFloat() / 1_000_000f))}M"
-                else -> null
+            if(item.reactions.isNotEmpty()) {
+                binding.actvLikes.text = context.getString(R.string.chat_likes_count, item.reactions.size.toString(10))
+                binding.actvLikes.visibility = View.VISIBLE
+            } else {
+                binding.actvLikes.visibility = View.GONE
             }
+
             // ChatEvent Relative Time Sent: ex. "Just now"
             binding.actvSent.text = item.added?.let { added ->
                 val date = UTC_MSG_SENT_FORMATTER.parse(added) ?: return@let null

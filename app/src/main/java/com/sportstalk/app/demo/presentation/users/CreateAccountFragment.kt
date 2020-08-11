@@ -9,26 +9,21 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.os.bundleOf
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.jakewharton.rxbinding3.view.clicks
 import com.jakewharton.rxbinding3.widget.textChanges
-import com.sportstalk.SportsTalk247
 import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.FragmentCreateAccountBinding
 import com.sportstalk.app.demo.presentation.BaseFragment
-import com.sportstalk.app.demo.presentation.chatroom.ChatRoomFragment
-import com.sportstalk.models.ClientConfig
 import com.sportstalk.models.chat.ChatRoom
+import com.sportstalk.models.users.User
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.rx2.asFlow
-import org.koin.android.ext.android.get
 import org.koin.androidx.viewmodel.ext.android.viewModel
-import org.koin.core.parameter.parametersOf
 import java.util.concurrent.TimeUnit
 
 class CreateAccountFragment: BaseFragment() {
@@ -272,16 +267,24 @@ class CreateAccountFragment: BaseFragment() {
                     Toast.LENGTH_LONG
                 ).show()
 
-                // Navigate to ChatRoom Screen
-                arguments?.getParcelable<ChatRoom>(INPUT_ARG_ROOM)?.let { chatRoom ->
-                    appNavController.navigate(
-                        R.id.action_fragmentCreateAccount_to_fragmentChatroom,
-                        bundleOf(
-                            ChatRoomFragment.INPUT_ARG_ROOM to chatRoom,
-                            ChatRoomFragment.INPUT_ARG_USER to effect.user
-                        )
-                    )
-                }
+                val chatroom = arguments?.getParcelable<ChatRoom>(INPUT_ARG_ROOM) ?: return
+
+                appNavController.previousBackStackEntry?.savedStateHandle
+                    ?.getLiveData<Pair<User, ChatRoom>>(OUTPUT_ARG_CREATED_USER_FOR_ROOM)
+                    ?.postValue(Pair(effect.user, chatroom))
+
+                appNavController.popBackStack()
+
+//                // Navigate to ChatRoom Screen
+//                arguments?.getParcelable<ChatRoom>(INPUT_ARG_ROOM)?.let { chatRoom ->
+//                    appNavController.navigate(
+//                        R.id.action_fragmentCreateAccount_to_fragmentChatroom,
+//                        bundleOf(
+//                            ChatRoomFragment.INPUT_ARG_ROOM to chatRoom,
+//                            ChatRoomFragment.INPUT_ARG_USER to effect.user
+//                        )
+//                    )
+//                }
             }
             is CreateAccountViewModel.ViewEffect.ErrorCreateUser -> {
                 // Display ERROR Prompt
@@ -305,6 +308,7 @@ class CreateAccountFragment: BaseFragment() {
 
     companion object {
         const val INPUT_ARG_ROOM = "input-arg-room"
+        const val OUTPUT_ARG_CREATED_USER_FOR_ROOM = "output-arg-created-user-for-room"
     }
 
 }

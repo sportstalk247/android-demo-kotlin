@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.*
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import androidx.lifecycle.lifecycleScope
@@ -11,9 +12,13 @@ import com.google.android.material.snackbar.Snackbar
 import com.jakewharton.rxbinding3.view.clicks
 import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.FragmentChatroomBinding
+import com.sportstalk.app.demo.extensions.throttleFirst
 import com.sportstalk.app.demo.presentation.BaseFragment
 import com.sportstalk.models.chat.ChatRoom
 import com.sportstalk.models.users.User
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.sendBlocking
+import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.rx2.asFlow
@@ -30,6 +35,13 @@ class ChatRoomFragment : BaseFragment() {
             room,
             user
         )
+    }
+
+    private val popBackChannel = Channel<Any>(Channel.RENDEZVOUS)
+
+    override fun enableBackPressedCallback(): Boolean = true
+    override fun onBackPressedCallback(): OnBackPressedCallback.() -> Unit = {
+        popBackChannel.sendBlocking(Any())
     }
 
     private lateinit var user: User
@@ -86,6 +98,15 @@ class ChatRoomFragment : BaseFragment() {
             appActivity.supportActionBar?.title = room.name
             appActivity.supportActionBar?.setHomeButtonEnabled(true)
         }
+
+        popBackChannel.consumeAsFlow()
+            .throttleFirst(1000L)
+            .onEach {
+                Log.d(TAG, "popBackChannel.consumeAsFlow()")
+                // Attempt execute Exit Room
+                viewModel.exitRoom()
+            }
+            .launchIn(lifecycleScope)
 
         ///////////////////////////////
         // Bind ViewModel State
@@ -177,13 +198,17 @@ class ChatRoomFragment : BaseFragment() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean =
         when (item.itemId) {
             android.R.id.home -> {
-                // Call Exit Chatroom Operation
-                appNavController.popBackStack()
+                requireActivity().onBackPressed()
                 true
             }
-            R.id.action_leave_room -> {
-                // Attempt execute Exit Room
-                viewModel.exitRoom()
+            R.id.action_account_settings -> {
+                // Navigate to Account Settings
+                if(appNavController.currentDestination?.id == R.id.fragmentChatroom) {
+                    appNavController.navigate(
+                        R.id.action_fragmentChatroom_to_fragmentAccountSettings
+                    )
+                }
+
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -212,7 +237,7 @@ class ChatRoomFragment : BaseFragment() {
     }
 
     private suspend fun takeProgressExitRoom(inProgress: Boolean) {
-        Log.d(TAG, "takeProgressExitRoom() -> inProgress")
+        Log.d(TAG, "takeProgressExitRoom() -> inProgress = $inProgress")
 
         binding.progressBar.visibility = when (inProgress) {
             true -> View.VISIBLE

@@ -150,21 +150,10 @@ class ListChatRoomsFragment : BaseFragment() {
 
     private fun takeEnableAccountSettings(isEnabled: Boolean) {
         Log.d(TAG, "takeEnableAccountSettings() -> isEnabled = $isEnabled")
+        // TODO:: Account setting from List Chatrooms screens already removed
         binding.toolbar.menu.findItem(R.id.action_account_settings)?.let { item ->
             // Toggle menu action
             item.isEnabled = isEnabled
-
-            item.setOnMenuItemClickListener {
-                // Navigate to Account Settings Screen
-                if (appNavController.currentDestination?.id == R.id.fragmentHome) {
-                    appNavController.navigate(
-                        R.id.action_fragmentHome_to_fragmentAccountSettings
-                    )
-                }
-
-                true
-            }
-
         }
 
     }
@@ -190,8 +179,7 @@ class ListChatRoomsFragment : BaseFragment() {
                     appNavController.navigate(
                         R.id.action_fragmentHome_to_fragmentChatroom,
                         bundleOf(
-                            /* TODO:: Bundle */ChatRoomFragment.INPUT_ARG_ROOM to effect.which,
-                            /* TODO:: Bundle */
+                            ChatRoomFragment.INPUT_ARG_ROOM to effect.which,
                             ChatRoomFragment.INPUT_ARG_USER to effect.who
                         )
                     )

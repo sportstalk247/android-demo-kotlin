@@ -17,8 +17,8 @@ typealias OnItemSendAnnouncement = ((ChatRoom) -> Unit)
 
 class ItemAdminListChatRoomAdapter(
     private val onItemUpdateChatRoom: OnItemUpdateChatRoom = {},
-    private val onItemDeleteChatRoom: OnItemDeleteChatRoom = {},
-    private val onItemSendAnnouncement: OnItemSendAnnouncement = {}
+    private val onItemDeleteChatRoom: OnItemDeleteChatRoom = {}/*,
+    private val onItemSendAnnouncement: OnItemSendAnnouncement = {}*/
 ) : RecyclerView.Adapter<ItemAdminListChatRoomAdapter.ItemAdminListChatRoomViewHolder>() {
 
     private var items: List<ChatRoom> = listOf()
@@ -154,9 +154,9 @@ class ItemAdminListChatRoomAdapter(
         holder.binding.btnDelete.setOnClickListener {
             onItemDeleteChatRoom(item)
         }
-        holder.binding.btnSendAnnouncement.setOnClickListener {
-            onItemSendAnnouncement(item)
-        }
+//        holder.binding.btnSendAnnouncement.setOnClickListener {
+//            onItemSendAnnouncement(item)
+//        }
     }
 
     inner class ItemAdminListChatRoomViewHolder(

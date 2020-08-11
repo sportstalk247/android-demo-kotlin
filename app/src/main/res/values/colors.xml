@@ -1,15 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <color name="colorPrimary">#424242</color>
+    <color name="colorPrimaryDark">#424242</color>
+    <color name="colorAccent">@android:color/darker_gray</color>
+<!--
     <color name="colorPrimary">#6200EE</color>
     <color name="colorPrimaryDark">#3700B3</color>
     <color name="colorAccent">#03DAC5</color>
+-->
 
-    <color name="bg_chat_message_sent">#3981ED</color>
+    <color name="accent_green">#03DAC5</color>
+
+    <!--<color name="bg_chat_message_sent">#3981ED</color>-->
+    <color name="bg_chat_message_sent">@color/accent_green</color>
     <color name="blue_like">#5291EF</color>
 
     <color name="bg_replied_message">#FFDDDDDD</color>
     <color name="bg_announcement">#FCF8E3</color>
     <color name="bg_unknown_eventtype">#FFFFFF</color>
+
+    <color name="bg_button">#424242</color>
 
 
 </resources>
