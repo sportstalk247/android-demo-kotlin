@@ -15,6 +15,7 @@ import com.bumptech.glide.Glide
 import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.*
 import com.sportstalk.models.chat.ChatEvent
+import com.sportstalk.models.chat.EventReaction
 import com.sportstalk.models.chat.EventType
 import com.sportstalk.models.users.User
 import java.text.DecimalFormat
@@ -254,8 +255,9 @@ class ItemChatEventAdapter(
             }
             binding.actvChatMessage.text = item.body
 
-            if(item.reactions.isNotEmpty()) {
-                binding.actvLikes.text = context.getString(R.string.chat_likes_count, item.reactions.size.toString(10))
+            val likeCount = item.reactions.firstOrNull { it.type == EventReaction.LIKE }?.count ?: 0
+            if(likeCount > 0) {
+                binding.actvLikes.text = context.getString(R.string.chat_likes_count, likeCount.toString(10))
                 binding.actvLikes.visibility = View.VISIBLE
             } else {
                 binding.actvLikes.visibility = View.GONE
@@ -321,8 +323,9 @@ class ItemChatEventAdapter(
 
             binding.actvChatMessage.text = item.body
 
-            if(item.reactions.isNotEmpty()) {
-                binding.actvLikes.text = context.getString(R.string.chat_likes_count, item.reactions.size.toString(10))
+            val likeCount = item.reactions.firstOrNull { it.type == EventReaction.LIKE }?.count ?: 0
+            if(likeCount > 0) {
+                binding.actvLikes.text = context.getString(R.string.chat_likes_count, likeCount.toString(10))
                 binding.actvLikes.visibility = View.VISIBLE
             } else {
                 binding.actvLikes.visibility = View.GONE
