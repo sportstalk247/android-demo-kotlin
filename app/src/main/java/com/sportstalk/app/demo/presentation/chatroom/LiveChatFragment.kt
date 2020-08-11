@@ -233,6 +233,7 @@ class LiveChatFragment : BaseFragment() {
                                 || it.eventtype == EventType.ACTION
                                 || it.eventtype == EventType.REACTION
                                 || it.eventtype == EventType.QUOTE
+                                || it.eventtype == EventType.REPLY
                     }
                     // Append to Chat list
                     adapter.update(chatEvents)
