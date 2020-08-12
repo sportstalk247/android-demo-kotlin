@@ -7,7 +7,7 @@ ext {
     buildToolsVersion = '29.0.3'
 
     // SportsTalk247 SDK Version
-    sportstalk247SdkVersion = '0.1.6'
+    sportstalk247SdkVersion = '0.1.7'
 
     kotlinx_serialization_version = '0.20.0'
 

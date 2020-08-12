@@ -146,6 +146,8 @@ class ItemChatEventAdapter(
         return when {
             // "Announcement" implementation
             item.eventtype == EventType.ANNOUNCEMENT -> VIEW_TYPE_ANNOUNCEMENT
+            // "roomopened", "roomclosed" implementation
+            item.eventtype in listOf(EventType.ROOM_OPEN, EventType.ROOM_CLOSED) -> VIEW_TYPE_ROOM_STATUS
             item.eventtype == EventType.ACTION -> VIEW_TYPE_ACTION
             item.eventtype == EventType.CUSTOM -> VIEW_TYPE_UNKNOWN_EVENTTYPE
             item.userid == me.userid -> VIEW_TYPE_SENT
@@ -184,6 +186,13 @@ class ItemChatEventAdapter(
                     false
                 )
             )
+            VIEW_TYPE_ROOM_STATUS -> ItemChatEventRoomStatusViewHolder(
+                ItemChatroomLiveChatRoomStatusBinding.inflate(
+                    LayoutInflater.from(parent.context),
+                    parent,
+                    false
+                )
+            )
             VIEW_TYPE_UNKNOWN_EVENTTYPE -> ItemChatEventUnknownEventTypeViewHolder(
                 ItemChatroomLiveChatUnknownEventtypeBinding.inflate(
                     LayoutInflater.from(parent.context),
@@ -217,14 +226,16 @@ class ItemChatEventAdapter(
                 holder.bind(item)
                 holder.binding.cardViewMessage.setOnClickListener(null)
             }
+            is ItemChatEventRoomStatusViewHolder -> {
+                holder.bind(item)
+                holder.binding.cardViewMessage.setOnClickListener(null)
+            }
             is ItemChatEventUnknownEventTypeViewHolder -> {
                 holder.bind(item)
                 holder.binding.cardViewMessage.setOnClickListener(null)
             }
         }
     }
-
-    private val reactionCountFormatter = DecimalFormat("###,###,###.#")
 
     inner class ItemChatEventSentViewHolder(
         val binding: ItemChatroomLiveChatSentBinding
@@ -378,6 +389,14 @@ class ItemChatEventAdapter(
         }
     }
 
+    inner class ItemChatEventRoomStatusViewHolder(
+        val binding: ItemChatroomLiveChatRoomStatusBinding
+    ): RecyclerView.ViewHolder(binding.root) {
+        fun bind(item: ChatEvent) {
+            binding.actvChatMessage.text = item.body
+        }
+    }
+
     inner class ItemChatEventUnknownEventTypeViewHolder(
         val binding: ItemChatroomLiveChatUnknownEventtypeBinding
     ): RecyclerView.ViewHolder(binding.root) {
@@ -391,6 +410,7 @@ class ItemChatEventAdapter(
         private const val VIEW_TYPE_RECEIVED = 0x08
         private const val VIEW_TYPE_ACTION = 0x00
         private const val VIEW_TYPE_ANNOUNCEMENT = 0x01
+        private const val VIEW_TYPE_ROOM_STATUS = 0x02
         private const val VIEW_TYPE_UNKNOWN_EVENTTYPE = 0xFF
 
     }
