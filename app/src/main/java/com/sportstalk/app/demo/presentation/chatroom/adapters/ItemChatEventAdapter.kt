@@ -274,7 +274,6 @@ class ItemChatEventAdapter(
                 binding.actvLikes.visibility = View.GONE
             }
 
-
             // ChatEvent Relative Time Sent: ex. "Just now"
             binding.actvSent.text = item.added?.let { added ->
                 val date = UTC_MSG_SENT_FORMATTER.parse(added) ?: return@let null
@@ -300,6 +299,15 @@ class ItemChatEventAdapter(
                 binding.containerReply.visibility = View.VISIBLE
             } else {
                 binding.containerReply.visibility = View.GONE
+            }
+
+            ///////////////////////////////
+            // Flagged as Deleted
+            ///////////////////////////////
+            // Hide Context Option if NOT deleted
+            binding.btnMore.visibility = when(item.deleted == false) {
+                true -> View.VISIBLE
+                else -> View.GONE
             }
         }
     }
@@ -368,6 +376,15 @@ class ItemChatEventAdapter(
                 binding.containerReply.visibility = View.VISIBLE
             } else {
                 binding.containerReply.visibility = View.GONE
+            }
+
+            ///////////////////////////////
+            // Flagged as Deleted
+            ///////////////////////////////
+            // Hide Context Option if NOT deleted
+            binding.btnMore.visibility = when(item.deleted == false) {
+                true -> View.VISIBLE
+                else -> View.INVISIBLE
             }
 
         }
