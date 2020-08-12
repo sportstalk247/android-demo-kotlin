@@ -143,12 +143,12 @@ class LiveChatFragment : BaseFragment() {
                 val options = ArrayList(
                     resources.getStringArray(R.array.chat_message_tap_options).toList()
                 ).run {
-                    // User's sent chat message(Prompt "Reply", "Report", "Flag as Deleted", or "Delete Permanently" options)
+                    // User's sent chat message(Prompt "Like", "Reply", "Report", "Flag as Deleted", or "Delete Permanently" options)
                     if(chatEvent.userid == user.userid)
                         slice(0 until size)
-                    // Other's chat message(Prompt "Reply" and "Report" options ONLY)
+                    // Other's chat message(Prompt "Like", "Reply" and "Report" options ONLY)
                     else
-                        slice(0 until 2)
+                        slice(0 until 3)
                 }.toTypedArray()
 
                 MaterialAlertDialogBuilder(requireContext())
