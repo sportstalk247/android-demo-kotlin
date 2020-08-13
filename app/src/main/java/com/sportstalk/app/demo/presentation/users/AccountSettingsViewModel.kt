@@ -99,7 +99,8 @@ class AccountSettingsViewModel(
         displayName
             .asFlow()
             .map {
-                Regex(AccountSettingsViewModel.REGEX_DISPLAYNAME).containsMatchIn(it)
+                /*Regex(AccountSettingsViewModel.REGEX_DISPLAYNAME).containsMatchIn(it)*/
+                true
             }
             .onEach { isValid ->
                 validationDisplayName.send(isValid)
@@ -109,7 +110,9 @@ class AccountSettingsViewModel(
         // Handlename Validation
         handleName
             .asFlow()
-            .map { Regex(AccountSettingsViewModel.REGEX_HANDLENAME).containsMatchIn(it) }
+            .map {
+                Regex(AccountSettingsViewModel.REGEX_HANDLENAME).containsMatchIn(it)
+            }
             .onEach { isValid ->
                 validationHandleName.send(isValid)
             }

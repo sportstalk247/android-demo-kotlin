@@ -213,7 +213,7 @@ class LiveChatFragment : BaseFragment() {
 
         if(replyTo.id != null) {
             binding.actvReplyTo.text = getString(R.string.reply_to, replyTo.user?.handle ?: "")
-            binding.actvRepliedMessage.text = replyTo.body
+            binding.actvRepliedMessage.text = replyTo.body?.trim()
 
             binding.containerReply.visibility = View.VISIBLE
         } else {

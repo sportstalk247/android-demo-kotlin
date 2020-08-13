@@ -294,7 +294,7 @@ class ItemChatEventAdapter(
                     R.string.you_replied_to,
                     "@${item.replyto?.user?.handle ?: ""}"
                 )
-                binding.actvRepliedMessage.text = item.replyto?.body
+                binding.actvRepliedMessage.text = item.replyto?.body?.trim()
 
                 binding.containerReply.visibility = View.VISIBLE
             } else {
@@ -371,7 +371,7 @@ class ItemChatEventAdapter(
                     "@${item.user?.handle ?: ""}",
                     "@${item.replyto?.user?.handle ?: ""}"
                 )
-                binding.actvRepliedMessage.text = item.replyto?.body
+                binding.actvRepliedMessage.text = item.replyto?.body?.trim()
 
                 binding.containerReply.visibility = View.VISIBLE
             } else {
