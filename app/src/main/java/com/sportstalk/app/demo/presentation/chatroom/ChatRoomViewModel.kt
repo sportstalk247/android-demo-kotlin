@@ -423,6 +423,9 @@ class ChatRoomViewModel(
         viewModelScope.launch {
 
             try {
+                val reacted = event.reactions.firstOrNull { r -> r.type == EventReaction.LIKE }
+                    ?.users?.any { u -> u.userid == user.userid } ?: false
+
                 // Perform React To a Message SDK Operation
                 val response = withContext(Dispatchers.IO) {
                     chatClient.reactToEvent(
@@ -431,7 +434,7 @@ class ChatRoomViewModel(
                         request = ReactToAMessageRequest(
                             userid = user.userid!!,
                             reaction = EventReaction.LIKE,
-                            reacted = true
+                            reacted = !reacted
                         )
                     )
                 }
