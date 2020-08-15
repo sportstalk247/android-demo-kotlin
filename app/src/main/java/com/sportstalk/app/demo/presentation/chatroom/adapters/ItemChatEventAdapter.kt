@@ -253,16 +253,14 @@ class ItemChatEventAdapter(
             // Display Name
             item.user?.displayname?.takeIf { it.isNotEmpty() }?.let { displayname ->
                 binding.actvDisplayName.text = displayname
-                binding.actvDisplayName.visibility = View.VISIBLE
             } ?: run {
-                binding.actvDisplayName.visibility = View.GONE
+                binding.actvDisplayName.text = ""
             }
             // Handle
             item.user?.handle?.takeIf { it.isNotEmpty() }?.let { handle ->
                 binding.actvDisplayHandle.text = "@${item.user?.handle ?: ""}"
-                binding.actvDisplayHandle.visibility = View.VISIBLE
             } ?: run {
-                binding.actvDisplayHandle.visibility = View.GONE
+                binding.actvDisplayHandle.text = ""
             }
             binding.actvChatMessage.text = item.body
 
@@ -328,16 +326,14 @@ class ItemChatEventAdapter(
             // Display Name
             item.user?.displayname?.takeIf { it.isNotEmpty() }?.let { displayname ->
                 binding.actvDisplayName.text = displayname
-                binding.actvDisplayName.visibility = View.VISIBLE
             } ?: run {
-                binding.actvDisplayName.visibility = View.GONE
+                binding.actvDisplayName.text = ""
             }
             // Handle
             item.user?.handle?.takeIf { it.isNotEmpty() }?.let { handle ->
                 binding.actvDisplayHandle.text = "@${item.user?.handle ?: ""}"
-                binding.actvDisplayHandle.visibility = View.VISIBLE
             } ?: run {
-                binding.actvDisplayHandle.visibility = View.GONE
+                binding.actvDisplayHandle.text = ""
             }
 
             binding.actvChatMessage.text = item.body

@@ -14,6 +14,7 @@
         android:id="@+id/containerReply"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
         android:layout_marginRight="52dp"
         app:layout_constraintRight_toLeftOf="@+id/civProfile"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -112,6 +113,7 @@
         android:id="@+id/actvDisplayName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
         android:gravity="left|center_vertical"
         android:paddingRight="8dp"
         android:textAlignment="gravity"
@@ -119,7 +121,7 @@
         android:textSize="10sp"
         android:textAppearance="?attr/textAppearanceHeadline5"
         android:textColor="@android:color/primary_text_light"
-        app:layout_constraintTop_toTopOf="@+id/actvDisplayHandle"
+        app:layout_constraintTop_toBottomOf="@+id/containerReply"
         app:layout_constraintRight_toLeftOf="@+id/actvDisplayHandle"
         tools:text="Bobby Axelrod"
         />
@@ -150,7 +152,7 @@
         android:layout_marginRight="16dp"
         app:layout_constraintLeft_toRightOf="@+id/btnMore"
         app:layout_constraintRight_toLeftOf="@+id/civProfile"
-        app:layout_constraintTop_toBottomOf="@+id/actvDisplayName"
+        app:layout_constraintTop_toBottomOf="@+id/actvDisplayHandle"
         android:theme="@style/Theme.MaterialComponents.Light.DarkActionBar"
         >
         <!--
