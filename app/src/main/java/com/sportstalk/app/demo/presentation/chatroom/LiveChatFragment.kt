@@ -272,26 +272,6 @@ class LiveChatFragment : BaseFragment() {
 
                 }
             }
-            is ChatRoomViewModel.ViewEffect.SuccessExitRoom -> {
-                Toast.makeText(
-                    requireContext(),
-                    "You've left the room.",
-                    Toast.LENGTH_SHORT
-                ).show()
-
-                // Navigate popback
-                appNavController.popBackStack()
-            }
-            is ChatRoomViewModel.ViewEffect.ChatMessageSent -> {
-                // Do nothing...
-            }
-            is ChatRoomViewModel.ViewEffect.ErrorSendChatMessage -> {
-                Toast.makeText(
-                    requireContext(),
-                    effect.err.message ?: getString(R.string.something_went_wrong_please_try_again),
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
             is ChatRoomViewModel.ViewEffect.QuotedReplySent -> {
                 // Do nothing...
             }

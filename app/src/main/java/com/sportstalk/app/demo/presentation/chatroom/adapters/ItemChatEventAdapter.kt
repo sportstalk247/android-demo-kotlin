@@ -146,6 +146,7 @@ class ItemChatEventAdapter(
         return when {
             // "Announcement" implementation
             item.eventtype == EventType.ANNOUNCEMENT -> VIEW_TYPE_ANNOUNCEMENT
+            item.eventtype == EventType.BOUNCE -> VIEW_TYPE_BOUNCE
             // "roomopened", "roomclosed" implementation
             item.eventtype in listOf(EventType.ROOM_OPEN, EventType.ROOM_CLOSED) -> VIEW_TYPE_ROOM_STATUS
             item.eventtype == EventType.ACTION -> VIEW_TYPE_ACTION
@@ -179,7 +180,7 @@ class ItemChatEventAdapter(
                     false
                 )
             )
-            VIEW_TYPE_ANNOUNCEMENT -> ItemChatEventAnnouncementViewHolder(
+            VIEW_TYPE_ANNOUNCEMENT, VIEW_TYPE_BOUNCE -> ItemChatEventAnnouncementViewHolder(
                 ItemChatroomLiveChatAnnouncementBinding.inflate(
                     LayoutInflater.from(parent.context),
                     parent,
@@ -423,6 +424,7 @@ class ItemChatEventAdapter(
         private const val VIEW_TYPE_RECEIVED = 0x08
         private const val VIEW_TYPE_ACTION = 0x00
         private const val VIEW_TYPE_ANNOUNCEMENT = 0x01
+        private const val VIEW_TYPE_BOUNCE = 0x03
         private const val VIEW_TYPE_ROOM_STATUS = 0x02
         private const val VIEW_TYPE_UNKNOWN_EVENTTYPE = 0xFF
 

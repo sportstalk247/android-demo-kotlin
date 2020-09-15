@@ -10,6 +10,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 import com.jakewharton.rxbinding3.swiperefreshlayout.refreshes
 import com.sportstalk.SportsTalk247
 import com.sportstalk.app.demo.R
@@ -74,11 +76,17 @@ class ChatroomListParticipantsFragment : BaseFragment() {
 
                 val optionBan = getString(R.string.ban_handle, participantHandle ?: "")
                 val optionRemoveBan = getString(R.string.remove_ban_from_handle, participantHandle ?: "")
+                val optionBounce = getString(R.string.bounce_handle, participantHandle ?: "")
+                val optionRemoveBounce = getString(R.string.remove_bounce_from_handle, participantHandle ?: "")
                 val optionPurgeMessages = getString(R.string.purge_messages_from_handle, participantHandle ?: "")
 
                 val options = mutableListOf<String>().apply {
                     if (participant.banned == true) add(optionRemoveBan)
                     else add(optionBan)
+
+                    if(room.bouncedusers?.any { id -> participant.userid == id } == true) add(optionRemoveBounce)
+                    else add(optionBounce)
+
                     add(optionPurgeMessages)
                 }.toTypedArray()
 
@@ -94,6 +102,64 @@ class ChatroomListParticipantsFragment : BaseFragment() {
                                             of = participant,
                                             isBanned = !(participant.banned ?: false)
                                         )
+
+                                        dialog.dismiss()
+                                    }
+                                    .setNegativeButton(android.R.string.cancel) { dialog, which ->
+                                        dialog.dismiss()
+                                    }
+                                    .show()
+                            }
+                            // Bounce/Remove Bounce
+                            optionBounce, optionRemoveBounce -> {
+                                MaterialAlertDialogBuilder(requireContext())
+                                    .setMessage(R.string.are_you_sure)
+                                    .setPositiveButton(android.R.string.ok) { dialog, which ->
+                                        val textInputLayout = LayoutInflater.from(requireContext())
+                                            .inflate(
+                                                R.layout.layout_inapp_settings_input_text,
+                                                binding.root,
+                                                false
+                                            ) as TextInputLayout
+                                        val tietInputText = textInputLayout.findViewById<TextInputEditText>(R.id.tietInputText).apply {
+                                            setText("The bouncer shows ${participant.handle} the way out.")
+                                        }
+
+                                        val bounceOption = options[index]
+
+                                        // Display Alert Prompt With Input Text
+                                        MaterialAlertDialogBuilder(requireContext())
+                                            .setTitle(bounceOption)
+                                            .setView(textInputLayout)
+                                            .setPositiveButton(R.string.apply) { _, which ->
+                                                Log.d(TAG, "bounceOption = $bounceOption")
+                                                when(bounceOption) {
+                                                    // Bounce User
+                                                    optionBounce -> {
+                                                        Log.d(TAG, "selected: optionBounce = $optionBounce")
+                                                        viewModel.bounceUser(
+                                                            from = room,
+                                                            who = participant,
+                                                            bounce = true,
+                                                            announcement = tietInputText.text?.toString()
+                                                        )
+                                                    }
+                                                    // Un-bounce User
+                                                    optionRemoveBounce -> {
+                                                        Log.d(TAG, "selected: optionRemoveBounce = $optionRemoveBounce")
+                                                        viewModel.bounceUser(
+                                                            from = room,
+                                                            who = participant,
+                                                            bounce = false,
+                                                            announcement = tietInputText.text?.toString()
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                            .setNegativeButton(android.R.string.cancel) { dialog, _ ->
+                                                dialog.dismiss()
+                                            }
+                                            .show()
 
                                         dialog.dismiss()
                                     }
@@ -275,6 +341,23 @@ class ChatroomListParticipantsFragment : BaseFragment() {
                 ).show()
             }
             is ChatroomListParticipantsViewModel.ViewEffect.ErrorPurgeUserMessages -> {
+                Toast.makeText(
+                    requireContext(),
+                    effect.err.message?.takeIf { it.isNotEmpty() } ?: getString(R.string.something_went_wrong_please_try_again),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+            is ChatroomListParticipantsViewModel.ViewEffect.SuccessBounceUser -> {
+                Toast.makeText(
+                    requireContext(),
+                    effect.response.event?.body ?: "",
+                    Toast.LENGTH_SHORT
+                ).show()
+
+                // Re-fetch chatroom participants
+                viewModel.fetchChatroomParticipants()
+            }
+            is ChatroomListParticipantsViewModel.ViewEffect.ErrorBounceUser -> {
                 Toast.makeText(
                     requireContext(),
                     effect.err.message?.takeIf { it.isNotEmpty() } ?: getString(R.string.something_went_wrong_please_try_again),

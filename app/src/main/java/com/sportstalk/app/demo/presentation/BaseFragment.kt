@@ -20,7 +20,8 @@ open class BaseFragment : Fragment() {
 
     // Top-level Nav Controller Instance
     /*lateinit var appNavController: NavController*/
-    open val appNavController: NavController by lazy { findNavController() }
+    open val appNavController: NavController
+        get() = findNavController()
 
 //    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 //        super.onViewCreated(view, savedInstanceState)

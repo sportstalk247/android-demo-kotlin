@@ -97,6 +97,8 @@
 
     <string name="ban_handle" formatted="true">Ban %s</string>
     <string name="remove_ban_from_handle" formatted="true">Remove Ban from %s</string>
+    <string name="bounce_handle" formatted="true">Bounce %s</string>
+    <string name="remove_bounce_from_handle" formatted="true">Remove Bounce from %s</string>
     <string name="purge_messages_from_handle" formatted="true">Purge messages from %s</string>
 
     <string name="are_you_sure">Are you sure?</string>

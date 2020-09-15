@@ -85,10 +85,10 @@ class ChatRoomViewModel(
                 .take(1)
     }
 
-    private val _effect = Channel<ViewEffect>(Channel.BUFFERED)
+    private val _effect = BroadcastChannel<ViewEffect>(Channel.BUFFERED)
     val effect: Flow<ViewEffect>
-        get() = _effect
-            .receiveAsFlow()
+        get() = _effect.asFlow()
+
     init {
         // Emit Room Name
         roomName.sendBlocking(room.name ?: "")

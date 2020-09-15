@@ -12,10 +12,7 @@ import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.channels.sendBlocking
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.consumeAsFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -31,28 +28,26 @@ class ListChatRoomsViewModel(
     private val preferences: SportsTalkDemoPreferences
 ): ViewModel() {
 
-    private val chatRooms = Channel<List<ChatRoom>>(Channel.RENDEZVOUS)
-    private val progressFetchRooms = Channel<Boolean>(Channel.RENDEZVOUS)
-    private val enableAccountSettings = ConflatedBroadcastChannel<Boolean>()
+    private val chatRooms = BroadcastChannel<List<ChatRoom>>(Channel.BUFFERED)
+    private val progressFetchRooms = BroadcastChannel<Boolean>(Channel.BUFFERED)
+    private val enableAccountSettings = MutableStateFlow<Boolean?>(null)
     // Keep track of cursor
-    private val cursor = ConflatedBroadcastChannel<String>("")
+    private val cursor = MutableStateFlow<String?>(null)
     val state = object: ViewState {
         override fun progressFetchChatRooms(): Flow<Boolean> =
-            progressFetchRooms
-                .consumeAsFlow()
+            progressFetchRooms.asFlow()
 
         override fun chatRooms(): Flow<List<ChatRoom>> =
-            chatRooms
-                .consumeAsFlow()
+            chatRooms.asFlow()
 
         override fun enableAccountSettings(): Flow<Boolean> =
-            enableAccountSettings.asFlow()
+            enableAccountSettings
+                .filterNotNull()
     }
 
-    private val _effect = Channel<ViewEffect>(Channel.RENDEZVOUS)
+    private val _effect = BroadcastChannel<ViewEffect>(Channel.BUFFERED)
     val effect: Flow<ViewEffect>
-        get() = _effect
-            .consumeAsFlow()
+        get() = _effect.asFlow()
 
     fun fetchInitial() {
         viewModelScope.launch {
@@ -99,7 +94,7 @@ class ListChatRoomsViewModel(
             chatRooms.send(listRoomsResponse.rooms)
             // Emit new cursor(IF NOT BLANK) and if there is MORE
             listRoomsResponse.cursor?.let { nowCursor ->
-                this@ListChatRoomsViewModel.cursor.send(nowCursor)
+                this@ListChatRoomsViewModel.cursor.value = nowCursor
             }
 
         } catch (err: SportsTalkException) {
@@ -110,7 +105,7 @@ class ListChatRoomsViewModel(
             progressFetchRooms.send(false)
 
             // EMIT Enable/Disable Account Settings
-            enableAccountSettings.send(preferences.currentUser != null)
+            enableAccountSettings.value = preferences.currentUser != null
         }
     }
 
