@@ -99,6 +99,7 @@
 
     <string name="chatroom_participants">Chatroom Participants</string>
     <string name="banned">Banned</string>
+    <string name="bounced_from_the_room">Bounced from the room</string>
 
     <string name="ban_handle" formatted="true">Ban %s</string>
     <string name="remove_ban_from_handle" formatted="true">Remove Ban from %s</string>

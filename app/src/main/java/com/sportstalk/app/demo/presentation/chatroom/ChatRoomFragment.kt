@@ -369,7 +369,7 @@ class ChatRoomFragment : BaseFragment() {
             is ChatRoomViewModel.ViewEffect.SuccessUnbounceUser -> {
                 Toast.makeText(
                     requireContext(),
-                    getString(R.string.the_bouncer_has_allowed_handle_to_enter_the_room, effect.response.event?.user?.handle),
+                    effect.response.event?.body,
                     Toast.LENGTH_SHORT
                 ).show()
 

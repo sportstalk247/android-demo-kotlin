@@ -566,13 +566,17 @@ class ChatRoomViewModel(
                 if(bounce) {
                     _effect.send(ViewEffect.SuccessBounceUser(response))
                 } else {
-                    _effect.send(ViewEffect.SuccessUnbounceUser(
-                        response.copy(
-                            event = response.event?.copy(
-                                user = who
+                    _effect.send(
+                        ViewEffect.SuccessUnbounceUser(
+                            response.copy(
+                                event = ChatEvent(
+                                    body = announcement,
+                                    userid = who.userid,
+                                    user = who
+                                )
                             )
                         )
-                    ))
+                    )
                 }
 
             } catch (err: SportsTalkException) {

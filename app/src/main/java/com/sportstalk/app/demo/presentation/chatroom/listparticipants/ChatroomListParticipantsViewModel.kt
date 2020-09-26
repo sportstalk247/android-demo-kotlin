@@ -11,10 +11,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.consumeAsFlow
-import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -33,11 +30,13 @@ class ChatroomListParticipantsViewModel(
 ) : ViewModel() {
 
     private val progressFetchChatroomParticipants = Channel<Boolean>(Channel.RENDEZVOUS)
+    private val progressFetchBouncedUsers = BroadcastChannel<Boolean>(Channel.BUFFERED)
     private val progressUserSetBanStatus = Channel<Boolean>(Channel.RENDEZVOUS)
     private val progressBounceUser = BroadcastChannel<Boolean>(Channel.BUFFERED)
     private val progressPurgeUserMessages = Channel<Boolean>(Channel.RENDEZVOUS)
 
-    private val chatroomParticipants = ConflatedBroadcastChannel<List<User>>()
+    private val chatroomParticipants = BroadcastChannel<List<User>>(Channel.BUFFERED)
+    private val bouncedUsers = BroadcastChannel<List<User>>(Channel.BUFFERED)
 
     private var cursor: String? = null
 
@@ -45,10 +44,18 @@ class ChatroomListParticipantsViewModel(
         override fun progressFetchChatroomParticipants(): Flow<Boolean> =
             progressFetchChatroomParticipants.receiveAsFlow()
 
+        override fun progressFetchBouncedUsers(): Flow<Boolean> =
+            progressFetchBouncedUsers.asFlow()
+
         override fun chatroomParticipants(): Flow<List<User>> =
             chatroomParticipants
-                .openSubscription()
-                .consumeAsFlow()
+                .asFlow()
+                .distinctUntilChanged()
+
+        override fun bouncedUsers(): Flow<List<User>> =
+            bouncedUsers
+                .asFlow()
+                .distinctUntilChanged()
 
         override fun progressUserSetBanStatus(): Flow<Boolean> =
             progressUserSetBanStatus.receiveAsFlow()
@@ -98,6 +105,34 @@ class ChatroomListParticipantsViewModel(
         }
     }
 
+    fun fetchBouncedUsers(which: ChatRoom) {
+        viewModelScope.launch {
+            try {
+                // DISPLAY Progress Indicator
+                progressFetchBouncedUsers.send(true)
+
+                val userIds = which.bouncedusers ?: return@launch
+                val bouncedUsersWithDetails = ArrayList<User>()
+                userIds.forEach { id ->
+                    bouncedUsersWithDetails.add(
+                        withContext(Dispatchers.IO) {
+                            userClient.getUserDetails(id)
+                        }
+                    )
+                }
+
+                // EMIT Bounced Users
+                bouncedUsers.send(bouncedUsersWithDetails)
+            } catch (err: SportsTalkException) {
+                // EMIT Error
+                _effect.send(ViewEffect.ErrorFetchBouncedUsers(err))
+            } finally {
+                // HIDE Progress Indicator
+                progressFetchBouncedUsers.send(false)
+            }
+        }
+    }
+
     fun setBanStatus(of: User, isBanned: Boolean) {
         viewModelScope.launch {
             try {
@@ -128,7 +163,7 @@ class ChatroomListParticipantsViewModel(
         }
     }
 
-    fun bounceUser(from: ChatRoom, who: User, bounce: Boolean, announcement: String? = null) {
+    fun bounceUser(who: User, bounce: Boolean, announcement: String? = null) {
         viewModelScope.launch {
             try {
                 // SHOW Progress Indicator
@@ -136,7 +171,7 @@ class ChatroomListParticipantsViewModel(
 
                 val response = withContext(Dispatchers.IO) {
                     chatClient.bounceUser(
-                        chatRoomId = from.id!!,
+                        chatRoomId = room.id!!,
                         request = BounceUserRequest(
                             userid = who.userid!!,
                             bounce = bounce,
@@ -146,7 +181,21 @@ class ChatroomListParticipantsViewModel(
                 }
 
                 // EMIT Success
-                _effect.send(ViewEffect.SuccessBounceUser(response))
+                if(bounce) {
+                    _effect.send(ViewEffect.SuccessBounceUser(response))
+                } else {
+                    _effect.send(
+                        ViewEffect.SuccessUnbounceUser(
+                            response.copy(
+                                event = ChatEvent(
+                                    body = announcement,
+                                    userid = who.userid,
+                                    user = who
+                                )
+                            )
+                        )
+                    )
+                }
 
             } catch (err: SportsTalkException) {
                 // EMIT ERROR
@@ -194,9 +243,19 @@ class ChatroomListParticipantsViewModel(
         fun progressFetchChatroomParticipants(): Flow<Boolean>
 
         /**
+         * Emits [true] upon start Batch call to Get User Details SDK operation. Emits [false] when done.
+         */
+        fun progressFetchBouncedUsers(): Flow<Boolean>
+
+        /**
          * Emits response of List Chatroom Participants SDK operation.
          */
         fun chatroomParticipants(): Flow<List<User>>
+
+        /**
+         * Emits response from Batch of Get User Details SDK operation.
+         */
+        fun bouncedUsers(): Flow<List<User>>
 
         /**
          * Emits [true] upon start Set Ban Status SDK operation. Emits [false] when done.
@@ -217,11 +276,13 @@ class ChatroomListParticipantsViewModel(
 
     sealed class ViewEffect {
         data class ErrorFetchChatroomParticipants(val err: SportsTalkException) : ViewEffect()
+        data class ErrorFetchBouncedUsers(val err: SportsTalkException) : ViewEffect()
         data class SuccessUserSetBanStatus(val user: User) : ViewEffect()
         data class ErrorUserSetBanStatus(val err: SportsTalkException) : ViewEffect()
         data class SuccessPurgeUserMessages(val who: User, val response: ExecuteChatCommandResponse): ViewEffect()
         data class ErrorPurgeUserMessages(val err: SportsTalkException): ViewEffect()
         data class SuccessBounceUser(val response: BounceUserResponse): ViewEffect()
+        data class SuccessUnbounceUser(val response: BounceUserResponse): ViewEffect()
         data class ErrorBounceUser(val err: SportsTalkException): ViewEffect()
     }
 
