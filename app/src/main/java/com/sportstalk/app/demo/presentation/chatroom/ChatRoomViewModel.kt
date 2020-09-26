@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.sportstalk.api.ChatClient
 import com.sportstalk.api.polling.coroutines.allEventUpdates
 import com.sportstalk.app.demo.SportsTalkDemoPreferences
+import com.sportstalk.app.demo.presentation.chatroom.listparticipants.ChatroomListParticipantsViewModel
 import com.sportstalk.models.SportsTalkException
 import com.sportstalk.models.chat.*
 import com.sportstalk.models.users.User
@@ -46,6 +47,7 @@ class ChatRoomViewModel(
     private val roomName = ConflatedBroadcastChannel<String>()
     private val attendeesCount = ConflatedBroadcastChannel<Long>()
     private val chatEvents = ConflatedBroadcastChannel<List<ChatEvent>>()
+    private val progressBounceUser = BroadcastChannel<Boolean>(Channel.BUFFERED)
 
     val state = object : ViewState {
         override fun roomName(): Flow<String> =
@@ -83,6 +85,9 @@ class ChatRoomViewModel(
             chatEvents
                 .asFlow()
                 .take(1)
+
+        override fun progressBounceUser(): Flow<Boolean> =
+            progressBounceUser.asFlow()
     }
 
     private val _effect = BroadcastChannel<ViewEffect>(Channel.BUFFERED)
@@ -540,6 +545,46 @@ class ChatRoomViewModel(
         }
     }
 
+    fun bounceUser(who: User, bounce: Boolean, announcement: String? = null) {
+        viewModelScope.launch {
+            try {
+                // SHOW Progress Indicator
+                progressBounceUser.send(true)
+
+                val response = withContext(Dispatchers.IO) {
+                    chatClient.bounceUser(
+                        chatRoomId = room.id!!,
+                        request = BounceUserRequest(
+                            userid = who.userid!!,
+                            bounce = bounce,
+                            announcement = announcement
+                        )
+                    )
+                }
+
+                // EMIT Success
+                if(bounce) {
+                    _effect.send(ViewEffect.SuccessBounceUser(response))
+                } else {
+                    _effect.send(ViewEffect.SuccessUnbounceUser(
+                        response.copy(
+                            event = response.event?.copy(
+                                user = who
+                            )
+                        )
+                    ))
+                }
+
+            } catch (err: SportsTalkException) {
+                // EMIT ERROR
+                _effect.send(ViewEffect.ErrorBounceUser(err))
+            } finally {
+                // HIDE Progress Indicator
+                progressBounceUser.send(false)
+            }
+        }
+    }
+
     interface ViewState {
 
         /**
@@ -593,6 +638,11 @@ class ChatRoomViewModel(
          * Emits the overall list of events(includes results from `previouseventscursor` and `nexteventscursor`)
          */
         fun chatEvents(): Flow<List<ChatEvent>>
+
+        /**
+         * Emits [true] upon start `Bounce user`/`Unbounce user` SDK operation. Emits [false] when done.
+         */
+        fun progressBounceUser(): Flow<Boolean>
     }
 
     sealed class ViewEffect {
@@ -622,6 +672,10 @@ class ChatRoomViewModel(
 
         data class SuccessListPreviousEvents(val previousEvents: List<ChatEvent>) : ViewEffect()
         data class ErrorListPreviousEvents(val err: SportsTalkException) : ViewEffect()
+
+        data class SuccessBounceUser(val response: BounceUserResponse): ViewEffect()
+        data class SuccessUnbounceUser(val response: BounceUserResponse): ViewEffect()
+        data class ErrorBounceUser(val err: SportsTalkException): ViewEffect()
     }
 
     companion object {

@@ -12,6 +12,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 import com.jakewharton.rxbinding3.view.clicks
 import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.FragmentChatroomLiveChatBinding
@@ -149,6 +151,15 @@ class LiveChatFragment : BaseFragment() {
                     // Other's chat message(Prompt "Like", "Reply" and "Report" options ONLY)
                     else
                         slice(0 until 3)
+
+                    // Bounce/Unbounce option
+                    if(::room.isInitialized && room.bouncedusers?.contains(chatEvent.userid) == true) {
+                        add(getString(R.string.chat_message_tap_option_unbounce))
+                    } else {
+                        add(getString(R.string.chat_message_tap_option_bounce))
+                    }
+
+                    return@run this
                 }.toTypedArray()
 
                 MaterialAlertDialogBuilder(requireContext())
@@ -186,6 +197,42 @@ class LiveChatFragment : BaseFragment() {
                                     which = chatEvent,
                                     isPermanentDelete = true,
                                     permanentifnoreplies = true
+                                )
+                            }
+                            // Bounce User
+                            getString(R.string.chat_message_tap_option_bounce) -> {
+                                val textInputLayout = LayoutInflater.from(requireContext())
+                                    .inflate(
+                                        R.layout.layout_inapp_settings_input_text,
+                                        binding.root,
+                                        false
+                                    ) as TextInputLayout
+                                val tietInputText = textInputLayout.findViewById<TextInputEditText>(R.id.tietInputText).apply {
+                                    chatEvent.user?.handle?.let { handle -> setText(getString(R.string.the_bouncer_shows_handle_the_way_out, handle)) }
+                                }
+
+                                // Display Alert Prompt With Input Text
+                                MaterialAlertDialogBuilder(requireContext())
+                                    .setTitle(R.string.chat_message_tap_option_bounce)
+                                    .setView(textInputLayout)
+                                    .setPositiveButton(R.string.apply) { _, which ->
+                                        viewModel.bounceUser(
+                                            who = chatEvent.user!!,
+                                            bounce = true,
+                                            announcement = tietInputText.text?.toString()
+                                        )
+                                    }
+                                    .setNegativeButton(android.R.string.cancel) { dialog, _ ->
+                                        dialog.dismiss()
+                                    }
+                                    .show()
+                            }
+                            // Un-bounce User
+                            getString(R.string.chat_message_tap_option_unbounce) -> {
+                                viewModel.bounceUser(
+                                    who = chatEvent.user!!,
+                                    bounce = false,
+                                    announcement = chatEvent.user?.handle?.let { handle -> getString(R.string.the_bouncer_has_allowed_handle_to_enter_the_room, handle) }
                                 )
                             }
                         }
@@ -335,6 +382,14 @@ class LiveChatFragment : BaseFragment() {
                     R.string.message_successfully_removed,
                     Toast.LENGTH_SHORT
                 ).show()
+            }
+            is ChatRoomViewModel.ViewEffect.SuccessBounceUser -> {
+                Log.d(TAG, "ChatRoomViewModel.ViewEffect.SuccessBounceUser -> this.room = effect.response.room!!")
+                this.room = effect.response.room!!
+            }
+            is ChatRoomViewModel.ViewEffect.SuccessUnbounceUser -> {
+                Log.d(TAG, "ChatRoomViewModel.ViewEffect.SuccessUnbounceUser -> this.room = effect.response.room!!")
+                this.room = effect.response.room!!
             }
         }
     }

@@ -13,21 +13,17 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import com.jakewharton.rxbinding3.swiperefreshlayout.refreshes
-import com.sportstalk.SportsTalk247
 import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.FragmentChatroomListParticipantsBinding
 import com.sportstalk.app.demo.presentation.BaseFragment
 import com.sportstalk.app.demo.presentation.chatroom.listparticipants.adapters.ItemChatroomParticipantAdapter
 import com.sportstalk.app.demo.presentation.utils.EndlessRecyclerViewScrollListener
-import com.sportstalk.models.ClientConfig
 import com.sportstalk.models.chat.ChatRoom
 import com.sportstalk.models.users.User
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.rx2.asFlow
 import org.koin.android.ext.android.getKoin
-import org.koin.androidx.viewmodel.ext.android.sharedViewModel
-import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.androidx.viewmodel.koin.getViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -122,7 +118,7 @@ class ChatroomListParticipantsFragment : BaseFragment() {
                                                 false
                                             ) as TextInputLayout
                                         val tietInputText = textInputLayout.findViewById<TextInputEditText>(R.id.tietInputText).apply {
-                                            setText("The bouncer shows ${participant.handle} the way out.")
+                                            participant.handle?.let { handle -> setText(getString(R.string.the_bouncer_shows_handle_the_way_out, handle)) }
                                         }
 
                                         val bounceOption = options[index]

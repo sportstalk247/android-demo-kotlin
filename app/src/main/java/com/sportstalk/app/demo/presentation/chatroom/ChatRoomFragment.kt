@@ -161,6 +161,13 @@ class ChatRoomFragment : BaseFragment() {
             .onEach(::takeProgressReportMessage)
             .launchIn(lifecycleScope)
 
+        /**
+         * Emits [true] upon start `Bounce user`/`Unbounce user` SDK operation. Emits [false] when done.
+         */
+        viewModel.state.progressBounceUser()
+            .onEach(::takeProgressBounceUser)
+            .launchIn(lifecycleScope)
+
         ///////////////////////////////
         // Bind View Effect
         ///////////////////////////////
@@ -280,6 +287,16 @@ class ChatRoomFragment : BaseFragment() {
         }
     }
 
+    private suspend fun takeProgressBounceUser(inProgress: Boolean) {
+        Log.d(TAG, "takeProgressBounceUser() -> inProgress = $inProgress")
+
+        // DISPLAY/HIDE Progress Indicator
+        binding.progressBar.visibility = when(inProgress) {
+            true -> View.VISIBLE
+            false -> View.GONE
+        }
+    }
+
     private suspend fun takeViewEffect(effect: ChatRoomViewModel.ViewEffect) {
         Log.d(TAG, "takeViewEffect() -> effect = ${effect::class.java.simpleName}")
 
@@ -340,6 +357,32 @@ class ChatRoomFragment : BaseFragment() {
                     Toast.LENGTH_SHORT
                 ).show()
             }
+            is ChatRoomViewModel.ViewEffect.SuccessBounceUser -> {
+                Toast.makeText(
+                    requireContext(),
+                    effect.response.event?.body ?: "",
+                    Toast.LENGTH_SHORT
+                ).show()
+
+                this.room = effect.response.room!!
+            }
+            is ChatRoomViewModel.ViewEffect.SuccessUnbounceUser -> {
+                Toast.makeText(
+                    requireContext(),
+                    getString(R.string.the_bouncer_has_allowed_handle_to_enter_the_room, effect.response.event?.user?.handle),
+                    Toast.LENGTH_SHORT
+                ).show()
+
+                this.room = effect.response.room!!
+            }
+            is ChatRoomViewModel.ViewEffect.ErrorBounceUser -> {
+                Toast.makeText(
+                    requireContext(),
+                    effect.err.message?.takeIf { it.isNotEmpty() } ?: getString(R.string.something_went_wrong_please_try_again),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+
         }
     }
 

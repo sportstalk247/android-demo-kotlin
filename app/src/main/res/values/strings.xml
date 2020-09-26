@@ -80,6 +80,8 @@
     <string name="chat_message_tap_option_report">Report</string>
     <string name="chat_message_tap_option_flag_as_deleted">Flag as Deleted</string>
     <string name="chat_message_tap_option_delete_permanently">Delete Permanently</string>
+    <string name="chat_message_tap_option_bounce">Bounce</string>
+    <string name="chat_message_tap_option_unbounce">Unbounce</string>
     <string-array name="chat_message_tap_options">
         <item>@string/chat_message_tap_option_like</item>
         <item>@string/chat_message_tap_option_reply</item>
@@ -87,6 +89,9 @@
         <item>@string/chat_message_tap_option_flag_as_deleted</item>
         <item>@string/chat_message_tap_option_delete_permanently</item>
     </string-array>
+
+    <string name="the_bouncer_shows_handle_the_way_out" formatted="true">The bouncer shows %s the way out.</string>
+    <string name="the_bouncer_has_allowed_handle_to_enter_the_room" formatted="true">The bouncer has allowed %s to enter the room.</string>
 
     <string name="message_successfully_removed">Message successfully removed…</string>
     <string name="permanent_if_no_replies">Do you want this message to get permanently deleted if no replies were received?</string>
