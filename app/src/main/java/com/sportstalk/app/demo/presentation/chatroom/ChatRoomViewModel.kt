@@ -479,19 +479,19 @@ class ChatRoomViewModel(
                     when(isPermanentDelete) {
                         // Perform Permanent Delete
                         true -> {
-                            chatClient.permanentlyDeleteEvent(
+                            chatClient.deleteEvent(
                                 chatRoomId = room.id!!,
                                 userid = user.userid!!,
-                                eventId = which.id!!,
-                                permanentifnoreplies = permanentifnoreplies
+                                eventId = which.id!!
                             )
                         }
                         // Perform Flag Event as Deleted
                         false -> {
-                            chatClient.flagEventLogicallyDeleted(
+                            chatClient.setMessageAsDeleted(
                                 chatRoomId = room.id!!,
                                 userid = user.userid!!,
                                 eventId = which.id!!,
+                                deleted = false,
                                 permanentifnoreplies = permanentifnoreplies
                             )
                         }

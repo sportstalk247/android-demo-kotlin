@@ -251,10 +251,11 @@ lifecycleScope.launch {
    // 3. Test user already joined the room  
    // 4. There exists a message/event on that room  
    val removeMessageResponse = withContext(Dispatchers.IO) {  
-      chatClient.flagEventLogicallyDeleted(    
+      chatClient.setMessageAsDeleted(
                   chatRoomId = testChatRoom.id!!,    
                   eventId = testEvent.id!!,  
                   userid = testUser.userid!!,
+                  deleted = false,
                   permanentifnoreplies = false // OPTIONAL
       )
    }

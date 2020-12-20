@@ -26,13 +26,13 @@ class SportsTalkDemoPreferences(
             return preferences.getString(KEY_CURRENT_USER, "")!!
                 .takeIf { it.isNotEmpty() }
                 ?.let { usrStr ->
-                    json.parse(User.serializer(), usrStr)
+                    json.decodeFromString(User.serializer(), usrStr)
                 }
         }
         set(value) {
             preferences.edit(true) {
                 value?.let { _value ->
-                    putString(KEY_CURRENT_USER, json.stringify(User.serializer(), _value))
+                    putString(KEY_CURRENT_USER, json.encodeToString(User.serializer(), _value))
                 } ?: run {
                     putString(KEY_CURRENT_USER, null)
                 }

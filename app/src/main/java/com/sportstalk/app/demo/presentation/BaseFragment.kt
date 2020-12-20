@@ -7,10 +7,12 @@ import androidx.activity.addCallback
 import androidx.annotation.IdRes
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import com.sportstalk.app.demo.R
+import kotlinx.coroutines.cancelChildren
 import org.koin.android.ext.android.getKoin
 import org.koin.androidx.viewmodel.koin.getViewModel
 import org.koin.core.parameter.ParametersDefinition
@@ -49,6 +51,13 @@ open class BaseFragment : Fragment() {
      * Override this and set to `true` if you want the implementing Fragment to have its own onBackPressedCallback implementation
      */
     open fun onBackPressedCallback(): OnBackPressedCallback.() -> Unit = {}
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+
+        // Cancel Coroutine Flow Subscriptions launched on `lifecycleScope`
+        lifecycleScope.coroutineContext.cancelChildren()
+    }
 
     /**
      * Log TAG

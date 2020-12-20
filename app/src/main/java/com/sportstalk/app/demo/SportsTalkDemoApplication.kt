@@ -32,15 +32,11 @@ class SportsTalkDemoApplication : MultiDexApplication() {
             modules(
                 module {
                     single {
-                        Json(
-                            JsonBuilder()
-                                .apply {
-                                    prettyPrint = true
-                                    isLenient = true
-                                    ignoreUnknownKeys = true
-                                }
-                                .buildConfiguration()
-                        )
+                        Json {
+                            prettyPrint = true
+                            isLenient = true
+                            ignoreUnknownKeys = true
+                        }
                     }
 
                     // Preferences
