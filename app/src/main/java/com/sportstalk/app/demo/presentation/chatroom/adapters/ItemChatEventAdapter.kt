@@ -94,7 +94,7 @@ class ItemChatEventAdapter(
 
     @SuppressLint("StaticFieldLeak")
     @MainThread
-    private fun replace(update: List<ChatEvent>) {
+    fun replace(update: List<ChatEvent>) {
         dataVersion++
         if (items.isEmpty()) {
             items = update

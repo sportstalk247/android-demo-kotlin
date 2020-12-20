@@ -63,84 +63,11 @@ class LiveChatFragment : BaseFragment() {
         binding.recyclerView.layoutManager =
             LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, true)
 
-        scrollListener = object : EndlessRecyclerViewScrollListener(binding.recyclerView.layoutManager!! as LinearLayoutManager) {
-            override fun onLoadMore(page: Int, totalItemsCount: Int, view: RecyclerView?) {
-                Log.d(
-                    TAG,
-                    "EndlessRecyclerViewScrollListener:: onLoadMore() -> page/totalItemsCount = ${page}/${totalItemsCount}"
-                )
-                // Attempt fetch more
-                viewModel.listPreviousEvents()
-            }
-        }
-
-        return binding.root
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        ViewCompat.setNestedScrollingEnabled(binding.recyclerView, true)
-
-        ///////////////////////////////
-        // Bind ViewModel State
-        ///////////////////////////////
-
-        /**
-         * Emits [true] upon start List Previous Events SDK operation. Emits [false] when done.
-         */
-        viewModel.state.progressListPreviousEvents()
-            .onEach(::takeProgressListPreviousEvents)
-            .launchIn(lifecycleScope)
-
-        /**
-         * Emits the overall list of events(includes results from `previouseventscursor` and `nexteventscursor`)
-         */
-        viewModel.state.chatEvents()
-            .onEach(::takeChatEvents)
-            .launchIn(lifecycleScope)
-
-
-        /**
-         * Emits an instance of [ChatEvent] the user wants to reply to(quoted).
-         */
-        viewModel.state.quotedReply()
-            .onEach(::takeReplyTo)
-            .launchIn(lifecycleScope)
-
-        ///////////////////////////////
-        // Bind View Effect
-        ///////////////////////////////
-        viewModel.effect
-            .onEach(::takeViewEffect)
-            .launchIn(lifecycleScope)
-
-        /**
-         * On click Clear Quoted Reply
-         */
-        binding.btnClear.clicks()
-            .throttleFirst(1000, TimeUnit.MILLISECONDS)
-            .asFlow()
-            .onEach {
-                viewModel.clearQuotedReply()
-            }
-            .launchIn(lifecycleScope)
-
-    }
-
-    private suspend fun takeProgressListPreviousEvents(inProgress: Boolean) {
-        Log.d(TAG, "takeProgressListPreviousEvents() -> inProgress = $inProgress")
-        // TODO
-    }
-
-    private suspend fun takeChatEvents(initialChatEvents: List<ChatEvent>) {
-        Log.d(TAG, "takeChatEvents() -> initialChatEvents = ${initialChatEvents}")
-
         adapter = ItemChatEventAdapter(
             me = user,
-            initialItems = initialChatEvents,
+            initialItems = listOf(),
             onTapChatEventItem = { chatEvent: ChatEvent ->
-                Log.d(TAG, "takeChatEvents() -> onTapChatEventItem() -> chatEvent = $chatEvent")
+                Log.d(TAG, "onTapChatEventItem() -> chatEvent = $chatEvent")
 
                 val options = ArrayList(
                     resources.getStringArray(R.array.chat_message_tap_options).toList()
@@ -253,6 +180,93 @@ class LiveChatFragment : BaseFragment() {
         })
 
         binding.recyclerView.adapter = adapter
+
+        scrollListener = object : EndlessRecyclerViewScrollListener(binding.recyclerView.layoutManager!! as LinearLayoutManager) {
+            override fun onLoadMore(page: Int, totalItemsCount: Int, view: RecyclerView?) {
+                Log.d(
+                    TAG,
+                    "EndlessRecyclerViewScrollListener:: onLoadMore() -> page/totalItemsCount = ${page}/${totalItemsCount}"
+                )
+                // Attempt fetch more
+                viewModel.listPreviousEvents()
+            }
+        }
+
+        binding.recyclerView.addOnScrollListener(scrollListener)
+
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        ViewCompat.setNestedScrollingEnabled(binding.recyclerView, true)
+
+        ///////////////////////////////
+        // Bind ViewModel State
+        ///////////////////////////////
+
+        /**
+         * Emits [true] upon start List Previous Events SDK operation. Emits [false] when done.
+         */
+        viewModel.state.progressListPreviousEvents()
+            .onEach(::takeProgressListPreviousEvents)
+            .launchIn(lifecycleScope)
+
+        /**
+         * Emits the overall list of events(includes results from `previouseventscursor` and `nexteventscursor`)
+         */
+        viewModel.state.chatEvents()
+            .onEach(::takeChatEvents)
+            .launchIn(lifecycleScope)
+
+
+        /**
+         * Emits an instance of [ChatEvent] the user wants to reply to(quoted).
+         */
+        viewModel.state.quotedReply()
+            .onEach(::takeReplyTo)
+            .launchIn(lifecycleScope)
+
+        ///////////////////////////////
+        // Bind View Effect
+        ///////////////////////////////
+        viewModel.effect
+            .onEach(::takeViewEffect)
+            .launchIn(lifecycleScope)
+
+        /**
+         * On click Clear Quoted Reply
+         */
+        binding.btnClear.clicks()
+            .throttleFirst(1000, TimeUnit.MILLISECONDS)
+            .asFlow()
+            .onEach {
+                viewModel.clearQuotedReply()
+            }
+            .launchIn(lifecycleScope)
+
+    }
+
+    override fun onDestroyView() {
+        if(::scrollListener.isInitialized) {
+            binding.recyclerView.removeOnScrollListener(scrollListener)
+        }
+
+        super.onDestroyView()
+    }
+
+    private suspend fun takeProgressListPreviousEvents(inProgress: Boolean) {
+        Log.d(TAG, "takeProgressListPreviousEvents() -> inProgress = $inProgress")
+        // TODO
+    }
+
+    private suspend fun takeChatEvents(chatEvents: List<ChatEvent>) {
+        Log.d(TAG, "takeChatEvents() -> chatEvents = $chatEvents")
+
+        if(::adapter.isInitialized) {
+            adapter.replace(chatEvents)
+        }
     }
 
     private suspend fun takeReplyTo(replyTo: ChatEvent) {
