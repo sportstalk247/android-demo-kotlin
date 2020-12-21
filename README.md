@@ -251,10 +251,11 @@ lifecycleScope.launch {
    // 3. Test user already joined the room  
    // 4. There exists a message/event on that room  
    val removeMessageResponse = withContext(Dispatchers.IO) {  
-      chatClient.flagEventLogicallyDeleted(    
+      chatClient.setMessageAsDeleted(
                   chatRoomId = testChatRoom.id!!,    
                   eventId = testEvent.id!!,  
                   userid = testUser.userid!!,
+                  deleted = false,
                   permanentifnoreplies = false // OPTIONAL
       )
    }
@@ -301,6 +302,35 @@ lifecycleScope.launch {
    // Resolve `createConversationResponse` from HERE(ex. Display Prompt, update UI)  
 }  
 ```  
+
+```
+### Bounce User (ban user from room)
+```kotlin
+// Under Fragment class
+// Execute within coroutine scope
+lifecycleScope.launch {
+  // This is with the assumption that
+   // 1. A test user has been created(or already exists)
+   // 2. A test chat room has already been created(or already exists)
+   // 3. Test user already joined the room
+   val banUserInputRequest = BounceUserRequest(
+      userid = testUserData.userid!!,
+      bounce = true,
+      announcement = "Test user has been banned."
+   )
+   
+   val banUserResponse = withContext(Dispatchers.IO) {
+      chatClient.bounceUser(
+      chatRoomId = testChatRoomData.id!!,
+      request = banUserInputRequest
+    )
+   }
+    
+   // Resolve `banUserResponse` from HERE(ex. Display Prompt, update UI)
+   // Next call to getEventUpdates() now includes a ChatEvent with eventtype="bounce"
+}  
+```
+
 ### Create/Publish a comment against a Conversation
 ```kotlin  
 // Under Fragment class  

@@ -75,12 +75,23 @@
     <string name="others_replied_to" formatted="true">%s replied to %s</string>
     <string name="you_replied_to" formatted="true">You replied to %s</string>
 
+    <string name="chat_message_tap_option_like">Like</string>
+    <string name="chat_message_tap_option_reply">Reply</string>
+    <string name="chat_message_tap_option_report">Report</string>
+    <string name="chat_message_tap_option_flag_as_deleted">Flag as Deleted</string>
+    <string name="chat_message_tap_option_delete_permanently">Delete Permanently</string>
+    <string name="chat_message_tap_option_bounce">Bounce</string>
+    <string name="chat_message_tap_option_unbounce">Unbounce</string>
     <string-array name="chat_message_tap_options">
-        <item>Reply</item>
-        <item>Report</item>
-        <item>Flag as Deleted</item>
-        <item>Delete Permanently</item>
+        <item>@string/chat_message_tap_option_like</item>
+        <item>@string/chat_message_tap_option_reply</item>
+        <item>@string/chat_message_tap_option_report</item>
+        <item>@string/chat_message_tap_option_flag_as_deleted</item>
+        <item>@string/chat_message_tap_option_delete_permanently</item>
     </string-array>
+
+    <string name="the_bouncer_shows_handle_the_way_out" formatted="true">The bouncer shows %s the way out.</string>
+    <string name="the_bouncer_has_allowed_handle_to_enter_the_room" formatted="true">The bouncer has allowed %s to enter the room.</string>
 
     <string name="message_successfully_removed">Message successfully removed…</string>
     <string name="permanent_if_no_replies">Do you want this message to get permanently deleted if no replies were received?</string>
@@ -88,9 +99,12 @@
 
     <string name="chatroom_participants">Chatroom Participants</string>
     <string name="banned">Banned</string>
+    <string name="bounced_from_the_room">Bounced from the room</string>
 
     <string name="ban_handle" formatted="true">Ban %s</string>
     <string name="remove_ban_from_handle" formatted="true">Remove Ban from %s</string>
+    <string name="bounce_handle" formatted="true">Bounce %s</string>
+    <string name="remove_bounce_from_handle" formatted="true">Remove Bounce from %s</string>
     <string name="purge_messages_from_handle" formatted="true">Purge messages from %s</string>
 
     <string name="are_you_sure">Are you sure?</string>
@@ -113,10 +127,13 @@
     <string name="moderation_type" formatted="true">Moderation: %s</string>
     <string name="max_reports_n" formatted="true">Max reports: %s</string>
     <string name="inroom_n" formatted="true">In-room: %s</string>
+    <string name="no">No</string>
+    <string name="flag_as_deleted">Flag as deleted</string>
     <string name="chatroom_successfully_updated" formatted="true">Chatroom \"%s\" successfully updated…</string>
     <string name="all_events_in_this_chatroom_successfully_deleted">All event(s) in this Chatroom has been successfully deleted…</string>
     <string name="chatroom_successfully_deleted" formatted="true">Chatroom \"%s\" successfully deleted…</string>
 
     <string name="chatevents_from_handle_successfully_purged" formatted="true">Chat Events from \"%s\" successfully purged…</string>
+    <string name="chat_likes_count" formatted="true">👍 x%s</string>
 
 </resources>

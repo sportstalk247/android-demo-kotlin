@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <integer name="send_chat_message_max_char_limit">1024</integer>
+
+</resources>

@@ -22,12 +22,7 @@
         <action
             android:id="@+id/action_fragmentHome_to_fragmentCreateChatroom"
             app:destination="@id/fragmentCreateChatroom"
-            app:popUpTo="@id/fragmentChatroom"
-            app:popUpToInclusive="true"
             />
-        <action
-            android:id="@+id/action_fragmentHome_to_fragmentAccountSettings"
-            app:destination="@id/fragmentAccountSettings" />
         <action
             android:id="@+id/action_fragmentHome_to_fragmentUpdateChatroom"
             app:destination="@id/fragmentUpdateChatroom" />
@@ -38,12 +33,6 @@
         android:name="com.sportstalk.app.demo.presentation.users.CreateAccountFragment"
         tools:layout="@layout/fragment_create_account"
         >
-        <action
-            android:id="@+id/action_fragmentCreateAccount_to_fragmentChatroom"
-            app:destination="@id/fragmentChatroom"
-            app:popUpTo="@+id/fragmentCreateAccount"
-            app:popUpToInclusive="true"
-            />
     </fragment>
 
     <fragment
@@ -51,6 +40,10 @@
         android:name="com.sportstalk.app.demo.presentation.chatroom.ChatRoomFragment"
         tools:layout="@layout/fragment_chatroom"
         >
+        <action
+            android:id="@+id/action_fragmentChatroom_to_fragmentAccountSettings"
+            app:destination="@id/fragmentAccountSettings"
+            />
     </fragment>
 
     <fragment

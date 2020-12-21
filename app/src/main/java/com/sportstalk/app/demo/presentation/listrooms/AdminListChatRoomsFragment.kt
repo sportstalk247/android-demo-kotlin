@@ -4,30 +4,24 @@ import android.os.Bundle
 import android.util.Log
 import android.view.*
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.textfield.TextInputEditText
-import com.google.android.material.textfield.TextInputLayout
 import com.jakewharton.rxbinding3.swiperefreshlayout.refreshes
 import com.jakewharton.rxbinding3.view.clicks
-import com.sportstalk.SportsTalk247
 import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.FragmentAdminListChatroomBinding
 import com.sportstalk.app.demo.presentation.BaseFragment
 import com.sportstalk.app.demo.presentation.listrooms.adapters.ItemAdminListChatRoomAdapter
 import com.sportstalk.app.demo.presentation.rooms.UpdateChatroomFragment
 import com.sportstalk.app.demo.presentation.utils.EndlessRecyclerViewScrollListener
-import com.sportstalk.models.ClientConfig
 import com.sportstalk.models.chat.ChatRoom
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.rx2.asFlow
 import org.koin.androidx.viewmodel.ext.android.viewModel
-import org.koin.core.parameter.parametersOf
 import java.util.concurrent.TimeUnit
 
 class AdminListChatRoomsFragment : BaseFragment() {
@@ -37,24 +31,7 @@ class AdminListChatRoomsFragment : BaseFragment() {
     private lateinit var adapter: ItemAdminListChatRoomAdapter
     private lateinit var scrollListener: RecyclerView.OnScrollListener
 
-    private val config: ClientConfig by lazy {
-        ClientConfig(
-            appId = getString(R.string.sportstalk247_appid),
-            apiToken = getString(R.string.sportstalk247_authToken),
-            endpoint = getString(R.string.sportstalk247_urlEndpoint)
-        )
-    }
-
-    private val viewModel: AdminListChatRoomsViewModel by viewModel {
-        parametersOf(
-            SportsTalk247.ChatClient(config = config)
-        )
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setHasOptionsMenu(true)
-    }
+    private val viewModel: AdminListChatRoomsViewModel by viewModel()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -90,37 +67,6 @@ class AdminListChatRoomsFragment : BaseFragment() {
                         dialog.dismiss()
                     }
                     .show()
-            },
-            onItemSendAnnouncement = { which ->
-                Log.d(
-                    TAG,
-                    "ItemAdminListChatRooms.adopt() -> onItemSendAnnouncement() -> which = $which"
-                )
-
-                val textInputLayout = LayoutInflater.from(requireContext())
-                    .inflate(
-                        R.layout.layout_inapp_settings_input_text,
-                        binding.root,
-                        false
-                    ) as TextInputLayout
-                val tietInputText =
-                    textInputLayout.findViewById<TextInputEditText>(R.id.tietInputText)
-
-                // Display Alert Prompt With Input Text
-                MaterialAlertDialogBuilder(requireContext())
-                    .setTitle(R.string.send_announcement)
-                    .setView(textInputLayout)
-                    .setPositiveButton(R.string.apply) { _, _ ->
-                        // Attempt send announcement
-                        viewModel.sendAnnouncement(
-                            message = tietInputText.text?.toString() ?: "",
-                            which = which
-                        )
-                    }
-                    .setNegativeButton(android.R.string.cancel) { dialog, _ ->
-                        dialog.dismiss()
-                    }
-                    .show()
             }
         )
         binding.recyclerView.adapter = adapter
@@ -144,12 +90,6 @@ class AdminListChatRoomsFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        // Setup Toolbar
-        (requireActivity() as? AppCompatActivity)?.let { actv ->
-            actv.setSupportActionBar(binding.toolbar)
-            actv.supportActionBar?.title = getString(R.string.rooms)
-        }
 
         ///////////////////////////////
         // Bind ViewModel State
@@ -216,11 +156,11 @@ class AdminListChatRoomsFragment : BaseFragment() {
             .asFlow()
             .onEach {
                 // Perform fetch upon Refresh
-                viewModel.fetchInitial()
+                viewModel.fetchInitial(forceRefresh = true)
             }
             .launchIn(lifecycleScope)
 
-        viewModel.fetchInitial()
+        viewModel.fetchInitial(forceRefresh = false)
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -276,7 +216,8 @@ class AdminListChatRoomsFragment : BaseFragment() {
             is AdminListChatRoomsViewModel.ViewEffect.ErrorFetchListChatrooms -> {
                 Toast.makeText(
                     requireContext(),
-                    effect.err.message ?: getString(R.string.something_went_wrong_please_try_again),
+                    effect.err.message?.takeIf { it.isNotEmpty() }
+                        ?: getString(R.string.something_went_wrong_please_try_again),
                     Toast.LENGTH_SHORT
                 ).show()
             }
@@ -293,13 +234,18 @@ class AdminListChatRoomsFragment : BaseFragment() {
                 }
             }
             is AdminListChatRoomsViewModel.ViewEffect.SuccessDeleteRoom -> {
-                // Refresh list
-                viewModel.fetchInitial()
+                // Remove from list
+                if(::adapter.isInitialized) {
+                    effect.response.room?.let { deletedRoom ->
+                        adapter.remove(deletedRoom)
+                    }
+                }
             }
             is AdminListChatRoomsViewModel.ViewEffect.ErrorDeleteRoom -> {
                 Toast.makeText(
                     requireContext(),
-                    effect.err.message ?: getString(R.string.something_went_wrong_please_try_again),
+                    effect.err.message?.takeIf { it.isNotEmpty() }
+                        ?: getString(R.string.something_went_wrong_please_try_again),
                     Toast.LENGTH_SHORT
                 ).show()
             }
@@ -314,7 +260,8 @@ class AdminListChatRoomsFragment : BaseFragment() {
             is AdminListChatRoomsViewModel.ViewEffect.ErrorSendAnnouncement -> {
                 Toast.makeText(
                     requireContext(),
-                    effect.err.message ?: getString(R.string.something_went_wrong_please_try_again),
+                    effect.err.message?.takeIf { it.isNotEmpty() }
+                        ?: getString(R.string.something_went_wrong_please_try_again),
                     Toast.LENGTH_SHORT
                 ).show()
             }

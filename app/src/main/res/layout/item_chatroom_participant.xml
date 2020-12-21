@@ -28,7 +28,7 @@
             android:layout_width="42dp"
             android:layout_height="42dp"
             android:layout_marginRight="16dp"
-            app:civ_circle_background_color="#DDDDDD"
+            app:civ_circle_background_color="@color/bg_button"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             android:src="@drawable/ic_room_user"

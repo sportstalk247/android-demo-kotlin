@@ -12,11 +12,9 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.jakewharton.rxbinding3.swiperefreshlayout.refreshes
 import com.jakewharton.rxbinding3.view.clicks
 import com.jakewharton.rxbinding3.widget.textChanges
-import com.sportstalk.SportsTalk247
 import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.FragmentAccountSettingsBinding
 import com.sportstalk.app.demo.presentation.BaseFragment
-import com.sportstalk.models.ClientConfig
 import com.sportstalk.models.users.User
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.launchIn
@@ -24,26 +22,14 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.rx2.asFlow
 import org.koin.androidx.viewmodel.ext.android.viewModel
-import org.koin.core.parameter.parametersOf
 import java.util.concurrent.TimeUnit
 
-class AccountSettingsFragment: BaseFragment() {
+class AccountSettingsFragment : BaseFragment() {
 
     private lateinit var binding: FragmentAccountSettingsBinding
     private lateinit var menu: Menu
 
-    private val config: ClientConfig by lazy {
-        ClientConfig(
-            appId = getString(R.string.sportstalk247_appid),
-            apiToken = getString(R.string.sportstalk247_authToken),
-            endpoint = getString(R.string.sportstalk247_urlEndpoint)
-        )
-    }
-    private val viewModel: AccountSettingsViewModel by viewModel {
-        parametersOf(
-            SportsTalk247.UserClient(config = config)
-        )
-    }
+    private val viewModel: AccountSettingsViewModel by viewModel()
 
     override fun enableBackPressedCallback(): Boolean = true
     override fun onBackPressedCallback(): OnBackPressedCallback.() -> Unit = {
@@ -111,9 +97,9 @@ class AccountSettingsFragment: BaseFragment() {
         /**
          * Emits [true] if handlename value is valid. Otherwise, emits [false].
          */
-        viewModel.state.validationHandleName()
-            .onEach { takeValidationHandleName(it) }
-            .launchIn(lifecycleScope)
+//        viewModel.state.validationHandleName()
+//            .onEach { takeValidationHandleName(it) }
+//            .launchIn(lifecycleScope)
 
         /**
          * Emits [true] if Profile Link value is valid. Otherwise, emits [false].
@@ -256,7 +242,7 @@ class AccountSettingsFragment: BaseFragment() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean =
-        when(item.itemId) {
+        when (item.itemId) {
             android.R.id.home -> {
                 requireActivity().onBackPressed()
                 true
@@ -273,11 +259,11 @@ class AccountSettingsFragment: BaseFragment() {
     private fun takeProgressFetchUserDetails(inProgress: Boolean) {
         Log.d(TAG, "takeProgressFetchUserDetails() -> inProgress = $inProgress")
 
-        if(::menu.isInitialized) {
+        if (::menu.isInitialized) {
             val menuSave = this.menu.findItem(R.id.action_save)
             menuSave.isEnabled = !inProgress
         }
-        when(inProgress) {
+        when (inProgress) {
             true -> {
                 binding.progressBar.visibility = View.VISIBLE
                 binding.swipeRefresh.isRefreshing = true
@@ -315,7 +301,7 @@ class AccountSettingsFragment: BaseFragment() {
         binding.tietPhotoLink.setText(user.pictureurl)
 
         // Set Ban/Restore label
-        binding.fabBanAccount.text = when(user.banned) {
+        binding.fabBanAccount.text = when (user.banned) {
             false -> getString(R.string.ban_account)
             else -> getString(R.string.restore_account)
         }
@@ -324,7 +310,7 @@ class AccountSettingsFragment: BaseFragment() {
     private fun takeValidationDisplayName(isValid: Boolean) {
         Log.d(TAG, "takeValidationDisplayName() -> isValid = $isValid")
 
-        when(isValid) {
+        when (isValid) {
             true -> {
                 binding.tilDisplayName.error = ""
                 binding.tilDisplayName.isErrorEnabled = false
@@ -339,7 +325,7 @@ class AccountSettingsFragment: BaseFragment() {
     private fun takeValidationHandleName(isValid: Boolean) {
         Log.d(TAG, "takeValidationHandleName() -> isValid = $isValid")
 
-        when(isValid) {
+        when (isValid) {
             true -> {
                 binding.tilHandleUsername.error = ""
                 binding.tilHandleUsername.isErrorEnabled = false
@@ -354,7 +340,7 @@ class AccountSettingsFragment: BaseFragment() {
     private fun takeValidationProfileLink(isValid: Boolean) {
         Log.d(TAG, "takeValidationProfileLink() -> isValid = $isValid")
 
-        when(isValid) {
+        when (isValid) {
             true -> {
                 binding.tilProfileLink.error = ""
                 binding.tilProfileLink.isErrorEnabled = false
@@ -369,7 +355,7 @@ class AccountSettingsFragment: BaseFragment() {
     private fun takeValidationPhotoLink(isValid: Boolean) {
         Log.d(TAG, "takeValidationPhotoLink() -> isValid = $isValid")
 
-        when(isValid) {
+        when (isValid) {
             true -> {
                 binding.tilPhotoLink.error = ""
                 binding.tilPhotoLink.isErrorEnabled = false
@@ -384,7 +370,7 @@ class AccountSettingsFragment: BaseFragment() {
     private fun takeEnableSave(enable: Boolean) {
         Log.d(TAG, "takeEnableSave() -> enable = $enable")
 
-        if(::menu.isInitialized) {
+        if (::menu.isInitialized) {
             val menuSave = this.menu.findItem(R.id.action_save)
             menuSave.isEnabled = enable
         }
@@ -393,11 +379,11 @@ class AccountSettingsFragment: BaseFragment() {
     private fun takeProgressUpdateUser(inProgress: Boolean) {
         Log.d(TAG, "takeProgressUpdateUser() -> inProgress = $inProgress")
 
-        if(::menu.isInitialized) {
+        if (::menu.isInitialized) {
             val menuSave = this.menu.findItem(R.id.action_save)
             menuSave.isEnabled = !inProgress
         }
-        when(inProgress) {
+        when (inProgress) {
             true -> {
                 binding.progressBar.visibility = View.VISIBLE
                 binding.swipeRefresh.isRefreshing = true
@@ -428,11 +414,11 @@ class AccountSettingsFragment: BaseFragment() {
     private fun takeProgressDeleteUser(inProgress: Boolean) {
         Log.d(TAG, "takeProgressDeleteUser() -> inProgress = $inProgress")
 
-        if(::menu.isInitialized) {
+        if (::menu.isInitialized) {
             val menuSave = this.menu.findItem(R.id.action_save)
             menuSave.isEnabled = !inProgress
         }
-        when(inProgress) {
+        when (inProgress) {
             true -> {
                 binding.progressBar.visibility = View.VISIBLE
                 binding.swipeRefresh.isRefreshing = true
@@ -463,11 +449,11 @@ class AccountSettingsFragment: BaseFragment() {
     private fun takeProgressBanAccount(inProgress: Boolean) {
         Log.d(TAG, "takeProgressBanAccount() -> inProgress = $inProgress")
 
-        if(::menu.isInitialized) {
+        if (::menu.isInitialized) {
             val menuSave = this.menu.findItem(R.id.action_save)
             menuSave.isEnabled = !inProgress
         }
-        when(inProgress) {
+        when (inProgress) {
             true -> {
                 binding.progressBar.visibility = View.VISIBLE
                 binding.swipeRefresh.isRefreshing = true
@@ -498,7 +484,7 @@ class AccountSettingsFragment: BaseFragment() {
     private fun takeViewEffect(effect: AccountSettingsViewModel.ViewEffect) {
         Log.d(TAG, "takeViewEffect() -> effect = ${effect::class.java.simpleName}")
 
-        when(effect) {
+        when (effect) {
             is AccountSettingsViewModel.ViewEffect.ErrorGetUserDetails -> {
                 // Display Error Prompt
                 Toast.makeText(
@@ -539,7 +525,7 @@ class AccountSettingsFragment: BaseFragment() {
                     .show()
 
                 // Navigate back
-                appNavController.popBackStack()
+                appNavController.popBackStack(R.id.fragmentHome, false)
             }
             is AccountSettingsViewModel.ViewEffect.ErrorDeleteAccount -> {
                 // Display Error Prompt
@@ -551,7 +537,7 @@ class AccountSettingsFragment: BaseFragment() {
                     .show()
             }
             is AccountSettingsViewModel.ViewEffect.SuccessBanRestoreAccount -> {
-                val message = when(effect.user.banned) {
+                val message = when (effect.user.banned) {
                     true -> getString(R.string.account_successfully_banned)
                     else -> getString(R.string.account_successfully_restored)
                 }

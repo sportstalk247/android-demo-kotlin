@@ -137,6 +137,8 @@
         android:gravity="center"
         android:text="@string/submit"
         android:textColor="@android:color/white"
+        android:textStyle="bold"
+        app:backgroundTint="@color/bg_button"
         app:elevation="3dp"
         android:enabled="false"
         tools:enabled="true"

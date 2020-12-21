@@ -1,16 +1,16 @@
 package com.sportstalk.app.demo.presentation
 
 import android.os.Bundle
-import android.view.View
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
 import androidx.annotation.IdRes
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
-import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
-import com.sportstalk.app.demo.R
+import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.isActive
 import org.koin.android.ext.android.getKoin
 import org.koin.androidx.viewmodel.koin.getViewModel
 import org.koin.core.parameter.ParametersDefinition
@@ -19,12 +19,8 @@ import org.koin.core.qualifier.Qualifier
 open class BaseFragment : Fragment() {
 
     // Top-level Nav Controller Instance
-    lateinit var appNavController: NavController
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        appNavController = Navigation.findNavController(requireActivity(), R.id.navHostFragmentApp)
-    }
+    open val appNavController: NavController
+        get() = findNavController()
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -47,6 +43,12 @@ open class BaseFragment : Fragment() {
      * Override this and set to `true` if you want the implementing Fragment to have its own onBackPressedCallback implementation
      */
     open fun onBackPressedCallback(): OnBackPressedCallback.() -> Unit = {}
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        // Cancel Coroutine Flow Subscriptions launched on `lifecycleScope`
+        lifecycleScope.coroutineContext.cancelChildren()
+    }
 
     /**
      * Log TAG

@@ -13,12 +13,10 @@ import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import com.jakewharton.rxbinding3.widget.checkedChanges
 import com.jakewharton.rxbinding3.widget.textChanges
-import com.sportstalk.SportsTalk247
 import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.FragmentUpdateChatroomBinding
 import com.sportstalk.app.demo.presentation.BaseFragment
 import com.sportstalk.app.demo.presentation.chatroom.listparticipants.ChatroomListParticipantsFragment
-import com.sportstalk.models.ClientConfig
 import com.sportstalk.models.chat.ChatRoom
 import com.sportstalk.models.users.User
 import kotlinx.coroutines.flow.debounce
@@ -31,23 +29,14 @@ import org.koin.core.parameter.parametersOf
 import java.text.SimpleDateFormat
 import java.util.*
 
-class UpdateChatroomFragment: BaseFragment() {
+class UpdateChatroomFragment : BaseFragment() {
 
     private lateinit var binding: FragmentUpdateChatroomBinding
-
-    private val config: ClientConfig by lazy {
-        ClientConfig(
-            appId = getString(R.string.sportstalk247_appid),
-            apiToken = getString(R.string.sportstalk247_authToken),
-            endpoint = getString(R.string.sportstalk247_urlEndpoint)
-        )
-    }
 
     private val updateChatroomViewModel: UpdateChatroomViewModel by viewModel {
         parametersOf(
             room,
-            user,
-            SportsTalk247.ChatClient(config)
+            user
         )
     }
 
@@ -381,7 +370,7 @@ class UpdateChatroomFragment: BaseFragment() {
     private suspend fun takeProgressGetChatroomDetails(inProgress: Boolean) {
         Log.d(TAG, "takeProgressGetChatroomDetails() -> inProgress = $inProgress")
 
-        binding.progressBar.visibility = when(inProgress) {
+        binding.progressBar.visibility = when (inProgress) {
             true -> View.VISIBLE
             false -> View.GONE
         }
@@ -412,7 +401,7 @@ class UpdateChatroomFragment: BaseFragment() {
 
     private fun takeProgressUpdateChatroom(inProgress: Boolean) {
         Log.d(TAG, "takeProgressUpdateChatroom() -> inProgress = $inProgress")
-        binding.progressBar.visibility = when(inProgress) {
+        binding.progressBar.visibility = when (inProgress) {
             true -> View.VISIBLE
             else -> View.GONE
         }
@@ -420,7 +409,7 @@ class UpdateChatroomFragment: BaseFragment() {
 
     private suspend fun takeProgressDeleteAllEventsInRoom(inProgress: Boolean) {
         Log.d(TAG, "takeProgressDeleteAllEventsInRoom() -> inProgress = $inProgress")
-        binding.progressBar.visibility = when(inProgress) {
+        binding.progressBar.visibility = when (inProgress) {
             true -> View.VISIBLE
             else -> View.GONE
         }
@@ -428,7 +417,7 @@ class UpdateChatroomFragment: BaseFragment() {
 
     private suspend fun takeProgressDeleteRoom(inProgress: Boolean) {
         Log.d(TAG, "takeProgressDeleteRoom() -> inProgress = $inProgress")
-        binding.progressBar.visibility = when(inProgress) {
+        binding.progressBar.visibility = when (inProgress) {
             true -> View.VISIBLE
             else -> View.GONE
         }
@@ -436,7 +425,7 @@ class UpdateChatroomFragment: BaseFragment() {
 
     private suspend fun takeProgressSendAnnouncement(inProgress: Boolean) {
         Log.d(TAG, "takeProgressSendAnnouncement() -> inProgress = $inProgress")
-        binding.progressBar.visibility = when(inProgress) {
+        binding.progressBar.visibility = when (inProgress) {
             true -> View.VISIBLE
             else -> View.GONE
         }
@@ -450,7 +439,7 @@ class UpdateChatroomFragment: BaseFragment() {
                 // Display ERROR Prompt
                 Toast.makeText(
                     requireContext(),
-                    effect.err.message ?: getString(R.string.something_went_wrong_please_try_again),
+                    effect.err.message?.takeIf { it.isNotEmpty() } ?: getString(R.string.something_went_wrong_please_try_again),
                     Toast.LENGTH_LONG
                 ).show()
 
@@ -472,7 +461,7 @@ class UpdateChatroomFragment: BaseFragment() {
                 // Display ERROR Prompt
                 Toast.makeText(
                     requireContext(),
-                    effect.err.message,
+                    effect.err.message?.takeIf { it.isNotEmpty() } ?: getString(R.string.something_went_wrong_please_try_again),
                     Toast.LENGTH_LONG
                 ).show()
             }
@@ -488,7 +477,7 @@ class UpdateChatroomFragment: BaseFragment() {
                 // Display ERROR Prompt
                 Toast.makeText(
                     requireContext(),
-                    effect.err.message,
+                    effect.err.message?.takeIf { it.isNotEmpty() } ?: getString(R.string.something_went_wrong_please_try_again),
                     Toast.LENGTH_LONG
                 ).show()
             }
@@ -496,7 +485,10 @@ class UpdateChatroomFragment: BaseFragment() {
                 // Success Prompt
                 Toast.makeText(
                     requireContext(),
-                    getString(R.string.chatroom_successfully_deleted, effect.response.room?.name ?: ""),
+                    getString(
+                        R.string.chatroom_successfully_deleted,
+                        effect.response.room?.name ?: ""
+                    ),
                     Toast.LENGTH_LONG
                 ).show()
 
@@ -507,7 +499,7 @@ class UpdateChatroomFragment: BaseFragment() {
                 // Display ERROR Prompt
                 Toast.makeText(
                     requireContext(),
-                    effect.err.message,
+                    effect.err.message?.takeIf { it.isNotEmpty() } ?: getString(R.string.something_went_wrong_please_try_again),
                     Toast.LENGTH_LONG
                 ).show()
             }
@@ -521,7 +513,7 @@ class UpdateChatroomFragment: BaseFragment() {
             is UpdateChatroomViewModel.ViewEffect.ErrorSendAnnouncement -> {
                 Toast.makeText(
                     requireContext(),
-                    effect.err.message ?: getString(R.string.something_went_wrong_please_try_again),
+                    effect.err.message?.takeIf { it.isNotEmpty() } ?: getString(R.string.something_went_wrong_please_try_again),
                     Toast.LENGTH_SHORT
                 ).show()
             }
@@ -607,8 +599,10 @@ class UpdateChatroomFragment: BaseFragment() {
         const val INPUT_ARG_ROOM = "input-arg-room"
         const val INPUT_ARG_USER = "input-arg-user"
 
-        private val UTC_DATE_FORMATTER: SimpleDateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
-        private val UI_DATE_FORMATTER: SimpleDateFormat = SimpleDateFormat("hh:mm aa MMM dd, yyyy", Locale.getDefault())
+        private val UTC_DATE_FORMATTER: SimpleDateFormat =
+            SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
+        private val UI_DATE_FORMATTER: SimpleDateFormat =
+            SimpleDateFormat("hh:mm aa MMM dd, yyyy", Locale.getDefault())
     }
 
 }

@@ -1,7 +1,6 @@
 package com.sportstalk.app.demo.presentation.chatroom.adapters
 
 import android.annotation.SuppressLint
-import android.content.res.ColorStateList
 import android.os.AsyncTask
 import android.text.format.DateUtils
 import android.view.LayoutInflater
@@ -9,15 +8,14 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.MainThread
 import androidx.core.content.ContextCompat
+import androidx.core.widget.ImageViewCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.sportstalk.app.demo.R
-import com.sportstalk.app.demo.databinding.ItemChatroomLiveChatActionBinding
-import com.sportstalk.app.demo.databinding.ItemChatroomLiveChatAnnouncementBinding
-import com.sportstalk.app.demo.databinding.ItemChatroomLiveChatReceivedBinding
-import com.sportstalk.app.demo.databinding.ItemChatroomLiveChatSentBinding
+import com.sportstalk.app.demo.databinding.*
 import com.sportstalk.models.chat.ChatEvent
+import com.sportstalk.models.chat.EventReaction
 import com.sportstalk.models.chat.EventType
 import com.sportstalk.models.users.User
 import java.text.DecimalFormat
@@ -26,17 +24,14 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 typealias OnTapChatEventItem = ((ChatEvent) -> Unit)
-typealias OnTapReactChatEventItem = ((ChatEvent, Boolean) -> Unit)
 
 class ItemChatEventAdapter(
     private val me: User,
     initialItems: List<ChatEvent> = listOf(),
-    private val onTapChatEventItem: OnTapChatEventItem = {},
-    private val onTapReactChatEventItem: OnTapReactChatEventItem = { _, _ -> }
+    private val onTapChatEventItem: OnTapChatEventItem = {}
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    private val UTC_BIRTHDAY_FORMATTER: SimpleDateFormat =
-        /*SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX", Locale.getDefault())*/
+    private val UTC_MSG_SENT_FORMATTER: SimpleDateFormat =
         SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
 
     private var items: List<ChatEvent> = ArrayList(initialItems)
@@ -99,7 +94,7 @@ class ItemChatEventAdapter(
 
     @SuppressLint("StaticFieldLeak")
     @MainThread
-    private fun replace(update: List<ChatEvent>) {
+    fun replace(update: List<ChatEvent>) {
         dataVersion++
         if (items.isEmpty()) {
             items = update
@@ -151,7 +146,11 @@ class ItemChatEventAdapter(
         return when {
             // "Announcement" implementation
             item.eventtype == EventType.ANNOUNCEMENT -> VIEW_TYPE_ANNOUNCEMENT
+            item.eventtype == EventType.BOUNCE -> VIEW_TYPE_BOUNCE
+            // "roomopened", "roomclosed" implementation
+            item.eventtype in listOf(EventType.ROOM_OPEN, EventType.ROOM_CLOSED) -> VIEW_TYPE_ROOM_STATUS
             item.eventtype == EventType.ACTION -> VIEW_TYPE_ACTION
+            item.eventtype == EventType.CUSTOM -> VIEW_TYPE_UNKNOWN_EVENTTYPE
             item.userid == me.userid -> VIEW_TYPE_SENT
             item.userid != me.userid -> VIEW_TYPE_RECEIVED
             else -> super.getItemViewType(position)
@@ -181,8 +180,22 @@ class ItemChatEventAdapter(
                     false
                 )
             )
-            VIEW_TYPE_ANNOUNCEMENT -> ItemChatEventAnnouncementViewHolder(
+            VIEW_TYPE_ANNOUNCEMENT, VIEW_TYPE_BOUNCE -> ItemChatEventAnnouncementViewHolder(
                 ItemChatroomLiveChatAnnouncementBinding.inflate(
+                    LayoutInflater.from(parent.context),
+                    parent,
+                    false
+                )
+            )
+            VIEW_TYPE_ROOM_STATUS -> ItemChatEventRoomStatusViewHolder(
+                ItemChatroomLiveChatRoomStatusBinding.inflate(
+                    LayoutInflater.from(parent.context),
+                    parent,
+                    false
+                )
+            )
+            VIEW_TYPE_UNKNOWN_EVENTTYPE -> ItemChatEventUnknownEventTypeViewHolder(
+                ItemChatroomLiveChatUnknownEventtypeBinding.inflate(
                     LayoutInflater.from(parent.context),
                     parent,
                     false
@@ -200,27 +213,30 @@ class ItemChatEventAdapter(
             }
             is ItemChatEventSentViewHolder -> {
                 holder.bind(me, item)
-                holder.binding.cardViewMessage.setOnClickListener { onTapChatEventItem(item) }
+                val onClickItem = when {
+                    item.deleted == null || item.deleted == false -> View.OnClickListener { onTapChatEventItem(item) }
+                    else -> null
+                }
+                holder.binding.btnMore.setOnClickListener { onTapChatEventItem(item) }
             }
             is ItemChatEventReceivedViewHolder -> {
                 holder.bind(me, item)
-                holder.binding.cardViewMessage.setOnClickListener { onTapChatEventItem(item) }
-                val iReactedToThisMessage = item.reactions
-                    .any { rxn ->
-                        rxn.users.any { usr -> usr.userid == me.userid }
-                    }
-                holder.binding.btnLike.setOnClickListener {
-                    onTapReactChatEventItem.invoke(item, iReactedToThisMessage)
-                }
+                holder.binding.btnMore.setOnClickListener { onTapChatEventItem(item) }
             }
             is ItemChatEventAnnouncementViewHolder -> {
                 holder.bind(item)
                 holder.binding.cardViewMessage.setOnClickListener(null)
             }
+            is ItemChatEventRoomStatusViewHolder -> {
+                holder.bind(item)
+                holder.binding.cardViewMessage.setOnClickListener(null)
+            }
+            is ItemChatEventUnknownEventTypeViewHolder -> {
+                holder.bind(item)
+                holder.binding.cardViewMessage.setOnClickListener(null)
+            }
         }
     }
-
-    private val reactionCountFormatter = DecimalFormat("###,###,###.#")
 
     inner class ItemChatEventSentViewHolder(
         val binding: ItemChatroomLiveChatSentBinding
@@ -236,20 +252,30 @@ class ItemChatEventAdapter(
                 .into(binding.civProfile)
 
             // Display Name
-            binding.actvDisplayName.text = item.user?.displayname
-            binding.actvDisplayHandle.text = "@${item.user?.handle ?: ""}"
+            item.user?.displayname?.takeIf { it.isNotEmpty() }?.let { displayname ->
+                binding.actvDisplayName.text = displayname
+            } ?: run {
+                binding.actvDisplayName.text = ""
+            }
+            // Handle
+            item.user?.handle?.takeIf { it.isNotEmpty() }?.let { handle ->
+                binding.actvDisplayHandle.text = "@${item.user?.handle ?: ""}"
+            } ?: run {
+                binding.actvDisplayHandle.text = ""
+            }
             binding.actvChatMessage.text = item.body
 
-            // ChatEvent Reaction Count
-            binding.actvReactionCount.text = when (item.reactions.size) {
-                in 1..999 -> reactionCountFormatter.format(item.reactions.size)
-                in 1000..999_999 -> "${reactionCountFormatter.format((item.reactions.size.toFloat() / 1_000f))}K"
-                in 1_000_000..999_999_999 -> "${reactionCountFormatter.format((item.reactions.size.toFloat() / 1_000_000f))}M"
-                else -> null
+            val likeCount = item.reactions.firstOrNull { it.type == EventReaction.LIKE }?.count ?: 0
+            if(likeCount > 0) {
+                binding.actvLikes.text = context.getString(R.string.chat_likes_count, likeCount.toString(10))
+                binding.actvLikes.visibility = View.VISIBLE
+            } else {
+                binding.actvLikes.visibility = View.GONE
             }
+
             // ChatEvent Relative Time Sent: ex. "Just now"
             binding.actvSent.text = item.added?.let { added ->
-                val date = UTC_BIRTHDAY_FORMATTER.parse(added) ?: return@let null
+                val date = UTC_MSG_SENT_FORMATTER.parse(added) ?: return@let null
                 DateUtils.getRelativeDateTimeString(
                     context,
                     date.time,
@@ -265,13 +291,22 @@ class ItemChatEventAdapter(
             if(item.replyto != null) {
                 binding.actvRepliedTo.text = context.getString(
                     R.string.you_replied_to,
-                    "@${item.user?.handle ?: ""}"
+                    "@${item.replyto?.user?.handle ?: ""}"
                 )
-                binding.actvRepliedMessage.text = item.replyto?.body
+                binding.actvRepliedMessage.text = item.replyto?.body?.trim()
 
                 binding.containerReply.visibility = View.VISIBLE
             } else {
                 binding.containerReply.visibility = View.GONE
+            }
+
+            ///////////////////////////////
+            // Flagged as Deleted
+            ///////////////////////////////
+            // Hide Context Option if NOT deleted
+            binding.btnMore.visibility = when(item.deleted == false) {
+                true -> View.VISIBLE
+                else -> View.GONE
             }
         }
     }
@@ -290,39 +325,31 @@ class ItemChatEventAdapter(
                 .into(binding.civProfile)
 
             // Display Name
-            binding.actvDisplayName.text = item.user?.displayname
-            binding.actvDisplayHandle.text = "@${item.user?.handle ?: ""}"
+            item.user?.displayname?.takeIf { it.isNotEmpty() }?.let { displayname ->
+                binding.actvDisplayName.text = displayname
+            } ?: run {
+                binding.actvDisplayName.text = ""
+            }
+            // Handle
+            item.user?.handle?.takeIf { it.isNotEmpty() }?.let { handle ->
+                binding.actvDisplayHandle.text = "@${item.user?.handle ?: ""}"
+            } ?: run {
+                binding.actvDisplayHandle.text = ""
+            }
+
             binding.actvChatMessage.text = item.body
 
-            val iReactedToThisMessage = item.reactions
-                .any { rxn ->
-                    rxn.users.any { usr -> usr.userid == me.userid }
-                }
-
-            with(binding.btnLike) {
-                imageTintList = when (iReactedToThisMessage) {
-                    true -> ColorStateList.valueOf(
-                        ContextCompat.getColor(context, R.color.blue_like)
-                    )
-                    false -> ColorStateList.valueOf(
-                        ContextCompat.getColor(context, android.R.color.tertiary_text_light)
-                    )
-                }
-
-                /*isEnabled = !iReactedToThisMessage*/
-                requestLayout()
+            val likeCount = item.reactions.firstOrNull { it.type == EventReaction.LIKE }?.count ?: 0
+            if(likeCount > 0) {
+                binding.actvLikes.text = context.getString(R.string.chat_likes_count, likeCount.toString(10))
+                binding.actvLikes.visibility = View.VISIBLE
+            } else {
+                binding.actvLikes.visibility = View.GONE
             }
 
-            // ChatEvent Reaction Count
-            binding.actvReactionCount.text = when (item.reactions.size) {
-                in 1..999 -> reactionCountFormatter.format(item.reactions.size)
-                in 1000..999_999 -> "${reactionCountFormatter.format((item.reactions.size.toFloat() / 1_000f))}K"
-                in 1_000_000..999_999_999 -> "${reactionCountFormatter.format((item.reactions.size.toFloat() / 1_000_000f))}M"
-                else -> null
-            }
             // ChatEvent Relative Time Sent: ex. "Just now"
             binding.actvSent.text = item.added?.let { added ->
-                val date = UTC_BIRTHDAY_FORMATTER.parse(added) ?: return@let null
+                val date = UTC_MSG_SENT_FORMATTER.parse(added) ?: return@let null
                 DateUtils.getRelativeDateTimeString(
                     context,
                     date.time,
@@ -341,11 +368,20 @@ class ItemChatEventAdapter(
                     "@${item.user?.handle ?: ""}",
                     "@${item.replyto?.user?.handle ?: ""}"
                 )
-                binding.actvRepliedMessage.text = item.replyto?.body
+                binding.actvRepliedMessage.text = item.replyto?.body?.trim()
 
                 binding.containerReply.visibility = View.VISIBLE
             } else {
                 binding.containerReply.visibility = View.GONE
+            }
+
+            ///////////////////////////////
+            // Flagged as Deleted
+            ///////////////////////////////
+            // Hide Context Option if NOT deleted
+            binding.btnMore.visibility = when(item.deleted == false) {
+                true -> View.VISIBLE
+                else -> View.INVISIBLE
             }
 
         }
@@ -367,11 +403,30 @@ class ItemChatEventAdapter(
         }
     }
 
+    inner class ItemChatEventRoomStatusViewHolder(
+        val binding: ItemChatroomLiveChatRoomStatusBinding
+    ): RecyclerView.ViewHolder(binding.root) {
+        fun bind(item: ChatEvent) {
+            binding.actvChatMessage.text = item.body
+        }
+    }
+
+    inner class ItemChatEventUnknownEventTypeViewHolder(
+        val binding: ItemChatroomLiveChatUnknownEventtypeBinding
+    ): RecyclerView.ViewHolder(binding.root) {
+        fun bind(item: ChatEvent) {
+            binding.actvChatMessage.text = item.body
+        }
+    }
+
     companion object {
         private const val VIEW_TYPE_SENT = 0x04
         private const val VIEW_TYPE_RECEIVED = 0x08
         private const val VIEW_TYPE_ACTION = 0x00
         private const val VIEW_TYPE_ANNOUNCEMENT = 0x01
+        private const val VIEW_TYPE_BOUNCE = 0x03
+        private const val VIEW_TYPE_ROOM_STATUS = 0x02
+        private const val VIEW_TYPE_UNKNOWN_EVENTTYPE = 0xFF
 
     }
 }

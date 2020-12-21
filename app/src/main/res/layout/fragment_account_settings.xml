@@ -57,7 +57,7 @@
                 android:layout_margin="16dp"
                 android:cropToPadding="true"
                 android:src="@drawable/ic_profile_default"
-                app:civ_circle_background_color="@android:color/darker_gray"
+                app:civ_circle_background_color="@color/colorPrimary"
                 app:civ_border_overlay="false"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintLeft_toRightOf="parent"
@@ -176,6 +176,8 @@
             android:textAlignment="gravity"
             android:text="@string/delete_account"
             android:textColor="@android:color/white"
+            android:textStyle="bold"
+            app:backgroundTint="@color/bg_button"
             app:elevation="3dp" />
 
         <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
@@ -188,6 +190,8 @@
             android:textAlignment="gravity"
             android:text="@string/ban_account"
             android:textColor="@android:color/white"
+            android:textStyle="bold"
+            app:backgroundTint="@color/bg_button"
             app:elevation="3dp" />
 
     </androidx.appcompat.widget.LinearLayoutCompat>

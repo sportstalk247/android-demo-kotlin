@@ -11,11 +11,9 @@ import com.sportstalk.models.chat.*
 import com.sportstalk.models.users.User
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.ConflatedBroadcastChannel
-import kotlinx.coroutines.channels.sendBlocking
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -32,75 +30,100 @@ class ChatRoomViewModel(
     private val preferences: SportsTalkDemoPreferences
 ) : ViewModel() {
 
-    private val progressJoinRoom = Channel<Boolean>(Channel.RENDEZVOUS)
-    private val progressExitRoom = Channel<Boolean>(Channel.RENDEZVOUS)
-    private val progressListPreviousEvents = Channel<Boolean>(Channel.RENDEZVOUS)
-    private val progressSendChatMessage = Channel<Boolean>(Channel.RENDEZVOUS)
-    private val progressRemoveMessage = Channel<Boolean>(Channel.RENDEZVOUS)
-    private val progressReportMessage = Channel<Boolean>(Channel.RENDEZVOUS)
-    private val quotedReply = ConflatedBroadcastChannel<ChatEvent>()
+    private val progressJoinRoom = MutableSharedFlow<Boolean>()
+    private val progressExitRoom = MutableSharedFlow<Boolean>()
+    private val progressListPreviousEvents = MutableSharedFlow<Boolean>()
+    private val progressSendChatMessage = MutableSharedFlow<Boolean>()
+    private val progressRemoveMessage = MutableSharedFlow<Boolean>()
+    private val progressReportMessage = MutableSharedFlow<Boolean>()
+    private val quotedReply = MutableStateFlow<ChatEvent?>(null)
 
     private lateinit var previouseventscursor: String
 
-    private val roomName = ConflatedBroadcastChannel<String>()
-    private val attendeesCount = ConflatedBroadcastChannel<Long>()
-    private val chatEvents = ConflatedBroadcastChannel<List<ChatEvent>>()
+    private val roomName = MutableStateFlow<String?>(null)
+    private val attendeesCount = MutableStateFlow<Long?>(null)
+    private val chatEvents = MutableStateFlow<List<ChatEvent>?>(listOf())
+    private val progressBounceUser = MutableSharedFlow<Boolean>()
 
     val state = object : ViewState {
         override fun roomName(): Flow<String> =
             roomName
-                .asFlow()
-                .take(1)
+                .asStateFlow()
+                .filterNotNull()
 
         override fun attendeesCount(): Flow<Long> =
             attendeesCount
-                .asFlow()
-                .take(1)
+                .asStateFlow()
+                .filterNotNull()
 
         override fun progressJoinRoom(): Flow<Boolean> =
-            progressJoinRoom.receiveAsFlow()
+            progressJoinRoom
+                .apply { resetReplayCache() }
+                .asSharedFlow()
 
         override fun progressExitRoom(): Flow<Boolean> =
-            progressExitRoom.receiveAsFlow()
+            progressExitRoom
+                .apply { resetReplayCache() }
+                .asSharedFlow()
+                .distinctUntilChanged()
 
         override fun progressListPreviousEvents(): Flow<Boolean> =
-            progressListPreviousEvents.receiveAsFlow()
+            progressListPreviousEvents
+                .apply { resetReplayCache() }
+                .asSharedFlow()
 
         override fun progressSendChatMessage(): Flow<Boolean> =
-            progressSendChatMessage.receiveAsFlow()
+            progressSendChatMessage
+                .apply { resetReplayCache() }
+                .asSharedFlow()
 
         override fun progressRemoveMessage(): Flow<Boolean> =
-            progressRemoveMessage.receiveAsFlow()
+            progressRemoveMessage
+                .apply { resetReplayCache() }
+                .asSharedFlow()
 
         override fun progressReportMessage(): Flow<Boolean> =
-            progressReportMessage.receiveAsFlow()
+            progressReportMessage
+                .apply { resetReplayCache() }
+                .asSharedFlow()
 
         override fun quotedReply(): Flow<ChatEvent> =
-            quotedReply.asFlow()
+            quotedReply
+                .asStateFlow()
+                .filterNotNull()
 
         override fun chatEvents(): Flow<List<ChatEvent>> =
             chatEvents
-                .asFlow()
-                .take(1)
+                .asStateFlow()
+                .filterNotNull()
+
+        override fun progressBounceUser(): Flow<Boolean> =
+            progressBounceUser
+                .apply { resetReplayCache() }
+                .asSharedFlow()
     }
 
-    private val _effect = Channel<ViewEffect>(Channel.RENDEZVOUS)
+    private val _effect = MutableSharedFlow<ViewEffect>()
     val effect: Flow<ViewEffect>
-        get() = _effect
-            .receiveAsFlow()
+        get() =
+            _effect
+                .apply { resetReplayCache() }
+                .asSharedFlow()
 
     init {
         // Emit Room Name
-        roomName.sendBlocking(room.name ?: "")
+        roomName.value = room.name ?: ""
         // Emit Room Attendees Count
-        attendeesCount.sendBlocking(room.inroom ?: 0L)
+        attendeesCount.value = room.inroom ?: 0L
     }
 
     fun joinRoom() {
+        if(::previouseventscursor.isInitialized) return
+
         viewModelScope.launch {
             try {
                 // DISPLAY Progress Indicator
-                progressJoinRoom.send(true)
+                progressJoinRoom.emit(true)
 
                 // Perform Join Room
                 val response = withContext(Dispatchers.IO) {
@@ -115,21 +138,21 @@ class ChatRoomViewModel(
 
                 // Emit join initial events list
                 val joinInitialEvents = response.eventscursor?.events ?: listOf()
-                chatEvents.send(joinInitialEvents)
+                chatEvents.emit(joinInitialEvents)
                 // Keep Previous Events Cursor
                 previouseventscursor = response.previouseventscursor ?: ""
 
                 // EMIT Success
-                _effect.send(ViewEffect.SuccessJoinRoom(response))
+                _effect.emit(ViewEffect.SuccessJoinRoom(response))
 
             } catch (err: SportsTalkException) {
                 // EMIT Error
-                _effect.send(
+                _effect.emit(
                     ViewEffect.ErrorJoinRoom(err)
                 )
             } finally {
                 // HIDE Progress Indicator
-                progressJoinRoom.send(false)
+                progressJoinRoom.emit(false)
             }
         }
     }
@@ -150,32 +173,15 @@ class ChatRoomViewModel(
         // Subscribe to Chat Event Updates
         jobAllEventUpdates = chatClient.allEventUpdates(
             chatRoomId = room.id!!,
-            frequency = 500L,
-            lifecycleOwner = lifecycleOwner
+            frequency = 500L
         )
+            // Filter out empty message(s) generated when performing LIKE action
+            .map { it.filter { msg -> msg.body?.isNotEmpty() == true } }
             .onEach { newEvents ->
-                val updatedChatEventList = ArrayList(chatEvents.valueOrNull ?: listOf()).apply {
-                    newEvents.forEach { newEvent ->
-                        val index = indexOfFirst { oldEvent -> oldEvent.id == newEvent.id }
-                        if (index >= 0) {
-                            set(index, newEvent)
-                        } else {
-                            add(0, newEvent)
-                        }
-                    }
-                }
-                    // Filter out "reaction" event type
-                    .filter { it.eventtype != EventType.REACTION }
-                    .sortedByDescending { it.ts }
-                    .distinctBy { it.id }
-
                 // Emit New Chat Event(s) received
-                _effect.send(
+                _effect.emit(
                     ViewEffect.ReceiveChatEventUpdates(newEvents)
                 )
-
-                // Update overall chat event list
-                chatEvents.send(updatedChatEventList)
             }
             .launchIn(viewModelScope)
     }
@@ -201,7 +207,7 @@ class ChatRoomViewModel(
         viewModelScope.launch {
             try {
                 // DISPLAY Progress Indicator
-                progressListPreviousEvents.send(true)
+                progressListPreviousEvents.emit(true)
 
                 // Perform List Previous Events SDK Operation
                 val response = withContext(Dispatchers.IO) {
@@ -212,20 +218,37 @@ class ChatRoomViewModel(
                     )
                 }
 
+                val updatedChatEventList = ArrayList(chatEvents.value ?: listOf()).apply {
+                    response.events.forEach { newEvent ->
+                        val index = indexOfFirst { oldEvent -> oldEvent.id == newEvent.id }
+                        if (index >= 0) {
+                            set(index, newEvent)
+                        } else {
+                            add(0, newEvent)
+                        }
+                    }
+                }
+                    // Filter out "reaction" event type
+                    .filter { it.eventtype != EventType.REACTION }
+                    .sortedByDescending { it.ts }
+                    .distinctBy { it.id }
+
                 // EMIT Success
-                _effect.send(
+                _effect.emit(
                     ViewEffect.SuccessListPreviousEvents(response.events)
                 )
+                // Emit updated Chat Event List
+                chatEvents.emit(updatedChatEventList)
 
                 // KEEP cursor
                 previouseventscursor = response.cursor ?: ""
 
             } catch (err: SportsTalkException) {
                 // EMIT error
-                _effect.send(ViewEffect.ErrorListPreviousEvents(err))
+                _effect.emit(ViewEffect.ErrorListPreviousEvents(err))
             } finally {
                 // HIDE Progress Indicator
-                progressListPreviousEvents.send(false)
+                progressListPreviousEvents.emit(false)
             }
         }
     }
@@ -241,54 +264,53 @@ class ChatRoomViewModel(
     ) {
 
         when {
-            quotedReply.valueOrNull != null && quotedReply.value != PLACEHOLDER_CLEAR_REPLY -> {
+            quotedReply.value != null && quotedReply.value != PLACEHOLDER_CLEAR_REPLY -> {
                 sendQuotedReply(
                     message = message,
                     customid = customid,
                     custompayload = custompayload,
-                    replyTo = quotedReply.value
+                    replyTo = quotedReply.value!!
                 )
             }
             else -> {
                 viewModelScope.launch {
                     try {
                         // DISPLAY Progress Indicator
-                        progressSendChatMessage.send(true)
+                        progressSendChatMessage.emit(true)
 
                         val response = withContext(Dispatchers.IO) {
                             chatClient.executeChatCommand(
                                 chatRoomId = room.id!!,
                                 request = ExecuteChatCommandRequest(
                                     command = message,
-                                    userid = user.userid!!,
-                                    customid = null,
-                                    custompayload = null,
-                                    customtype = null
+                                    userid = user.userid!!
                                 )
                             )
                         }
 
                         // Emit SUCCESS Send Chat Message
-                        _effect.send(ViewEffect.ChatMessageSent(response))
+                        _effect.emit(ViewEffect.ChatMessageSent(response))
 
                     } catch (err: SportsTalkException) {
                         // EMIT Error
-                        _effect.send(ViewEffect.ErrorSendChatMessage(err))
+                        _effect.emit(ViewEffect.ErrorSendChatMessage(err))
 
                     } finally {
                         // HIDE Progress Indicator
-                        progressSendChatMessage.send(false)
+                        progressSendChatMessage.emit(false)
                     }
                 }
             }
         }
     }
 
-    fun prepareQuotedReply(replyTo: ChatEvent) =
-        this@ChatRoomViewModel.quotedReply.sendBlocking(replyTo)
+    fun prepareQuotedReply(replyTo: ChatEvent) {
+        this@ChatRoomViewModel.quotedReply.value = replyTo
+    }
 
-    fun clearQuotedReply() =
-        this@ChatRoomViewModel.quotedReply.sendBlocking(PLACEHOLDER_CLEAR_REPLY)
+    fun clearQuotedReply() {
+        this@ChatRoomViewModel.quotedReply.value = PLACEHOLDER_CLEAR_REPLY
+    }
 
     /**
      * Perform `Reply to a Message (Quoted)` SDK Operation
@@ -305,7 +327,7 @@ class ChatRoomViewModel(
         viewModelScope.launch {
             try {
                 // DISPLAY Progress Indicator
-                progressSendChatMessage.send(true)
+                progressSendChatMessage.emit(true)
 
                 val response = withContext(Dispatchers.IO) {
                     chatClient.sendQuotedReply(
@@ -324,21 +346,21 @@ class ChatRoomViewModel(
                 }
 
                 // EMIT SUCCESS Quoted Reply
-                _effect.send(
+                _effect.emit(
                     ViewEffect.QuotedReplySent(response)
                 )
 
             } catch (err: SportsTalkException) {
                 // EMIT Error
-                _effect.send(
+                _effect.emit(
                     ViewEffect.ErrorSendQuotedReply(err)
                 )
             } finally {
                 // HIDE Progress Indicator
-                progressSendChatMessage.send(false)
+                progressSendChatMessage.emit(false)
 
                 // Clear Prepared Quoted Reply
-                this@ChatRoomViewModel.quotedReply.send(PLACEHOLDER_CLEAR_REPLY)
+                this@ChatRoomViewModel.quotedReply.value = PLACEHOLDER_CLEAR_REPLY
             }
         }
     }
@@ -356,7 +378,7 @@ class ChatRoomViewModel(
         viewModelScope.launch {
             try {
                 // DISPLAY Progress Indicator
-                progressSendChatMessage.send(true)
+                progressSendChatMessage.emit(true)
 
                 val response = withContext(Dispatchers.IO) {
                     chatClient.sendThreadedReply(
@@ -373,15 +395,15 @@ class ChatRoomViewModel(
                 }
 
                 // EMIT SUCCESS Quoted Reply
-                _effect.send(ViewEffect.ThreadedReplySent(response))
+                _effect.emit(ViewEffect.ThreadedReplySent(response))
             } catch (err: SportsTalkException) {
                 // EMIT Error
-                _effect.send(
+                _effect.emit(
                     ViewEffect.ErrorSendThreadedReply(err)
                 )
             } finally {
                 // HIDE Progress Indicator
-                progressSendChatMessage.send(false)
+                progressSendChatMessage.emit(false)
             }
         }
     }
@@ -393,7 +415,7 @@ class ChatRoomViewModel(
         viewModelScope.launch {
             try {
                 // DISPLAY Progress Indicator
-                progressReportMessage.send(true)
+                progressReportMessage.emit(true)
 
                 val response = withContext(Dispatchers.IO) {
                     chatClient.reportMessage(
@@ -407,23 +429,26 @@ class ChatRoomViewModel(
                 }
 
                 // EMIT Success
-                _effect.send(ViewEffect.SuccessReportMessage(response))
+                _effect.emit(ViewEffect.SuccessReportMessage(response))
 
             } catch (err: SportsTalkException) {
                 // EMIT Error
-                _effect.send(ViewEffect.ErrorReportMessage(err))
+                _effect.emit(ViewEffect.ErrorReportMessage(err))
             } finally {
                 // HIDE Progress Indicator
-                progressReportMessage.send(false)
+                progressReportMessage.emit(false)
             }
 
         }
     }
 
-    fun reactToAMessage(event: ChatEvent, hasAlreadyReacted: Boolean) {
+    fun reactToAMessage(event: ChatEvent/*, hasAlreadyReacted: Boolean*/) {
         viewModelScope.launch {
 
             try {
+                val reacted = event.reactions.firstOrNull { r -> r.type == EventReaction.LIKE }
+                    ?.users?.any { u -> u.userid == user.userid } ?: false
+
                 // Perform React To a Message SDK Operation
                 val response = withContext(Dispatchers.IO) {
                     chatClient.reactToEvent(
@@ -432,7 +457,7 @@ class ChatRoomViewModel(
                         request = ReactToAMessageRequest(
                             userid = user.userid!!,
                             reaction = EventReaction.LIKE,
-                            reacted = !hasAlreadyReacted
+                            reacted = !reacted
                         )
                     )
                 }
@@ -441,7 +466,7 @@ class ChatRoomViewModel(
                 var replyTo: ChatEvent? = response.replyto
                 while (replyTo != null) {
                     if(replyTo.id == event.id) {
-                        _effect.send(
+                        _effect.emit(
                             ViewEffect.SuccessReactToAMessage(replyTo)
                         )
                         break
@@ -452,7 +477,7 @@ class ChatRoomViewModel(
 
             } catch (err: SportsTalkException) {
                 // Emit Error
-                _effect.send(ViewEffect.ErrorReactToAMessage(err))
+                _effect.emit(ViewEffect.ErrorReactToAMessage(err))
             }
 
         }
@@ -466,25 +491,25 @@ class ChatRoomViewModel(
         viewModelScope.launch {
             try {
                 // DISPLAY Progress Indicator
-                progressRemoveMessage.send(true)
+                progressRemoveMessage.emit(true)
 
                 val response = withContext(Dispatchers.IO) {
                     when(isPermanentDelete) {
                         // Perform Permanent Delete
                         true -> {
-                            chatClient.permanentlyDeleteEvent(
+                            chatClient.deleteEvent(
                                 chatRoomId = room.id!!,
                                 userid = user.userid!!,
-                                eventId = which.id!!,
-                                permanentifnoreplies = permanentifnoreplies
+                                eventId = which.id!!
                             )
                         }
                         // Perform Flag Event as Deleted
                         false -> {
-                            chatClient.flagEventLogicallyDeleted(
+                            chatClient.setMessageAsDeleted(
                                 chatRoomId = room.id!!,
                                 userid = user.userid!!,
                                 eventId = which.id!!,
+                                deleted = false,
                                 permanentifnoreplies = permanentifnoreplies
                             )
                         }
@@ -492,16 +517,16 @@ class ChatRoomViewModel(
                 }
 
                 // EMIT Success
-                _effect.send(
+                _effect.emit(
                     ViewEffect.SuccessRemoveMessage(response)
                 )
 
             } catch (err: SportsTalkException) {
                 // EMIT Error
-                _effect.send(ViewEffect.ErrorReactToAMessage(err))
+                _effect.emit(ViewEffect.ErrorReactToAMessage(err))
             } finally {
                 // HIDE Progress Indicator
-                progressRemoveMessage.send(false)
+                progressRemoveMessage.emit(false)
             }
         }
     }
@@ -516,7 +541,7 @@ class ChatRoomViewModel(
         viewModelScope.launch {
             try {
                 // DISPLAY Progress Indicator
-                progressExitRoom.send(true)
+                progressExitRoom.emit(true)
                 // Perform `Exit Room` SDK Operation
                 val response = withContext(Dispatchers.IO) {
                     chatClient.exitRoom(
@@ -526,14 +551,58 @@ class ChatRoomViewModel(
                 }
 
                 // EMIT Success
-                _effect.send(ViewEffect.SuccessExitRoom())
+                _effect.emit(ViewEffect.SuccessExitRoom())
 
             } catch (err: SportsTalkException) {
                 // EMIT Error
-                _effect.send(ViewEffect.ErrorExitRoom(err))
+                _effect.emit(ViewEffect.ErrorExitRoom(err))
             } finally {
                 // HIDE Progress Indicator
-                progressExitRoom.send(false)
+                progressExitRoom.emit(false)
+            }
+        }
+    }
+
+    fun bounceUser(who: User, bounce: Boolean, announcement: String? = null) {
+        viewModelScope.launch {
+            try {
+                // SHOW Progress Indicator
+                progressBounceUser.emit(true)
+
+                val response = withContext(Dispatchers.IO) {
+                    chatClient.bounceUser(
+                        chatRoomId = room.id!!,
+                        request = BounceUserRequest(
+                            userid = who.userid!!,
+                            bounce = bounce,
+                            announcement = announcement
+                        )
+                    )
+                }
+
+                // EMIT Success
+                if(bounce) {
+                    _effect.emit(ViewEffect.SuccessBounceUser(response))
+                } else {
+                    _effect.emit(
+                        ViewEffect.SuccessUnbounceUser(
+                            response.copy(
+                                event = ChatEvent(
+                                    body = announcement,
+                                    userid = who.userid,
+                                    user = who
+                                )
+                            )
+                        )
+                    )
+                }
+
+            } catch (err: SportsTalkException) {
+                // EMIT ERROR
+                _effect.emit(ViewEffect.ErrorBounceUser(err))
+            } finally {
+                // HIDE Progress Indicator
+                progressBounceUser.emit(false)
             }
         }
     }
@@ -591,6 +660,11 @@ class ChatRoomViewModel(
          * Emits the overall list of events(includes results from `previouseventscursor` and `nexteventscursor`)
          */
         fun chatEvents(): Flow<List<ChatEvent>>
+
+        /**
+         * Emits [true] upon start `Bounce user`/`Unbounce user` SDK operation. Emits [false] when done.
+         */
+        fun progressBounceUser(): Flow<Boolean>
     }
 
     sealed class ViewEffect {
@@ -620,6 +694,10 @@ class ChatRoomViewModel(
 
         data class SuccessListPreviousEvents(val previousEvents: List<ChatEvent>) : ViewEffect()
         data class ErrorListPreviousEvents(val err: SportsTalkException) : ViewEffect()
+
+        data class SuccessBounceUser(val response: BounceUserResponse): ViewEffect()
+        data class SuccessUnbounceUser(val response: BounceUserResponse): ViewEffect()
+        data class ErrorBounceUser(val err: SportsTalkException): ViewEffect()
     }
 
     companion object {

@@ -20,7 +20,7 @@
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
             app:layout_collapseMode="pin"
-            app:navigationIcon="?attr/homeAsUpIndicator"
+            app:navigationIcon="@drawable/ic_exit_to_app_white_24dp"
             app:popupTheme="@style/AppTheme.PopupOverlay"
             app:menu="@menu/chatroom"
             tools:title="New York Test Room"
@@ -52,7 +52,7 @@
         android:id="@+id/fragmentContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginBottom="76dp"
+        android:layout_marginBottom="86dp"
         app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"
         tools:layout="@layout/fragment_chatroom_live_chat"
         />
@@ -79,11 +79,13 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_marginLeft="8dp"
                 android:layout_marginRight="8dp"
-                android:layout_marginBottom="8dp"
+                android:layout_marginLeft="18dp"
+                android:layout_marginBottom="16dp"
                 android:hint="@string/send_a_message"
                 app:boxCollapsedPaddingTop="8dp"
+                app:counterEnabled="true"
+                app:counterMaxLength="@integer/send_chat_message_max_char_limit"
                 >
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -92,6 +94,7 @@
                     android:layout_height="wrap_content"
                     android:textSize="14sp"
                     android:includeFontPadding="true"
+                    android:maxLength="@integer/send_chat_message_max_char_limit"
                     />
                 <ProgressBar
                     android:id="@+id/progressBarSendChat"
@@ -113,6 +116,7 @@
                 android:layout_width="42dp"
                 android:layout_height="42dp"
                 android:layout_marginRight="8dp"
+                android:layout_marginBottom="16dp"
                 android:backgroundTint="@android:color/transparent"
                 android:foreground="?attr/selectableItemBackgroundBorderless"
                 android:tint="@color/colorAccent"

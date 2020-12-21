@@ -35,10 +35,10 @@ class AccountSettingsViewModel(
 
     private val userDetails = ConflatedBroadcastChannel<User>(preferences.currentUser!!)
 
-    private val validationDisplayName = Channel<Boolean>(Channel.RENDEZVOUS)
-    private val validationHandleName = Channel<Boolean>(Channel.RENDEZVOUS)
-    private val validationProfileLink = Channel<Boolean>(Channel.RENDEZVOUS)
-    private val validationPhotoLink = Channel<Boolean>(Channel.RENDEZVOUS)
+    private val validationDisplayName = ConflatedBroadcastChannel/*Channel*/<Boolean>(/*Channel.RENDEZVOUS*/)
+    private val validationHandleName = ConflatedBroadcastChannel/*Channel*/<Boolean>(/*Channel.RENDEZVOUS*/)
+    private val validationProfileLink = ConflatedBroadcastChannel/*Channel*/<Boolean>(/*Channel.RENDEZVOUS*/)
+    private val validationPhotoLink = ConflatedBroadcastChannel/*Channel*/<Boolean>(/*Channel.RENDEZVOUS*/)
     private val progressFetchUserDetails = Channel<Boolean>(Channel.RENDEZVOUS)
     private val progressUpdateUser = Channel<Boolean>(Channel.RENDEZVOUS)
     private val progressDeleteUser = Channel<Boolean>(Channel.RENDEZVOUS)
@@ -54,23 +54,28 @@ class AccountSettingsViewModel(
 
         override fun validationDisplayName(): Flow<Boolean> =
             validationDisplayName
-                .consumeAsFlow()
+                /*.consumeAsFlow()*/
+                .asFlow()
 
         override fun validationHandleName(): Flow<Boolean> =
             validationHandleName
-                .consumeAsFlow()
+                /*.consumeAsFlow()*/
+                .asFlow()
 
         override fun validationProfileLink(): Flow<Boolean> =
             validationProfileLink
-                .consumeAsFlow()
+                /*.consumeAsFlow()*/
+                .asFlow()
 
         override fun validationPhotoLink(): Flow<Boolean> =
             validationPhotoLink
-                .consumeAsFlow()
+                /*.consumeAsFlow()*/
+                .asFlow()
 
         override fun enableSave(): Flow<Boolean> =
-            validationDisplayName.consumeAsFlow()
-                .onStart { emit(false) }
+            validationDisplayName/*.consumeAsFlow()
+                .onStart { emit(false) }*/
+                .asFlow()
 
         override fun progressUpdateUser(): Flow<Boolean> =
             progressUpdateUser
@@ -94,7 +99,8 @@ class AccountSettingsViewModel(
         displayName
             .asFlow()
             .map {
-                Regex(AccountSettingsViewModel.REGEX_DISPLAYNAME).containsMatchIn(it)
+                /*Regex(AccountSettingsViewModel.REGEX_DISPLAYNAME).containsMatchIn(it)*/
+                true
             }
             .onEach { isValid ->
                 validationDisplayName.send(isValid)
@@ -104,7 +110,9 @@ class AccountSettingsViewModel(
         // Handlename Validation
         handleName
             .asFlow()
-            .map { Regex(AccountSettingsViewModel.REGEX_HANDLENAME).containsMatchIn(it) }
+            .map {
+                Regex(AccountSettingsViewModel.REGEX_HANDLENAME).containsMatchIn(it)
+            }
             .onEach { isValid ->
                 validationHandleName.send(isValid)
             }

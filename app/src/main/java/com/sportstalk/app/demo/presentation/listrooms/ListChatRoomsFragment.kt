@@ -2,14 +2,15 @@ package com.sportstalk.app.demo.presentation.listrooms
 
 import android.os.Bundle
 import android.util.Log
-import android.view.*
-import androidx.appcompat.app.AppCompatActivity
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.Toast
 import androidx.core.os.bundleOf
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.jakewharton.rxbinding3.swiperefreshlayout.refreshes
-import com.sportstalk.SportsTalk247
 import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.FragmentListChatroomBinding
 import com.sportstalk.app.demo.presentation.BaseFragment
@@ -17,40 +18,23 @@ import com.sportstalk.app.demo.presentation.chatroom.ChatRoomFragment
 import com.sportstalk.app.demo.presentation.listrooms.adapters.ItemListChatRoomAdapter
 import com.sportstalk.app.demo.presentation.users.CreateAccountFragment
 import com.sportstalk.app.demo.presentation.utils.EndlessRecyclerViewScrollListener
-import com.sportstalk.models.ClientConfig
 import com.sportstalk.models.chat.ChatRoom
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.rx2.asFlow
+import org.koin.android.ext.android.getKoin
 import org.koin.androidx.viewmodel.ext.android.viewModel
-import org.koin.core.parameter.parametersOf
+import org.koin.androidx.viewmodel.koin.getViewModel
 
 class ListChatRoomsFragment : BaseFragment() {
 
     private lateinit var binding: FragmentListChatroomBinding
-    private lateinit var menu: Menu
 
     private lateinit var adapter: ItemListChatRoomAdapter
     private lateinit var scrollListener: RecyclerView.OnScrollListener
 
-    private val config: ClientConfig by lazy {
-        ClientConfig(
-            appId = getString(R.string.sportstalk247_appid),
-            apiToken = getString(R.string.sportstalk247_authToken),
-            endpoint = getString(R.string.sportstalk247_urlEndpoint)
-        )
-    }
-
-    private val viewModel: ListChatRoomsViewModel by viewModel {
-        parametersOf(
-            SportsTalk247.ChatClient(config = config)
-        )
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setHasOptionsMenu(true)
-    }
+    private val viewModel: ListChatRoomsViewModel by viewModel()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -90,12 +74,6 @@ class ListChatRoomsFragment : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Setup Toolbar
-        (requireActivity() as? AppCompatActivity)?.let { actv ->
-            actv.setSupportActionBar(binding.toolbar)
-            actv.supportActionBar?.title = getString(R.string.rooms)
-        }
-
         ///////////////////////////////
         // Bind ViewModel State
         ///////////////////////////////
@@ -122,6 +100,7 @@ class ListChatRoomsFragment : BaseFragment() {
          * Emits [true] if account was already created. Emits [false] otherwise.
          */
         viewModel.state.enableAccountSettings()
+            .distinctUntilChanged()
             .onEach { takeEnableAccountSettings(it) }
             .launchIn(lifecycleScope)
 
@@ -147,33 +126,6 @@ class ListChatRoomsFragment : BaseFragment() {
         viewModel.fetchInitial()
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        super.onCreateOptionsMenu(menu, inflater)
-        inflater.inflate(R.menu.list_chatroom, menu)
-
-        this.menu = menu
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean =
-        when (item.itemId) {
-            R.id.action_search -> {
-                // TODO:: R.id.action_search
-                true
-            }
-            R.id.action_account_settings -> {
-                // Navigate to Account Settings Screen
-                if (appNavController.currentDestination?.id == R.id.fragmentHome) {
-                    appNavController.navigate(
-                        R.id.action_fragmentHome_to_fragmentAccountSettings
-                    )
-                }
-
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
-        }
-
-
     override fun onDestroyView() {
         super.onDestroyView()
 
@@ -184,6 +136,10 @@ class ListChatRoomsFragment : BaseFragment() {
     private fun takeProgressFetchChatRooms(inProgress: Boolean) {
         Log.d(TAG, "takeProgressFetchChatRooms() -> inProgress = $inProgress")
         binding.swipeRefresh.isRefreshing = inProgress
+
+        if (!inProgress) {
+            requireActivity().invalidateOptionsMenu()
+        }
     }
 
     private fun takeChatRooms(chatRooms: List<ChatRoom>) {
@@ -194,8 +150,12 @@ class ListChatRoomsFragment : BaseFragment() {
 
     private fun takeEnableAccountSettings(isEnabled: Boolean) {
         Log.d(TAG, "takeEnableAccountSettings() -> isEnabled = $isEnabled")
-        // Toggle menu action
-        this.menu.findItem(R.id.action_account_settings)?.isEnabled = isEnabled
+        // TODO:: Account setting from List Chatrooms screens already removed
+        binding.toolbar.menu.findItem(R.id.action_account_settings)?.let { item ->
+            // Toggle menu action
+            item.isEnabled = isEnabled
+        }
+
     }
 
     private fun takeViewEffect(effect: ListChatRoomsViewModel.ViewEffect) {
@@ -219,12 +179,19 @@ class ListChatRoomsFragment : BaseFragment() {
                     appNavController.navigate(
                         R.id.action_fragmentHome_to_fragmentChatroom,
                         bundleOf(
-                            /* TODO:: Bundle */ChatRoomFragment.INPUT_ARG_ROOM to effect.which,
-                            /* TODO:: Bundle */
+                            ChatRoomFragment.INPUT_ARG_ROOM to effect.which,
                             ChatRoomFragment.INPUT_ARG_USER to effect.who
                         )
                     )
                 }
+            }
+            is ListChatRoomsViewModel.ViewEffect.ErrorFetchListChatrooms -> {
+                Toast.makeText(
+                    requireContext(),
+                    effect.err.message ?: getString(R.string.something_went_wrong_please_try_again),
+                    Toast.LENGTH_LONG
+                )
+                    .show()
             }
         }
     }

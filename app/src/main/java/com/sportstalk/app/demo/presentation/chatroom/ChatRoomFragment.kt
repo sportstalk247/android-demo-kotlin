@@ -4,30 +4,21 @@ import android.os.Bundle
 import android.util.Log
 import android.view.*
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.viewpager2.adapter.FragmentStateAdapter
-import androidx.viewpager2.widget.ViewPager2
-import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.snackbar.Snackbar
-import com.google.android.material.tabs.TabLayout
 import com.jakewharton.rxbinding3.view.clicks
-import com.sportstalk.SportsTalk247
 import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.FragmentChatroomBinding
+import com.sportstalk.app.demo.extensions.throttleFirst
 import com.sportstalk.app.demo.presentation.BaseFragment
-import com.sportstalk.app.demo.presentation.chatroom.listparticipants.ChatroomListParticipantsFragment
-import com.sportstalk.app.demo.presentation.utils.AppBarStateChangedListener
-import com.sportstalk.models.ClientConfig
-import com.sportstalk.models.chat.ChatEvent
 import com.sportstalk.models.chat.ChatRoom
 import com.sportstalk.models.users.User
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.sendBlocking
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.rx2.asFlow
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
@@ -40,23 +31,23 @@ class ChatRoomFragment : BaseFragment() {
     private val viewModel: ChatRoomViewModel by viewModel {
         parametersOf(
             room,
-            user,
-            SportsTalk247.ChatClient(config)
+            user
         )
+    }
+
+    private val popBackChannel = MutableSharedFlow<Any>()
+
+    override fun enableBackPressedCallback(): Boolean = true
+    override fun onBackPressedCallback(): OnBackPressedCallback.() -> Unit = {
+        lifecycleScope.launchWhenCreated {
+            popBackChannel.emit(Any())
+        }
     }
 
     private lateinit var user: User
     private lateinit var room: ChatRoom
 
     private lateinit var errorJoinSnackBar: Snackbar
-
-    private val config: ClientConfig by lazy {
-        ClientConfig(
-            appId = getString(R.string.sportstalk247_appid),
-            apiToken = getString(R.string.sportstalk247_authToken),
-            endpoint = getString(R.string.sportstalk247_urlEndpoint)
-        )
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -107,6 +98,15 @@ class ChatRoomFragment : BaseFragment() {
             appActivity.supportActionBar?.title = room.name
             appActivity.supportActionBar?.setHomeButtonEnabled(true)
         }
+
+        popBackChannel.asSharedFlow()
+            .throttleFirst(1000L)
+            .onEach {
+                Log.d(TAG, "popBackChannel.asSharedFlow()")
+                // Attempt execute Exit Room
+                viewModel.exitRoom()
+            }
+            .launchIn(lifecycleScope)
 
         ///////////////////////////////
         // Bind ViewModel State
@@ -161,6 +161,13 @@ class ChatRoomFragment : BaseFragment() {
             .onEach(::takeProgressReportMessage)
             .launchIn(lifecycleScope)
 
+        /**
+         * Emits [true] upon start `Bounce user`/`Unbounce user` SDK operation. Emits [false] when done.
+         */
+        viewModel.state.progressBounceUser()
+            .onEach(::takeProgressBounceUser)
+            .launchIn(lifecycleScope)
+
         ///////////////////////////////
         // Bind View Effect
         ///////////////////////////////
@@ -177,7 +184,7 @@ class ChatRoomFragment : BaseFragment() {
             .onEach {
                 // Perform send
                 viewModel.sendChatMessage(
-                    message = binding.tietChatMessage.text?.toString() ?: ""
+                    message = binding.tietChatMessage.text.toString().trim() ?: ""
                 )
                 // Clear text
                 binding.tietChatMessage.setText("")
@@ -198,13 +205,17 @@ class ChatRoomFragment : BaseFragment() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean =
         when (item.itemId) {
             android.R.id.home -> {
-                // Call Exit Chatroom Operation
-                appNavController.popBackStack()
+                requireActivity().onBackPressed()
                 true
             }
-            R.id.action_leave_room -> {
-                // Attempt execute Exit Room
-                viewModel.exitRoom()
+            R.id.action_account_settings -> {
+                // Navigate to Account Settings
+                if(appNavController.currentDestination?.id == R.id.fragmentChatroom) {
+                    appNavController.navigate(
+                        R.id.action_fragmentChatroom_to_fragmentAccountSettings
+                    )
+                }
+
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -233,7 +244,7 @@ class ChatRoomFragment : BaseFragment() {
     }
 
     private suspend fun takeProgressExitRoom(inProgress: Boolean) {
-        Log.d(TAG, "takeProgressExitRoom() -> inProgress")
+        Log.d(TAG, "takeProgressExitRoom() -> inProgress = $inProgress")
 
         binding.progressBar.visibility = when (inProgress) {
             true -> View.VISIBLE
@@ -276,6 +287,16 @@ class ChatRoomFragment : BaseFragment() {
         }
     }
 
+    private suspend fun takeProgressBounceUser(inProgress: Boolean) {
+        Log.d(TAG, "takeProgressBounceUser() -> inProgress = $inProgress")
+
+        // DISPLAY/HIDE Progress Indicator
+        binding.progressBar.visibility = when(inProgress) {
+            true -> View.VISIBLE
+            false -> View.GONE
+        }
+    }
+
     private suspend fun takeViewEffect(effect: ChatRoomViewModel.ViewEffect) {
         Log.d(TAG, "takeViewEffect() -> effect = ${effect::class.java.simpleName}")
 
@@ -308,6 +329,13 @@ class ChatRoomFragment : BaseFragment() {
                 // Clear text
                 binding.tietChatMessage.setText("")
             }
+            is ChatRoomViewModel.ViewEffect.ErrorSendChatMessage -> {
+                Toast.makeText(
+                    requireContext(),
+                    effect.err.message ?: getString(R.string.something_went_wrong_please_try_again),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
             is ChatRoomViewModel.ViewEffect.ErrorRemoveMessage -> {
                 Toast.makeText(
                     requireContext(),
@@ -325,10 +353,36 @@ class ChatRoomFragment : BaseFragment() {
             is ChatRoomViewModel.ViewEffect.ErrorReportMessage -> {
                 Toast.makeText(
                     requireContext(),
-                    effect.err.message ?: getString(R.string.something_went_wrong_please_try_again),
+                    effect.err.message?.takeIf { it.isNotEmpty() } ?: getString(R.string.something_went_wrong_please_try_again),
                     Toast.LENGTH_SHORT
                 ).show()
             }
+            is ChatRoomViewModel.ViewEffect.SuccessBounceUser -> {
+                Toast.makeText(
+                    requireContext(),
+                    effect.response.event?.body ?: "",
+                    Toast.LENGTH_SHORT
+                ).show()
+
+                this.room = effect.response.room!!
+            }
+            is ChatRoomViewModel.ViewEffect.SuccessUnbounceUser -> {
+                Toast.makeText(
+                    requireContext(),
+                    effect.response.event?.body,
+                    Toast.LENGTH_SHORT
+                ).show()
+
+                this.room = effect.response.room!!
+            }
+            is ChatRoomViewModel.ViewEffect.ErrorBounceUser -> {
+                Toast.makeText(
+                    requireContext(),
+                    effect.err.message?.takeIf { it.isNotEmpty() } ?: getString(R.string.something_went_wrong_please_try_again),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+
         }
     }
 

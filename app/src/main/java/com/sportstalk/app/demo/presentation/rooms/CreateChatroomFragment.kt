@@ -14,18 +14,15 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.jakewharton.rxbinding3.view.clicks
 import com.jakewharton.rxbinding3.widget.checkedChanges
 import com.jakewharton.rxbinding3.widget.textChanges
-import com.sportstalk.SportsTalk247
 import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.FragmentCreateChatroomBinding
 import com.sportstalk.app.demo.presentation.BaseFragment
-import com.sportstalk.models.ClientConfig
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.rx2.asFlow
 import org.koin.androidx.viewmodel.ext.android.viewModel
-import org.koin.core.parameter.parametersOf
 import java.util.concurrent.TimeUnit
 
 class CreateChatroomFragment : BaseFragment() {
@@ -46,19 +43,7 @@ class CreateChatroomFragment : BaseFragment() {
             .show()
     }
 
-    private val config: ClientConfig by lazy {
-        ClientConfig(
-            appId = getString(R.string.sportstalk247_appid),
-            apiToken = getString(R.string.sportstalk247_authToken),
-            endpoint = getString(R.string.sportstalk247_urlEndpoint)
-        )
-    }
-
-    private val viewModel: CreateChatroomViewModel by viewModel {
-        parametersOf(
-            SportsTalk247.ChatClient(config = config)
-        )
-    }
+    private val viewModel: CreateChatroomViewModel by viewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

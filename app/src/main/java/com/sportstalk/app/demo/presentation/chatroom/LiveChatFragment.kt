@@ -12,6 +12,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 import com.jakewharton.rxbinding3.view.clicks
 import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.FragmentChatroomLiveChatBinding
@@ -26,14 +28,16 @@ import com.sportstalk.models.users.User
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.rx2.asFlow
+import org.koin.android.ext.android.getKoin
 import org.koin.androidx.viewmodel.ext.android.getViewModel
+import org.koin.androidx.viewmodel.koin.getViewModel
 import java.util.concurrent.TimeUnit
 
 class LiveChatFragment : BaseFragment() {
 
     private lateinit var binding: FragmentChatroomLiveChatBinding
     private val viewModel: ChatRoomViewModel by lazy {
-        (parentFragment ?: this@LiveChatFragment).getViewModel<ChatRoomViewModel>()
+        getKoin().getViewModel<ChatRoomViewModel>(owner = requireParentFragment())
     }
 
     private lateinit var scrollListener: RecyclerView.OnScrollListener
@@ -61,6 +65,124 @@ class LiveChatFragment : BaseFragment() {
         binding.recyclerView.layoutManager =
             LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, true)
 
+        adapter = ItemChatEventAdapter(
+            me = user,
+            initialItems = listOf(),
+            onTapChatEventItem = { chatEvent: ChatEvent ->
+                Log.d(TAG, "onTapChatEventItem() -> chatEvent = $chatEvent")
+
+                val options = ArrayList(
+                    resources.getStringArray(R.array.chat_message_tap_options).toList()
+                ).run {
+                    // User's sent chat message(Prompt "Like", "Reply", "Report", "Flag as Deleted", or "Delete Permanently" options)
+                    if(chatEvent.userid == user.userid)
+                        slice(0 until size)
+                    // Other's chat message(Prompt "Like", "Reply" and "Report" options ONLY)
+                    else
+                        slice(0 until 3)
+
+                    // Bounce/Unbounce option
+                    if(::room.isInitialized && room.bouncedusers?.contains(chatEvent.userid) == true) {
+                        add(getString(R.string.chat_message_tap_option_unbounce))
+                    } else {
+                        add(getString(R.string.chat_message_tap_option_bounce))
+                    }
+
+                    return@run this
+                }.toTypedArray()
+
+                MaterialAlertDialogBuilder(requireContext())
+                    .setItems(options) { dialog, which ->
+                        when(options[which]) {
+                            // Like
+                            getString(R.string.chat_message_tap_option_like) -> {
+                                // Perform React Operation
+                                viewModel.reactToAMessage(
+                                    event = chatEvent
+                                )
+                            }
+                            // Reply
+                            getString(R.string.chat_message_tap_option_reply) -> {
+                                // Prepare Quoted Reply
+                                viewModel.prepareQuotedReply(replyTo = chatEvent)
+                            }
+                            // Report
+                            getString(R.string.chat_message_tap_option_report) -> {
+                                // Perform Report Message
+                                viewModel.reportMessage(which = chatEvent, reporttype = ReportType.ABUSE)
+                            }
+                            // Flag as Deleted
+                            getString(R.string.chat_message_tap_option_flag_as_deleted) -> {
+                                viewModel.removeMessage(
+                                    which = chatEvent,
+                                    isPermanentDelete = true,
+                                    permanentifnoreplies = false/*true*/
+                                )
+                            }
+                            // Delete Permanently
+                            getString(R.string.chat_message_tap_option_delete_permanently) -> {
+                                // Delete Permanently
+                                viewModel.removeMessage(
+                                    which = chatEvent,
+                                    isPermanentDelete = true,
+                                    permanentifnoreplies = true
+                                )
+                            }
+                            // Bounce User
+                            getString(R.string.chat_message_tap_option_bounce) -> {
+                                val textInputLayout = LayoutInflater.from(requireContext())
+                                    .inflate(
+                                        R.layout.layout_inapp_settings_input_text,
+                                        binding.root,
+                                        false
+                                    ) as TextInputLayout
+                                val tietInputText = textInputLayout.findViewById<TextInputEditText>(R.id.tietInputText).apply {
+                                    chatEvent.user?.handle?.let { handle -> setText(getString(R.string.the_bouncer_shows_handle_the_way_out, handle)) }
+                                }
+
+                                // Display Alert Prompt With Input Text
+                                MaterialAlertDialogBuilder(requireContext())
+                                    .setTitle(R.string.chat_message_tap_option_bounce)
+                                    .setView(textInputLayout)
+                                    .setPositiveButton(R.string.apply) { _, which ->
+                                        viewModel.bounceUser(
+                                            who = chatEvent.user!!,
+                                            bounce = true,
+                                            announcement = tietInputText.text?.toString()
+                                        )
+                                    }
+                                    .setNegativeButton(android.R.string.cancel) { dialog, _ ->
+                                        dialog.dismiss()
+                                    }
+                                    .show()
+                            }
+                            // Un-bounce User
+                            getString(R.string.chat_message_tap_option_unbounce) -> {
+                                viewModel.bounceUser(
+                                    who = chatEvent.user!!,
+                                    bounce = false,
+                                    announcement = chatEvent.user?.handle?.let { handle -> getString(R.string.the_bouncer_has_allowed_handle_to_enter_the_room, handle) }
+                                )
+                            }
+                        }
+                        dialog.dismiss()
+                    }
+                    .show()
+            }
+        )
+
+        adapter.registerAdapterDataObserver(object: RecyclerView.AdapterDataObserver() {
+            override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
+                super.onItemRangeInserted(positionStart, itemCount)
+                val item = adapter.getItem(positionStart)
+                if(item.userid == user.userid) {
+                    binding.recyclerView.scrollToPosition(0)
+                }
+            }
+        })
+
+        binding.recyclerView.adapter = adapter
+
         scrollListener = object : EndlessRecyclerViewScrollListener(binding.recyclerView.layoutManager!! as LinearLayoutManager) {
             override fun onLoadMore(page: Int, totalItemsCount: Int, view: RecyclerView?) {
                 Log.d(
@@ -71,6 +193,8 @@ class LiveChatFragment : BaseFragment() {
                 viewModel.listPreviousEvents()
             }
         }
+
+        binding.recyclerView.addOnScrollListener(scrollListener)
 
         return binding.root
     }
@@ -126,108 +250,25 @@ class LiveChatFragment : BaseFragment() {
 
     }
 
+    override fun onDestroyView() {
+        if(::scrollListener.isInitialized) {
+            binding.recyclerView.removeOnScrollListener(scrollListener)
+        }
+
+        super.onDestroyView()
+    }
+
     private suspend fun takeProgressListPreviousEvents(inProgress: Boolean) {
         Log.d(TAG, "takeProgressListPreviousEvents() -> inProgress = $inProgress")
         // TODO
     }
 
-    private suspend fun takeChatEvents(initialChatEvents: List<ChatEvent>) {
-        Log.d(TAG, "takeChatEvents() -> initialChatEvents = ${initialChatEvents}")
+    private suspend fun takeChatEvents(chatEvents: List<ChatEvent>) {
+        Log.d(TAG, "takeChatEvents() -> chatEvents = $chatEvents")
 
-        adapter = ItemChatEventAdapter(
-            me = user,
-            initialItems = initialChatEvents,
-            onTapChatEventItem = { chatEvent: ChatEvent ->
-                Log.d(TAG, "takeChatEvents() -> onTapChatEventItem() -> chatEvent = $chatEvent")
-
-                val options = ArrayList(
-                    resources.getStringArray(R.array.chat_message_tap_options).toList()
-                ).run {
-                    // User's sent chat message(Prompt "Reply", "Report", "Flag as Deleted", or "Delete Permanently" options)
-                    if(chatEvent.userid == user.userid)
-                        slice(0 until size)
-                    // Other's chat message(Prompt "Reply" and "Report" options ONLY)
-                    else
-                        slice(0 until 2)
-                }.toTypedArray()
-
-                MaterialAlertDialogBuilder(requireContext())
-                    .setItems(options) { dialog, which ->
-                        when(which) {
-                            // Reply
-                            0 -> {
-                                // Prepare Quoted Reply
-                                viewModel.prepareQuotedReply(replyTo = chatEvent)
-                            }
-                            // Report
-                            1 -> {
-                                // Perform Report Message
-                                viewModel.reportMessage(which = chatEvent, reporttype = ReportType.ABUSE)
-                            }
-                            // Flag as Deleted
-                            // Delete Permanently
-                            else -> {
-                                /*
-                                * [Y/N] Do you want this message to get permanently deleted if no replies were received?
-                                */
-                                var permanentifnoreplies: Boolean? = null
-                                MaterialAlertDialogBuilder(requireContext())
-                                    .setMessage(R.string.permanent_if_no_replies)
-                                    .setPositiveButton(android.R.string.yes) { dialog, _ ->
-                                        permanentifnoreplies = true
-                                        dialog.dismiss()
-                                    }
-                                    .setNegativeButton(android.R.string.no) { dialog, _ ->
-                                        permanentifnoreplies = false
-                                        dialog.dismiss()
-                                    }
-                                    .setOnDismissListener {
-                                        when(which) {
-                                            // Flag as Deleted
-                                            1 -> {
-                                                viewModel.removeMessage(
-                                                    which = chatEvent,
-                                                    isPermanentDelete = false,
-                                                    permanentifnoreplies = permanentifnoreplies
-                                                )
-                                            }
-                                            // Delete Permanently
-                                            2 -> {
-                                                viewModel.removeMessage(
-                                                    which = chatEvent,
-                                                    isPermanentDelete = true,
-                                                    permanentifnoreplies = permanentifnoreplies
-                                                )
-                                            }
-                                        }
-                                    }
-                                    .show()
-                            }
-                        }
-                        dialog.dismiss()
-                    }
-                    .show()
-            },
-            onTapReactChatEventItem = { chatEvent: ChatEvent, hasAlreadyReacted: Boolean ->
-                // Perform React Operation
-                viewModel.reactToAMessage(
-                    event = chatEvent,
-                    hasAlreadyReacted = hasAlreadyReacted
-                )
-            }
-        )
-
-        adapter.registerAdapterDataObserver(object: RecyclerView.AdapterDataObserver() {
-            override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
-                super.onItemRangeInserted(positionStart, itemCount)
-                val item = adapter.getItem(positionStart)
-                if(item.userid == user.userid) {
-                    binding.recyclerView.scrollToPosition(0)
-                }
-            }
-        })
-
-        binding.recyclerView.adapter = adapter
+        if(::adapter.isInitialized) {
+            adapter.replace(chatEvents)
+        }
     }
 
     private suspend fun takeReplyTo(replyTo: ChatEvent) {
@@ -235,7 +276,7 @@ class LiveChatFragment : BaseFragment() {
 
         if(replyTo.id != null) {
             binding.actvReplyTo.text = getString(R.string.reply_to, replyTo.user?.handle ?: "")
-            binding.actvRepliedMessage.text = replyTo.body
+            binding.actvRepliedMessage.text = replyTo.body?.trim()
 
             binding.containerReply.visibility = View.VISIBLE
         } else {
@@ -255,6 +296,7 @@ class LiveChatFragment : BaseFragment() {
                                 || it.eventtype == EventType.ACTION
                                 || it.eventtype == EventType.REACTION
                                 || it.eventtype == EventType.QUOTE
+                                || it.eventtype == EventType.REPLY
                     }
                     // Append to Chat list
                     adapter.update(chatEvents)
@@ -292,16 +334,6 @@ class LiveChatFragment : BaseFragment() {
                     // TODO:: Handle Advertisement Events
 
                 }
-            }
-            is ChatRoomViewModel.ViewEffect.ChatMessageSent -> {
-                // Do nothing...
-            }
-            is ChatRoomViewModel.ViewEffect.ErrorSendChatMessage -> {
-                Toast.makeText(
-                    requireContext(),
-                    effect.err.message ?: getString(R.string.something_went_wrong_please_try_again),
-                    Toast.LENGTH_SHORT
-                ).show()
             }
             is ChatRoomViewModel.ViewEffect.QuotedReplySent -> {
                 // Do nothing...
@@ -347,10 +379,17 @@ class LiveChatFragment : BaseFragment() {
                 ).show()
             }
             is ChatRoomViewModel.ViewEffect.SuccessRemoveMessage -> {
+                Log.d(TAG, "ChatRoomViewModel.ViewEffect.SuccessRemoveMessage:: permanentdelete = ${effect.response.permanentdelete}")
+                Log.d(TAG, "ChatRoomViewModel.ViewEffect.SuccessRemoveMessage:: removedEvent = ${effect.response.event}")
+
                 // Pre-emptively Remove ChatEvent
                 if (::adapter.isInitialized) {
                     effect.response.event?.let { removedEvent ->
-                        adapter.remove(removedEvent)
+                        if(effect.response.permanentdelete == true) {
+                            adapter.remove(removedEvent)
+                        } else {
+                            adapter.update(removedEvent)
+                        }
                     }
                 }
 
@@ -359,6 +398,14 @@ class LiveChatFragment : BaseFragment() {
                     R.string.message_successfully_removed,
                     Toast.LENGTH_SHORT
                 ).show()
+            }
+            is ChatRoomViewModel.ViewEffect.SuccessBounceUser -> {
+                Log.d(TAG, "ChatRoomViewModel.ViewEffect.SuccessBounceUser -> this.room = effect.response.room!!")
+                this.room = effect.response.room!!
+            }
+            is ChatRoomViewModel.ViewEffect.SuccessUnbounceUser -> {
+                Log.d(TAG, "ChatRoomViewModel.ViewEffect.SuccessUnbounceUser -> this.room = effect.response.room!!")
+                this.room = effect.response.room!!
             }
         }
     }

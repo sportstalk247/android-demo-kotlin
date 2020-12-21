@@ -1,8 +1,7 @@
 package com.sportstalk.app.demo
 
 import androidx.multidex.MultiDexApplication
-import com.sportstalk.api.ChatClient
-import com.sportstalk.api.UserClient
+import com.sportstalk.SportsTalk247
 import com.sportstalk.app.demo.presentation.chatroom.ChatRoomViewModel
 import com.sportstalk.app.demo.presentation.chatroom.listparticipants.ChatroomListParticipantsViewModel
 import com.sportstalk.app.demo.presentation.inappsettings.InAppSettingsViewModel
@@ -12,6 +11,7 @@ import com.sportstalk.app.demo.presentation.rooms.CreateChatroomViewModel
 import com.sportstalk.app.demo.presentation.rooms.UpdateChatroomViewModel
 import com.sportstalk.app.demo.presentation.users.AccountSettingsViewModel
 import com.sportstalk.app.demo.presentation.users.CreateAccountViewModel
+import com.sportstalk.models.ClientConfig
 import com.sportstalk.models.chat.ChatRoom
 import com.sportstalk.models.users.User
 import kotlinx.serialization.json.Json
@@ -21,7 +21,7 @@ import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
 
-class SportsTalkDemoApplication: MultiDexApplication() {
+class SportsTalkDemoApplication : MultiDexApplication() {
 
     override fun onCreate() {
         super.onCreate()
@@ -32,15 +32,11 @@ class SportsTalkDemoApplication: MultiDexApplication() {
             modules(
                 module {
                     single {
-                        Json(
-                            JsonBuilder()
-                                .apply {
-                                    prettyPrint = true
-                                    isLenient = true
-                                    ignoreUnknownKeys = true
-                                }
-                                .buildConfiguration()
-                        )
+                        Json {
+                            prettyPrint = true
+                            isLenient = true
+                            ignoreUnknownKeys = true
+                        }
                     }
 
                     // Preferences
@@ -51,6 +47,29 @@ class SportsTalkDemoApplication: MultiDexApplication() {
                         )
                     }
 
+                    // Client Config
+                    factory {
+                        val preferences: SportsTalkDemoPreferences = get()
+                        // Config field values might change based on latest preference value(s)
+                        ClientConfig(
+                            appId = preferences.appId ?: "",
+                            apiToken = preferences.authToken ?: "",
+                            endpoint = preferences.urlEndpoint ?: ""
+                        )
+                    }
+
+                    // User Client
+                    factory {
+                        val config: ClientConfig = get()
+                        SportsTalk247.UserClient(config)
+                    }
+
+                    // Chat Client
+                    factory {
+                        val config: ClientConfig = get()
+                        SportsTalk247.ChatClient(config)
+                    }
+
                     /*
                     * In-app Settings
                     */
@@ -59,43 +78,41 @@ class SportsTalkDemoApplication: MultiDexApplication() {
                     /*
                     * List Chatrooms
                     */
-                    viewModel { (chatClient: ChatClient) -> ListChatRoomsViewModel(chatClient = chatClient, preferences = get()) }
+                    viewModel { ListChatRoomsViewModel(chatClient = get(), preferences = get()) }
 
                     /*
                     * Admin List Chatrooms
                     */
-                    viewModel { (chatClient: ChatClient) -> AdminListChatRoomsViewModel(chatClient = chatClient, preferences = get()) }
+                    viewModel {
+                        AdminListChatRoomsViewModel(
+                            chatClient = get(),
+                            preferences = get()
+                        )
+                    }
 
                     /*
                      * Create Account
                      */
-                    viewModel {
-                        (userClient: UserClient) -> CreateAccountViewModel(userClient = userClient, preferences = get())
-                    }
+                    viewModel { CreateAccountViewModel(userClient = get(), preferences = get()) }
 
                     /*
                      * Account Settings
                      */
-                    viewModel {
-                        (userClient: UserClient) -> AccountSettingsViewModel(userClient = userClient, preferences = get())
-                    }
+                    viewModel { AccountSettingsViewModel(userClient = get(), preferences = get()) }
 
                     /*
                      * Create Chatroom
                      */
-                    viewModel {
-                        (chatClient: ChatClient) -> CreateChatroomViewModel(chatClient = chatClient, preferences = get())
-                    }
+                    viewModel { CreateChatroomViewModel(chatClient = get(), preferences = get()) }
 
                     /*
                     * Chatroom
                     */
-                    viewModel {
-                        (room: ChatRoom, user: User, chatClient: ChatClient) ->
+                    viewModel { (room: ChatRoom, user: User) ->
                         ChatRoomViewModel(
                             room = room,
                             user = user,
-                            chatClient = chatClient,
+                            chatClient = get(),
                             preferences = get()
                         )
                     }
@@ -103,12 +120,11 @@ class SportsTalkDemoApplication: MultiDexApplication() {
                     /*
                     * Update Chatroom
                     */
-                    viewModel {
-                        (room: ChatRoom, user: User, chatClient: ChatClient) ->
+                    viewModel { (room: ChatRoom, user: User) ->
                         UpdateChatroomViewModel(
                             room = room,
                             user = user,
-                            chatClient = chatClient,
+                            chatClient = get(),
                             preferences = get()
                         )
                     }
@@ -116,13 +132,12 @@ class SportsTalkDemoApplication: MultiDexApplication() {
                     /*
                     * Chatroom List Participants
                     */
-                    viewModel {
-                        (room: ChatRoom, user: User, userClient: UserClient, chatClient: ChatClient) ->
+                    viewModel { (room: ChatRoom, user: User) ->
                         ChatroomListParticipantsViewModel(
                             room = room,
                             user = user,
-                            userClient = userClient,
-                            chatClient = chatClient
+                            userClient = get(),
+                            chatClient = get()
                         )
                     }
 

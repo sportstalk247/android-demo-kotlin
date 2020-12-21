@@ -14,8 +14,11 @@
         android:id="@+id/containerReply"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="52dp"
+        android:layout_marginBottom="8dp"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.99"
         android:visibility="gone"
         tools:visibility="visible"
         >
@@ -25,20 +28,20 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:maxLines="1"
-            android:textAppearance="?attr/textAppearanceSubtitle2"
             android:textColor="@android:color/tertiary_text_light"
-            android:textSize="12sp"
+            android:textSize="8sp"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintRight_toRightOf="@+id/cardViewReply"
-            tools:text="Others replied to @bobby_axelrod"
+            tools:text="You replied to @bobby_axelrod"
             />
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardViewReply"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
             app:cardBackgroundColor="@color/bg_replied_message"
-            app:cardUseCompatPadding="true"
+            app:cardUseCompatPadding="false"
             app:contentPadding="4dp"
             app:cardCornerRadius="8dp"
             android:layout_marginLeft="16dp"
@@ -50,8 +53,8 @@
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:paddingBottom="18dp"
+                android:layout_height="wrap_content"
+                android:paddingBottom="8dp"
                 >
                 <View
                     android:id="@+id/divider"
@@ -76,7 +79,10 @@
                     android:layout_marginRight="12dp"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintLeft_toRightOf="@+id/divider"
-                    android:textSize="16sp"
+                    app:layout_constraintRight_toRightOf="parent"
+                    android:maxLines="5"
+                    android:ellipsize="marquee"
+                    android:textSize="12sp"
                     android:textAppearance="?attr/textAppearanceHeadline1"
                     android:textColor="@android:color/tertiary_text_light"
                     tools:text="I'm good. How are you doing???"
@@ -90,33 +96,61 @@
 
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/civProfile"
-        android:layout_width="42dp"
-        android:layout_height="42dp"
-        android:layout_marginTop="16dp"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
         android:layout_marginRight="16dp"
-        app:civ_circle_background_color="#DDDDDD"
+        app:civ_circle_background_color="@color/colorPrimary"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/cardViewMessage"
-        android:src="@drawable/ic_room_user"
+        app:layout_constraintTop_toTopOf="@+id/actvDisplayName"
+        app:layout_constraintBottom_toBottomOf="@+id/cardViewMessage"
+        app:layout_constraintVertical_bias="0.175"
+        android:src="@drawable/ic_profile_default"
+        />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/actvDisplayName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="left|center_vertical"
+        android:layout_marginTop="8dp"
+        android:layout_marginLeft="20dp"
+        android:paddingRight="8dp"
+        android:textAlignment="gravity"
+        android:textStyle="bold"
+        android:textSize="10sp"
+        android:textAppearance="?attr/textAppearanceHeadline5"
+        android:textColor="@android:color/primary_text_light"
+        app:layout_constraintTop_toBottomOf="@+id/containerReply"
+        app:layout_constraintLeft_toRightOf="@+id/civProfile"
+        tools:text="Bobby Axelrod"
+        />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/actvDisplayHandle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:textSize="8sp"
+        android:textColor="@android:color/tertiary_text_light"
+        app:layout_constraintTop_toBottomOf="@+id/containerReply"
+        app:layout_constraintLeft_toRightOf="@+id/actvDisplayName"
+        tools:text="\@bobby_axelrod"
         />
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardViewMessage"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
         app:cardBackgroundColor="@color/cardview_light_background"
-        app:cardUseCompatPadding="true"
-        app:contentPadding="12dp"
+        app:cardUseCompatPadding="false"
+        app:contentPadding="8dp"
         app:cardCornerRadius="8dp"
         android:layout_marginLeft="16dp"
-        android:clickable="true"
-        android:focusable="true"
-        android:foreground="?attr/selectableItemBackgroundBorderless"
+        android:layout_marginRight="4dp"
+        app:layout_constraintTop_toBottomOf="@+id/actvDisplayHandle"
         app:layout_constraintLeft_toRightOf="@+id/civProfile"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/containerReply"
-        app:layout_constraintBottom_toTopOf="@+id/containerReply"
-        app:layout_constraintVertical_bias="0.15"
+        app:layout_constraintRight_toLeftOf="@+id/btnMore"
         android:theme="@style/Theme.MaterialComponents.Light.DarkActionBar"
         >
 
@@ -126,107 +160,81 @@
             >
 
             <androidx.appcompat.widget.AppCompatTextView
-                android:id="@+id/actvDisplayName"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="12dp"
-                android:layout_marginRight="8dp"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintLeft_toLeftOf="parent"
-                android:textStyle="bold"
-                android:textSize="14sp"
-                android:textAppearance="?attr/textAppearanceHeadline5"
-                android:textColor="@android:color/primary_text_light"
-                android:maxLines="1"
-                android:ellipsize="end"
-                tools:text="Bobby Axelrod"
-                />
-
-            <androidx.appcompat.widget.AppCompatTextView
-                android:id="@+id/actvDisplayHandle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginRight="8dp"
-                android:textSize="12sp"
-                android:textAppearance="?attr/textAppearanceHeadline6"
-                android:textColor="@android:color/tertiary_text_light"
-                android:maxLines="1"
-                android:ellipsize="end"
-                app:layout_constraintTop_toBottomOf="@+id/actvDisplayName"
-                app:layout_constraintBottom_toTopOf="@+id/actvDisplayName"
-                app:layout_constraintLeft_toRightOf="@+id/actvDisplayName"
-                app:layout_constraintRight_toLeftOf="@+id/btnLike"
-                app:layout_constraintHorizontal_bias="0.05"
-                tools:text="\@bobby_axelrod"
-                />
-
-            <androidx.appcompat.widget.AppCompatTextView
                 android:id="@+id/actvChatMessage"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="12dp"
-                android:layout_marginTop="2dp"
-                android:layout_marginRight="12dp"
-                app:layout_constraintTop_toBottomOf="@+id/actvDisplayHandle"
+                android:layout_marginLeft="4dp"
+                android:layout_marginBottom="4dp"
+                android:layout_marginRight="4dp"
+                android:textSize="12sp"
+                android:gravity="center_vertical|left"
+                android:textAlignment="gravity"
+                app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintRight_toLeftOf="@+id/btnLike"
-                android:textSize="16sp"
+                app:layout_constraintRight_toRightOf="parent"
                 android:textAppearance="?attr/textAppearanceHeadline1"
                 android:textColor="@android:color/primary_text_light"
-                tools:text="I'm good. How are you doing???"
+                tools:text="I'm good. How are you doing???\nI'm good. How are you doing???\nI'm good. How are you doing???\nI'm good. How are you doing???\nI'm good. How are you doing???\nI'm good. How are you doing???\nI'm good. How are you doing???\n"
                 />
 
             <androidx.appcompat.widget.AppCompatTextView
                 android:id="@+id/actvSent"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
                 android:maxLines="1"
                 android:textAppearance="?attr/textAppearanceSubtitle2"
                 android:textColor="@android:color/tertiary_text_light"
-                android:textSize="12sp"
+                android:textSize="8sp"
                 app:layout_constraintLeft_toLeftOf="@+id/actvChatMessage"
                 app:layout_constraintTop_toBottomOf="@+id/actvChatMessage"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintVertical_bias="0.99"
                 tools:text="Just now" />
 
-            <androidx.appcompat.widget.AppCompatImageView
-                android:id="@+id/btnLike"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:layout_marginLeft="8dp"
-                android:clickable="true"
-                android:focusable="true"
-                android:foreground="?attr/selectableItemBackgroundBorderless"
-                app:srcCompat="@drawable/ic_thumb_up_black_24dp"
-                android:scaleType="fitXY"
-                app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                tools:tint="@color/blue_like"
-                />
-
-            <androidx.appcompat.widget.AppCompatTextView
-                android:id="@+id/actvReactionCount"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="12sp"
-                android:textAppearance="?attr/textAppearanceHeadline6"
-                android:textColor="@android:color/secondary_text_light"
-                android:maxLines="1"
-                app:layout_constraintTop_toBottomOf="@+id/btnLike"
-                app:layout_constraintLeft_toRightOf="@+id/btnLike"
-                app:layout_constraintRight_toLeftOf="@+id/btnLike"
-                tools:text="18K"
-                />
-
             <androidx.constraintlayout.widget.Guideline
-                android:id="@+id/guideline"
+                android:id="@+id/guidelineNameHandle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                app:layout_constraintHeight_percent="0.5"
+                android:orientation="vertical"
+                app:layout_constraintGuide_percent="0.55"
                 />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </com.google.android.material.card.MaterialCardView>
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/actvLikes"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:layout_marginLeft="8dp"
+        android:textSize="12sp"
+        android:textAppearance="?attr/textAppearanceHeadline6"
+        android:textColor="@android:color/tertiary_text_light"
+        app:layout_constraintTop_toBottomOf="@+id/cardViewMessage"
+        app:layout_constraintLeft_toLeftOf="@+id/cardViewMessage"
+        tools:text="👍 x1"
+        />
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/btnMore"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:padding="4dp"
+        android:layout_marginLeft="12dp"
+        android:layout_marginRight="4dp"
+        android:src="@drawable/ic_more_horizontal"
+        app:civ_circle_background_color="@android:color/white"
+        app:civ_border_width="1dp"
+        app:civ_border_color="@color/colorPrimary"
+        android:tint="@color/colorPrimary"
+        app:layout_constraintTop_toTopOf="@+id/cardViewMessage"
+        app:layout_constraintRight_toRightOf="parent"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackgroundBorderless"
+        />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
-apply plugin: "androidx.navigation.safeargs.kotlin"
+apply plugin: 'kotlinx-serialization'
 
 def localProperties = new Properties()
 localProperties.load(new FileInputStream(rootProject.file("local.properties")))
@@ -99,7 +99,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     implementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    implementation "org.jetbrains.kotlinx:kotlinx-serialization-runtime:$kotlinx_serialization_version"
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinx_serialization_version"
 
     // Dependencies for local unit tests
     testImplementation "junit:junit:$junitVersion"
@@ -153,6 +153,9 @@ dependencies {
     implementation "androidx.constraintlayout:constraintlayout:$constraintLayoutVersion"
     // ViewPager2
     implementation "androidx.viewpager2:viewpager2:$viewPager2Version"
+    // Google FlexboxLayout
+    implementation "com.google.android:flexbox:$googleFlexBoxVersion"
+
     // AndroidX Navigation
     implementation "androidx.navigation:navigation-fragment:$rootProject.androidXNavigationVersion"
     implementation "androidx.navigation:navigation-fragment-ktx:$rootProject.androidXNavigationVersion"
@@ -199,4 +202,8 @@ dependencies {
     implementation "com.github.bumptech.glide:glide:$glideVersion"
     annotationProcessor "com.github.bumptech.glide:compiler:$glideVersion"
 
+}
+
+configurations.all {
+    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
 }
