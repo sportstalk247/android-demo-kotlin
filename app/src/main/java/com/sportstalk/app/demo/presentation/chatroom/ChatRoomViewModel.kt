@@ -65,6 +65,7 @@ class ChatRoomViewModel(
             progressExitRoom
                 .apply { resetReplayCache() }
                 .asSharedFlow()
+                .distinctUntilChanged()
 
         override fun progressListPreviousEvents(): Flow<Boolean> =
             progressListPreviousEvents
@@ -117,6 +118,8 @@ class ChatRoomViewModel(
     }
 
     fun joinRoom() {
+        if(::previouseventscursor.isInitialized) return
+
         viewModelScope.launch {
             try {
                 // DISPLAY Progress Indicator
@@ -170,10 +173,9 @@ class ChatRoomViewModel(
         // Subscribe to Chat Event Updates
         jobAllEventUpdates = chatClient.allEventUpdates(
             chatRoomId = room.id!!,
-            frequency = 500L,
-            lifecycleOwner = lifecycleOwner
+            frequency = 500L
         )
-                // Filter out empty message(s) generated when performing LIKE action
+            // Filter out empty message(s) generated when performing LIKE action
             .map { it.filter { msg -> msg.body?.isNotEmpty() == true } }
             .onEach { newEvents ->
                 // Emit New Chat Event(s) received

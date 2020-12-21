@@ -28,14 +28,16 @@ import com.sportstalk.models.users.User
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.rx2.asFlow
+import org.koin.android.ext.android.getKoin
 import org.koin.androidx.viewmodel.ext.android.getViewModel
+import org.koin.androidx.viewmodel.koin.getViewModel
 import java.util.concurrent.TimeUnit
 
 class LiveChatFragment : BaseFragment() {
 
     private lateinit var binding: FragmentChatroomLiveChatBinding
     private val viewModel: ChatRoomViewModel by lazy {
-        (parentFragment ?: this@LiveChatFragment).getViewModel<ChatRoomViewModel>()
+        getKoin().getViewModel<ChatRoomViewModel>(owner = requireParentFragment())
     }
 
     private lateinit var scrollListener: RecyclerView.OnScrollListener

@@ -18,9 +18,7 @@ import com.sportstalk.models.chat.ChatRoom
 import com.sportstalk.models.users.User
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.sendBlocking
-import kotlinx.coroutines.flow.consumeAsFlow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.rx2.asFlow
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
@@ -37,11 +35,13 @@ class ChatRoomFragment : BaseFragment() {
         )
     }
 
-    private val popBackChannel = Channel<Any>(Channel.RENDEZVOUS)
+    private val popBackChannel = MutableSharedFlow<Any>()
 
     override fun enableBackPressedCallback(): Boolean = true
     override fun onBackPressedCallback(): OnBackPressedCallback.() -> Unit = {
-        popBackChannel.sendBlocking(Any())
+        lifecycleScope.launchWhenCreated {
+            popBackChannel.emit(Any())
+        }
     }
 
     private lateinit var user: User
@@ -99,10 +99,10 @@ class ChatRoomFragment : BaseFragment() {
             appActivity.supportActionBar?.setHomeButtonEnabled(true)
         }
 
-        popBackChannel.consumeAsFlow()
+        popBackChannel.asSharedFlow()
             .throttleFirst(1000L)
             .onEach {
-                Log.d(TAG, "popBackChannel.consumeAsFlow()")
+                Log.d(TAG, "popBackChannel.asSharedFlow()")
                 // Attempt execute Exit Room
                 viewModel.exitRoom()
             }

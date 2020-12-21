@@ -156,11 +156,11 @@ class AdminListChatRoomsFragment : BaseFragment() {
             .asFlow()
             .onEach {
                 // Perform fetch upon Refresh
-                viewModel.fetchInitial()
+                viewModel.fetchInitial(forceRefresh = true)
             }
             .launchIn(lifecycleScope)
 
-        viewModel.fetchInitial()
+        viewModel.fetchInitial(forceRefresh = false)
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -234,8 +234,12 @@ class AdminListChatRoomsFragment : BaseFragment() {
                 }
             }
             is AdminListChatRoomsViewModel.ViewEffect.SuccessDeleteRoom -> {
-                // Refresh list
-                viewModel.fetchInitial()
+                // Remove from list
+                if(::adapter.isInitialized) {
+                    effect.response.room?.let { deletedRoom ->
+                        adapter.remove(deletedRoom)
+                    }
+                }
             }
             is AdminListChatRoomsViewModel.ViewEffect.ErrorDeleteRoom -> {
                 Toast.makeText(
