@@ -9,19 +9,20 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.Snackbar
-import com.jakewharton.rxbinding3.view.clicks
 import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.FragmentChatroomBinding
 import com.sportstalk.app.demo.extensions.throttleFirst
 import com.sportstalk.app.demo.presentation.BaseFragment
-import com.sportstalk.models.chat.ChatRoom
-import com.sportstalk.models.users.User
+import com.sportstalk.datamodels.chat.ChatRoom
+import com.sportstalk.datamodels.users.User
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.rxkotlin.addTo
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.sendBlocking
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.rx2.asFlow
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
+import reactivecircus.flowbinding.android.view.clicks
 import java.text.DecimalFormat
 import java.util.concurrent.TimeUnit
 
@@ -35,12 +36,12 @@ class ChatRoomFragment : BaseFragment() {
         )
     }
 
-    private val popBackChannel = MutableSharedFlow<Any>()
+    private val popBackChannel = Channel<Any>(Channel.BUFFERED)
 
     override fun enableBackPressedCallback(): Boolean = true
     override fun onBackPressedCallback(): OnBackPressedCallback.() -> Unit = {
         lifecycleScope.launchWhenCreated {
-            popBackChannel.emit(Any())
+            popBackChannel.send(Any())
         }
     }
 
@@ -48,6 +49,8 @@ class ChatRoomFragment : BaseFragment() {
     private lateinit var room: ChatRoom
 
     private lateinit var errorJoinSnackBar: Snackbar
+
+    private lateinit var rxDisposeBag: CompositeDisposable
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -87,6 +90,8 @@ class ChatRoomFragment : BaseFragment() {
             )
             .commit()
 
+        rxDisposeBag = CompositeDisposable()
+
         return binding.root
     }
 
@@ -99,7 +104,7 @@ class ChatRoomFragment : BaseFragment() {
             appActivity.supportActionBar?.setHomeButtonEnabled(true)
         }
 
-        popBackChannel.asSharedFlow()
+        popBackChannel.consumeAsFlow()
             .throttleFirst(1000L)
             .onEach {
                 Log.d(TAG, "popBackChannel.asSharedFlow()")
@@ -172,15 +177,18 @@ class ChatRoomFragment : BaseFragment() {
         // Bind View Effect
         ///////////////////////////////
         viewModel.effect
-            .onEach(::takeViewEffect)
-            .launchIn(lifecycleScope)
+//            .filterNot { it is ChatRoomViewModel.ViewEffect.ReceiveChatEventUpdates }
+//            .onEach(::takeViewEffect)
+//            .launchIn(lifecycleScope)
+            .filter { it !is ChatRoomViewModel.ViewEffect.ReceiveChatEventUpdates }
+            .subscribe(::takeViewEffect)
+            .addTo(rxDisposeBag)
 
         ///////////////////////////////
         // Bind UI Input Actions
         ///////////////////////////////
         binding.btnSend.clicks()
-            .throttleFirst(500, TimeUnit.MILLISECONDS)
-            .asFlow()
+            .throttleFirst(500L)
             .onEach {
                 // Perform send
                 viewModel.sendChatMessage(
@@ -220,6 +228,12 @@ class ChatRoomFragment : BaseFragment() {
             }
             else -> super.onOptionsItemSelected(item)
         }
+
+    override fun onDestroyView() {
+        rxDisposeBag.dispose()
+
+        super.onDestroyView()
+    }
 
     private suspend fun takeRoomName(name: String) {
         Log.d(TAG, "takeRoomName() -> name = $name")
@@ -297,15 +311,16 @@ class ChatRoomFragment : BaseFragment() {
         }
     }
 
-    private suspend fun takeViewEffect(effect: ChatRoomViewModel.ViewEffect) {
+    private fun takeViewEffect(effect: ChatRoomViewModel.ViewEffect) {
         Log.d(TAG, "takeViewEffect() -> effect = ${effect::class.java.simpleName}")
 
         when (effect) {
             is ChatRoomViewModel.ViewEffect.SuccessJoinRoom -> {
                 // Attempt Start Listening to Chat Events
-                viewModel.startListeningToChatUpdates(lifecycleOwner = this@ChatRoomFragment)
+                viewModel.startListeningToChatUpdates()
             }
             is ChatRoomViewModel.ViewEffect.ErrorJoinRoom -> {
+                errorJoinSnackBar.setText(effect.err.message ?: "Something went wrong...")
                 errorJoinSnackBar.show()
             }
             is ChatRoomViewModel.ViewEffect.SuccessExitRoom -> {
@@ -384,6 +399,31 @@ class ChatRoomFragment : BaseFragment() {
             }
 
         }
+    }
+
+    override fun onResume() {
+        Log.d(TAG, "onResume()")
+        super.onResume()
+
+        viewModel.startListeningToChatUpdates()
+
+    }
+
+    override fun onPause() {
+        Log.d(TAG, "onPause()")
+        super.onPause()
+
+        viewModel.stopListeningFromChatUpdates()
+    }
+
+    override fun onStart() {
+        Log.d(TAG, "onStart()")
+        super.onStart()
+    }
+
+    override fun onStop() {
+        Log.d(TAG, "onStop()")
+        super.onStop()
     }
 
     companion object {

@@ -11,19 +11,19 @@ import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.jakewharton.rxbinding3.view.clicks
-import com.jakewharton.rxbinding3.widget.textChanges
 import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.FragmentCreateAccountBinding
+import com.sportstalk.app.demo.extensions.throttleFirst
 import com.sportstalk.app.demo.presentation.BaseFragment
-import com.sportstalk.models.chat.ChatRoom
-import com.sportstalk.models.users.User
+import com.sportstalk.datamodels.chat.ChatRoom
+import com.sportstalk.datamodels.users.User
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.rx2.asFlow
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import reactivecircus.flowbinding.android.view.clicks
+import reactivecircus.flowbinding.android.widget.textChanges
 import java.util.concurrent.TimeUnit
 
 class CreateAccountFragment: BaseFragment() {
@@ -124,41 +124,32 @@ class CreateAccountFragment: BaseFragment() {
         // Bind UI Input Actions
         ///////////////////////////////
 
-        binding.tietDisplayName.textChanges()
-            .skipInitialValue()
-            .asFlow()
+        binding.tietDisplayName.textChanges(emitImmediately = false)
             .debounce(350)
             .map { it.toString() }
             .onEach { viewModel.displayName(it) }
             .launchIn(lifecycleScope)
 
-        binding.tietHandleUsername.textChanges()
-            .skipInitialValue()
-            .asFlow()
+        binding.tietHandleUsername.textChanges(emitImmediately = false)
             .debounce(350)
             .map { it.toString() }
             .onEach { viewModel.handleName(it) }
             .launchIn(lifecycleScope)
 
-        binding.tietProfileLink.textChanges()
-            .skipInitialValue()
-            .asFlow()
+        binding.tietProfileLink.textChanges(emitImmediately = false)
             .debounce(350)
             .map { it.toString() }
             .onEach { viewModel.profileLink(it) }
             .launchIn(lifecycleScope)
 
-        binding.tietPhotoLink.textChanges()
-            .skipInitialValue()
-            .asFlow()
+        binding.tietPhotoLink.textChanges(emitImmediately = false)
             .debounce(350)
             .map { it.toString() }
             .onEach { viewModel.photoLink(it) }
             .launchIn(lifecycleScope)
 
         binding.fabSubmit.clicks()
-            .throttleFirst(1000, TimeUnit.MILLISECONDS)
-            .asFlow()
+            .throttleFirst(1000L)
             .onEach { viewModel.submit() }
             .launchIn(lifecycleScope)
     }

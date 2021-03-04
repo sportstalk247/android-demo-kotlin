@@ -3,7 +3,7 @@ package com.sportstalk.app.demo
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
-import com.sportstalk.models.users.User
+import com.sportstalk.datamodels.users.User
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.sendBlocking
 import kotlinx.coroutines.flow.Flow
@@ -26,13 +26,13 @@ class SportsTalkDemoPreferences(
             return preferences.getString(KEY_CURRENT_USER, "")!!
                 .takeIf { it.isNotEmpty() }
                 ?.let { usrStr ->
-                    json.decodeFromString(User.serializer(), usrStr)
+                    json.parse/*decodeFromString*/(User.serializer(), usrStr)
                 }
         }
         set(value) {
             preferences.edit(true) {
                 value?.let { _value ->
-                    putString(KEY_CURRENT_USER, json.encodeToString(User.serializer(), _value))
+                    putString(KEY_CURRENT_USER, json.stringify/*encodeToString*/(User.serializer(), _value))
                 } ?: run {
                     putString(KEY_CURRENT_USER, null)
                 }

@@ -11,6 +11,8 @@
 
     <color name="accent_green">#03DAC5</color>
 
+    <color name="lb_grey">@color/colorAccent</color>
+
     <!--<color name="bg_chat_message_sent">#3981ED</color>-->
     <color name="bg_chat_message_sent">@color/accent_green</color>
     <color name="blue_like">#5291EF</color>

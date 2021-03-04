@@ -2,18 +2,17 @@ package com.sportstalk.app.demo.presentation.users
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sportstalk.api.UserClient
 import com.sportstalk.app.demo.SportsTalkDemoPreferences
-import com.sportstalk.models.SportsTalkException
-import com.sportstalk.models.users.CreateUpdateUserRequest
-import com.sportstalk.models.users.DeleteUserResponse
-import com.sportstalk.models.users.User
+import com.sportstalk.coroutine.api.UserClient
+import com.sportstalk.datamodels.SportsTalkException
+import com.sportstalk.datamodels.users.CreateUpdateUserRequest
+import com.sportstalk.datamodels.users.DeleteUserResponse
+import com.sportstalk.datamodels.users.User
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.channels.sendBlocking
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -28,21 +27,21 @@ class AccountSettingsViewModel(
     val preferences: SportsTalkDemoPreferences
 ) : ViewModel() {
 
-    private val displayName = ConflatedBroadcastChannel<String>()
-    private val handleName = ConflatedBroadcastChannel<String>()
-    private val profileLink = ConflatedBroadcastChannel<String>()
-    private val photoLink = ConflatedBroadcastChannel<String>()
+    private val displayName = ConflatedBroadcastChannel<String?>(null)
+    private val handleName = ConflatedBroadcastChannel<String?>(null)
+    private val profileLink = ConflatedBroadcastChannel<String?>(null)
+    private val photoLink = ConflatedBroadcastChannel<String?>(null)
 
     private val userDetails = ConflatedBroadcastChannel<User>(preferences.currentUser!!)
 
-    private val validationDisplayName = ConflatedBroadcastChannel/*Channel*/<Boolean>(/*Channel.RENDEZVOUS*/)
-    private val validationHandleName = ConflatedBroadcastChannel/*Channel*/<Boolean>(/*Channel.RENDEZVOUS*/)
-    private val validationProfileLink = ConflatedBroadcastChannel/*Channel*/<Boolean>(/*Channel.RENDEZVOUS*/)
-    private val validationPhotoLink = ConflatedBroadcastChannel/*Channel*/<Boolean>(/*Channel.RENDEZVOUS*/)
-    private val progressFetchUserDetails = Channel<Boolean>(Channel.RENDEZVOUS)
-    private val progressUpdateUser = Channel<Boolean>(Channel.RENDEZVOUS)
-    private val progressDeleteUser = Channel<Boolean>(Channel.RENDEZVOUS)
-    private val progressBanAccount = Channel<Boolean>(Channel.RENDEZVOUS)
+    private val validationDisplayName = ConflatedBroadcastChannel<Boolean?>(null)
+    private val validationHandleName = ConflatedBroadcastChannel<Boolean?>(null)
+    private val validationProfileLink = ConflatedBroadcastChannel<Boolean?>(null)
+    private val validationPhotoLink = ConflatedBroadcastChannel<Boolean?>(null)
+    private val progressFetchUserDetails = Channel<Boolean>(Channel.BUFFERED)
+    private val progressUpdateUser = Channel<Boolean>(Channel.BUFFERED)
+    private val progressDeleteUser = Channel<Boolean>(Channel.BUFFERED)
+    private val progressBanAccount = Channel<Boolean>(Channel.BUFFERED)
 
     val state = object : ViewState {
         override fun progressFetchUserDetails(): Flow<Boolean> =
@@ -53,29 +52,24 @@ class AccountSettingsViewModel(
             userDetails.asFlow()
 
         override fun validationDisplayName(): Flow<Boolean> =
-            validationDisplayName
-                /*.consumeAsFlow()*/
-                .asFlow()
+            validationDisplayName.asFlow()
+                .filterNotNull()
 
         override fun validationHandleName(): Flow<Boolean> =
-            validationHandleName
-                /*.consumeAsFlow()*/
-                .asFlow()
+            validationHandleName.asFlow()
+                .filterNotNull()
 
         override fun validationProfileLink(): Flow<Boolean> =
-            validationProfileLink
-                /*.consumeAsFlow()*/
-                .asFlow()
+            validationProfileLink.asFlow()
+                .filterNotNull()
 
         override fun validationPhotoLink(): Flow<Boolean> =
-            validationPhotoLink
-                /*.consumeAsFlow()*/
-                .asFlow()
+            validationPhotoLink.asFlow()
+                .filterNotNull()
 
         override fun enableSave(): Flow<Boolean> =
-            validationDisplayName/*.consumeAsFlow()
-                .onStart { emit(false) }*/
-                .asFlow()
+            validationDisplayName.asFlow()
+                .filterNotNull()
 
         override fun progressUpdateUser(): Flow<Boolean> =
             progressUpdateUser
@@ -90,14 +84,16 @@ class AccountSettingsViewModel(
                 .consumeAsFlow()
     }
 
-    private val _effect = Channel<ViewEffect>(Channel.RENDEZVOUS)
+    private val _effect = Channel<ViewEffect>(Channel.BUFFERED)
     val effect: Flow<ViewEffect>
-        get() = _effect.consumeAsFlow()
+        get() = _effect
+            .consumeAsFlow()
 
     init {
         // Display Name Validation
         displayName
             .asFlow()
+            .filterNotNull()
             .map {
                 /*Regex(AccountSettingsViewModel.REGEX_DISPLAYNAME).containsMatchIn(it)*/
                 true
@@ -110,6 +106,7 @@ class AccountSettingsViewModel(
         // Handlename Validation
         handleName
             .asFlow()
+            .filterNotNull()
             .map {
                 Regex(AccountSettingsViewModel.REGEX_HANDLENAME).containsMatchIn(it)
             }
@@ -121,6 +118,7 @@ class AccountSettingsViewModel(
         // Profile Link URL Validation
         profileLink
             .asFlow()
+            .filterNotNull()
             .map { Regex(AccountSettingsViewModel.REGEX_IMAGE_URL).containsMatchIn(it) }
             .onEach { isValid ->
                 validationProfileLink.send(isValid)
@@ -130,6 +128,7 @@ class AccountSettingsViewModel(
         // Photo Link URL Validation
         photoLink
             .asFlow()
+            .filterNotNull()
             .map { Regex(AccountSettingsViewModel.REGEX_IMAGE_URL).containsMatchIn(it) }
             .onEach { isValid ->
                 validationPhotoLink.send(isValid)
@@ -170,17 +169,21 @@ class AccountSettingsViewModel(
         }
     }
 
-    fun displayName(displayName: String) =
+    fun displayName(displayName: String) {
         this.displayName.sendBlocking(displayName)
+    }
 
-    fun handleName(handleName: String) =
+    fun handleName(handleName: String) {
         this.handleName.sendBlocking(handleName)
+    }
 
-    fun profileLink(profileLink: String) =
+    fun profileLink(profileLink: String) {
         this.profileLink.sendBlocking(profileLink)
+    }
 
-    fun photoLink(photoLink: String) =
+    fun photoLink(photoLink: String) {
         this.photoLink.sendBlocking(photoLink)
+    }
 
     fun save() {
         viewModelScope.launch {
@@ -197,12 +200,12 @@ class AccountSettingsViewModel(
                 userClient.createOrUpdateUser(
                     request = CreateUpdateUserRequest(
                         userid = preferences.currentUser?.userid!!,
-                        displayname = displayName.valueOrNull
+                        displayname = displayName.value
                             ?: preferences.currentUser?.displayname,
-                        handle = (handleName.valueOrNull ?: preferences.currentUser?.handle)
+                        handle = (handleName.value ?: preferences.currentUser?.handle)
                             ?.replaceFirst("@", ""),
-                        profileurl = profileLink.valueOrNull ?: preferences.currentUser?.profileurl,
-                        pictureurl = photoLink.valueOrNull ?: preferences.currentUser?.pictureurl
+                        profileurl = profileLink.value ?: preferences.currentUser?.profileurl,
+                        pictureurl = photoLink.value ?: preferences.currentUser?.pictureurl
                     )
                 )
             }
@@ -276,7 +279,7 @@ class AccountSettingsViewModel(
                     userId = preferences.currentUser?.userid!!,
                     // `true` - if not yet banned
                     // `false` - if already banned
-                    banned = !(preferences.currentUser?.banned ?: false)
+                    applyeffect = !(preferences.currentUser?.banned ?: false)
                 )
             }
 

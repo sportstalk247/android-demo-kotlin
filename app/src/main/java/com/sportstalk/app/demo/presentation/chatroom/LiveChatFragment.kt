@@ -14,23 +14,25 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
-import com.jakewharton.rxbinding3.view.clicks
 import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.FragmentChatroomLiveChatBinding
+import com.sportstalk.app.demo.extensions.throttleFirst
 import com.sportstalk.app.demo.presentation.BaseFragment
 import com.sportstalk.app.demo.presentation.chatroom.adapters.ItemChatEventAdapter
 import com.sportstalk.app.demo.presentation.utils.EndlessRecyclerViewScrollListener
-import com.sportstalk.models.chat.ChatEvent
-import com.sportstalk.models.chat.ChatRoom
-import com.sportstalk.models.chat.EventType
-import com.sportstalk.models.chat.ReportType
-import com.sportstalk.models.users.User
+import com.sportstalk.datamodels.chat.ChatEvent
+import com.sportstalk.datamodels.chat.ChatRoom
+import com.sportstalk.datamodels.chat.EventType
+import com.sportstalk.datamodels.chat.ReportType
+import com.sportstalk.datamodels.users.User
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.rxkotlin.addTo
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.rx2.asFlow
 import org.koin.android.ext.android.getKoin
 import org.koin.androidx.viewmodel.ext.android.getViewModel
 import org.koin.androidx.viewmodel.koin.getViewModel
+import reactivecircus.flowbinding.android.view.clicks
 import java.util.concurrent.TimeUnit
 
 class LiveChatFragment : BaseFragment() {
@@ -46,6 +48,8 @@ class LiveChatFragment : BaseFragment() {
     private lateinit var room: ChatRoom
 
     private lateinit var adapter: ItemChatEventAdapter
+
+    private lateinit var rxDisposeBag: CompositeDisposable
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -115,8 +119,8 @@ class LiveChatFragment : BaseFragment() {
                             getString(R.string.chat_message_tap_option_flag_as_deleted) -> {
                                 viewModel.removeMessage(
                                     which = chatEvent,
-                                    isPermanentDelete = true,
-                                    permanentifnoreplies = false/*true*/
+                                    isPermanentDelete = false,
+                                    permanentifnoreplies = /*false*/true
                                 )
                             }
                             // Delete Permanently
@@ -196,6 +200,8 @@ class LiveChatFragment : BaseFragment() {
 
         binding.recyclerView.addOnScrollListener(scrollListener)
 
+        rxDisposeBag = CompositeDisposable()
+
         return binding.root
     }
 
@@ -234,15 +240,16 @@ class LiveChatFragment : BaseFragment() {
         // Bind View Effect
         ///////////////////////////////
         viewModel.effect
-            .onEach(::takeViewEffect)
-            .launchIn(lifecycleScope)
+//            .onEach(::takeViewEffect)
+//            .launchIn(lifecycleScope)
+            .subscribe(::takeViewEffect)
+            .addTo(rxDisposeBag)
 
         /**
          * On click Clear Quoted Reply
          */
         binding.btnClear.clicks()
-            .throttleFirst(1000, TimeUnit.MILLISECONDS)
-            .asFlow()
+            .throttleFirst(1000L)
             .onEach {
                 viewModel.clearQuotedReply()
             }
@@ -254,6 +261,8 @@ class LiveChatFragment : BaseFragment() {
         if(::scrollListener.isInitialized) {
             binding.recyclerView.removeOnScrollListener(scrollListener)
         }
+
+        rxDisposeBag.dispose()
 
         super.onDestroyView()
     }
@@ -284,7 +293,7 @@ class LiveChatFragment : BaseFragment() {
         }
     }
 
-    private suspend fun takeViewEffect(effect: ChatRoomViewModel.ViewEffect) {
+    private fun takeViewEffect(effect: ChatRoomViewModel.ViewEffect) {
         Log.d(TAG, "takeViewEffect() -> effect = ${effect::class.java.simpleName}")
 
         when (effect) {
@@ -297,6 +306,8 @@ class LiveChatFragment : BaseFragment() {
                                 || it.eventtype == EventType.REACTION
                                 || it.eventtype == EventType.QUOTE
                                 || it.eventtype == EventType.REPLY
+                                || it.eventtype == "replace"
+                                || it.eventtype == "remove"
                     }
                     // Append to Chat list
                     adapter.update(chatEvents)
@@ -314,7 +325,7 @@ class LiveChatFragment : BaseFragment() {
                     // TODO:: Handle Reaction Events
 
                     val roomOpenEvents = effect.eventUpdates.filter {
-                        it.eventtype == EventType.ROOM_OPEN
+                        it.eventtype == EventType.ROOM_OPENED
                     }
                     // TODO:: Handle Room Open Events
 

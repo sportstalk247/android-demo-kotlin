@@ -13,7 +13,7 @@ import com.bumptech.glide.Glide
 import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.ItemChatroomParticipantBinding
 import com.sportstalk.app.demo.databinding.ItemChatroomParticipantHeaderBouncedUsersBinding
-import com.sportstalk.models.users.User
+import com.sportstalk.datamodels.users.User
 
 typealias OnTapChatParticipantItem = ((User) -> Unit)
 typealias OnTapBouncedUser = ((User) -> Unit)

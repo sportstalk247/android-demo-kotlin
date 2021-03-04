@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.ItemAdminListChatroomBinding
-import com.sportstalk.models.chat.ChatRoom
+import com.sportstalk.datamodels.chat.ChatRoom
 
 typealias OnItemUpdateChatRoom = ((ChatRoom) -> Unit)
 typealias OnItemDeleteChatRoom = ((ChatRoom) -> Unit)

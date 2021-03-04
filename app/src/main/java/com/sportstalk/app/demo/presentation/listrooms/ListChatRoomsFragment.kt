@@ -10,7 +10,6 @@ import androidx.core.os.bundleOf
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.jakewharton.rxbinding3.swiperefreshlayout.refreshes
 import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.FragmentListChatroomBinding
 import com.sportstalk.app.demo.presentation.BaseFragment
@@ -18,14 +17,14 @@ import com.sportstalk.app.demo.presentation.chatroom.ChatRoomFragment
 import com.sportstalk.app.demo.presentation.listrooms.adapters.ItemListChatRoomAdapter
 import com.sportstalk.app.demo.presentation.users.CreateAccountFragment
 import com.sportstalk.app.demo.presentation.utils.EndlessRecyclerViewScrollListener
-import com.sportstalk.models.chat.ChatRoom
+import com.sportstalk.datamodels.chat.ChatRoom
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.rx2.asFlow
 import org.koin.android.ext.android.getKoin
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.androidx.viewmodel.koin.getViewModel
+import reactivecircus.flowbinding.swiperefreshlayout.refreshes
 
 class ListChatRoomsFragment : BaseFragment() {
 
@@ -116,7 +115,6 @@ class ListChatRoomsFragment : BaseFragment() {
         ///////////////////////////////
 
         binding.swipeRefresh.refreshes()
-            .asFlow()
             .onEach {
                 viewModel.fetchInitial()
             }

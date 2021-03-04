@@ -14,10 +14,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.*
-import com.sportstalk.models.chat.ChatEvent
-import com.sportstalk.models.chat.EventReaction
-import com.sportstalk.models.chat.EventType
-import com.sportstalk.models.users.User
+import com.sportstalk.datamodels.chat.ChatEvent
+import com.sportstalk.datamodels.chat.EventReaction
+import com.sportstalk.datamodels.chat.EventType
+import com.sportstalk.datamodels.users.User
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.*
@@ -148,7 +148,7 @@ class ItemChatEventAdapter(
             item.eventtype == EventType.ANNOUNCEMENT -> VIEW_TYPE_ANNOUNCEMENT
             item.eventtype == EventType.BOUNCE -> VIEW_TYPE_BOUNCE
             // "roomopened", "roomclosed" implementation
-            item.eventtype in listOf(EventType.ROOM_OPEN, EventType.ROOM_CLOSED) -> VIEW_TYPE_ROOM_STATUS
+            item.eventtype in listOf(EventType.ROOM_OPENED, EventType.ROOM_CLOSED) -> VIEW_TYPE_ROOM_STATUS
             item.eventtype == EventType.ACTION -> VIEW_TYPE_ACTION
             item.eventtype == EventType.CUSTOM -> VIEW_TYPE_UNKNOWN_EVENTTYPE
             item.userid == me.userid -> VIEW_TYPE_SENT

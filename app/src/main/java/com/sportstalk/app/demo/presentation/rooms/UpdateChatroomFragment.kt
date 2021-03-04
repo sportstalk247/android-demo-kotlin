@@ -11,21 +11,20 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
-import com.jakewharton.rxbinding3.widget.checkedChanges
-import com.jakewharton.rxbinding3.widget.textChanges
 import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.FragmentUpdateChatroomBinding
 import com.sportstalk.app.demo.presentation.BaseFragment
 import com.sportstalk.app.demo.presentation.chatroom.listparticipants.ChatroomListParticipantsFragment
-import com.sportstalk.models.chat.ChatRoom
-import com.sportstalk.models.users.User
+import com.sportstalk.datamodels.chat.ChatRoom
+import com.sportstalk.datamodels.users.User
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.rx2.asFlow
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
+import reactivecircus.flowbinding.android.widget.checkedChanges
+import reactivecircus.flowbinding.android.widget.textChanges
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -219,9 +218,7 @@ class UpdateChatroomFragment : BaseFragment() {
         ///////////////////////////////
 
         // Room Name
-        binding.tietName.textChanges()
-            .skipInitialValue()
-            .asFlow()
+        binding.tietName.textChanges(emitImmediately = false)
             .debounce(350)
             .map { it.toString() }
             .onEach { updateChatroomViewModel.roomName(it) }
@@ -229,7 +226,6 @@ class UpdateChatroomFragment : BaseFragment() {
 
         // Room Description
         binding.tietDescription.textChanges()
-            .asFlow()
             .debounce(350)
             .map { it.toString() }
             .onEach { updateChatroomViewModel.roomDescription(it) }
@@ -237,7 +233,6 @@ class UpdateChatroomFragment : BaseFragment() {
 
         // Room Custom ID
         binding.tietCustomId.textChanges()
-            .asFlow()
             .debounce(350)
             .map { it.toString() }
             .onEach { updateChatroomViewModel.roomCustomId(it) }
@@ -268,7 +263,6 @@ class UpdateChatroomFragment : BaseFragment() {
         binding.switchEnableActions.isChecked = enabled == true
 
         binding.switchEnableActions.checkedChanges()
-            .asFlow()
             .onEach { checked ->
                 updateChatroomViewModel.roomAction(checked)
                 binding.switchEnableActions.text = when (checked) {
@@ -284,7 +278,6 @@ class UpdateChatroomFragment : BaseFragment() {
         binding.switchEnableEnterExit.isChecked = enabled == true
 
         binding.switchEnableEnterExit.checkedChanges()
-            .asFlow()
             .onEach { checked ->
                 updateChatroomViewModel.roomEnterExit(checked)
                 binding.switchEnableEnterExit.text = when (checked) {
@@ -300,7 +293,6 @@ class UpdateChatroomFragment : BaseFragment() {
         binding.switchRoomOpen.isChecked = enabled == true
 
         binding.switchRoomOpen.checkedChanges()
-            .asFlow()
             .onEach { checked ->
                 updateChatroomViewModel.roomIsOpen(checked)
                 binding.switchRoomOpen.text = when (checked) {
@@ -316,7 +308,6 @@ class UpdateChatroomFragment : BaseFragment() {
         binding.switchProfanityFilter.isChecked = enabled == true
 
         binding.switchProfanityFilter.checkedChanges()
-            .asFlow()
             .onEach { checked ->
                 updateChatroomViewModel.roomProfanityEnabled(checked)
                 binding.switchProfanityFilter.text = when (checked) {

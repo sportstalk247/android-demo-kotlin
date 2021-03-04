@@ -5,11 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.sportstalk.app.demo.SportsTalkDemoPreferences
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
-import kotlinx.coroutines.channels.sendBlocking
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 
 class InAppSettingsViewModel(
     private val preferences: SportsTalkDemoPreferences
@@ -20,24 +17,18 @@ class InAppSettingsViewModel(
     private val appId = ConflatedBroadcastChannel<String?>(preferences.appId)
     val state = object: ViewState {
         override fun urlEndpoint(): Flow<String?> =
-            urlEndpoint
-                .openSubscription()
-                .receiveAsFlow()
+            urlEndpoint.asFlow()
 
         override fun authToken(): Flow<String?> =
-            authToken
-                .openSubscription()
-                .receiveAsFlow()
+            authToken.asFlow()
 
         override fun appId(): Flow<String?> =
-            appId
-                .openSubscription()
-                .receiveAsFlow()
+            appId.asFlow()
     }
 
-    private val _effect = Channel<ViewEffect>(Channel.RENDEZVOUS)
+    private val _effect = Channel<ViewEffect>(Channel.BUFFERED)
     val effect: Flow<ViewEffect> =
-        _effect.receiveAsFlow()
+        _effect.consumeAsFlow()
 
     init {
         preferences.urlEndpointChanges()
@@ -69,7 +60,9 @@ class InAppSettingsViewModel(
         // Clear operation automatically sets original values
         preferences.clear()
         // Emit [ViewEffect.SuccessReset]]
-        _effect.sendBlocking(ViewEffect.SuccessReset())
+        viewModelScope.launch {
+            _effect.send(ViewEffect.SuccessReset())
+        }
     }
 
     interface ViewState {

@@ -2,18 +2,15 @@ package com.sportstalk.app.demo.presentation.listrooms
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sportstalk.api.ChatClient
+
 import com.sportstalk.app.demo.SportsTalkDemoPreferences
-import com.sportstalk.models.SportsTalkException
-import com.sportstalk.models.chat.ChatRoom
-import com.sportstalk.models.users.User
+import com.sportstalk.coroutine.api.ChatClient
+import com.sportstalk.datamodels.SportsTalkException
+import com.sportstalk.datamodels.chat.ChatRoom
+import com.sportstalk.datamodels.users.User
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.ConflatedBroadcastChannel
-import kotlinx.coroutines.channels.sendBlocking
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -28,26 +25,29 @@ class ListChatRoomsViewModel(
     private val preferences: SportsTalkDemoPreferences
 ): ViewModel() {
 
-    private val chatRooms = BroadcastChannel<List<ChatRoom>>(Channel.BUFFERED)
-    private val progressFetchRooms = BroadcastChannel<Boolean>(Channel.BUFFERED)
+    private val chatRooms = Channel<List<ChatRoom>>(Channel.BUFFERED)
+    private val progressFetchRooms = Channel<Boolean>(Channel.BUFFERED)
     private val enableAccountSettings = MutableStateFlow<Boolean?>(null)
     // Keep track of cursor
     private val cursor = MutableStateFlow<String?>(null)
     val state = object: ViewState {
         override fun progressFetchChatRooms(): Flow<Boolean> =
-            progressFetchRooms.asFlow()
+            progressFetchRooms
+                .consumeAsFlow()
 
         override fun chatRooms(): Flow<List<ChatRoom>> =
-            chatRooms.asFlow()
+            chatRooms
+                .consumeAsFlow()
 
         override fun enableAccountSettings(): Flow<Boolean> =
             enableAccountSettings
                 .filterNotNull()
     }
 
-    private val _effect = BroadcastChannel<ViewEffect>(Channel.BUFFERED)
+    private val _effect = Channel<ViewEffect>(Channel.BUFFERED)
     val effect: Flow<ViewEffect>
-        get() = _effect.asFlow()
+        get() = _effect
+            .consumeAsFlow()
 
     fun fetchInitial() {
         viewModelScope.launch {
@@ -65,13 +65,14 @@ class ListChatRoomsViewModel(
     }
 
     fun join(which: ChatRoom) {
-        val currentUser = preferences.currentUser
-        if(currentUser != null) {
-            _effect.sendBlocking(ViewEffect.NavigateToChatRoom(which, currentUser))
-        } else {
-            _effect.sendBlocking(ViewEffect.NavigateToCreateProfile(which))
+        viewModelScope.launch {
+            val currentUser = preferences.currentUser
+            if(currentUser != null) {
+                _effect.send(ViewEffect.NavigateToChatRoom(which, currentUser))
+            } else {
+                _effect.send(ViewEffect.NavigateToCreateProfile(which))
+            }
         }
-
     }
 
     private suspend fun performFetch(cursor: String? = null) {

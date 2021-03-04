@@ -1,7 +1,15 @@
 package com.sportstalk.app.demo
 
 import androidx.multidex.MultiDexApplication
-import com.sportstalk.SportsTalk247
+import com.sportstalk.coroutine.SportsTalk247
+import com.sportstalk.coroutine.api.UserClient
+import com.sportstalk.coroutine.api.ChatClient
+import com.sportstalk.coroutine.api.CommentClient
+
+import com.sportstalk.reactive.rx2.SportsTalk247 as RxSportsTalk247
+import com.sportstalk.reactive.rx2.api.UserClient as RxUserClient
+import com.sportstalk.reactive.rx2.api.ChatClient as RxChatClient
+
 import com.sportstalk.app.demo.presentation.chatroom.ChatRoomViewModel
 import com.sportstalk.app.demo.presentation.chatroom.listparticipants.ChatroomListParticipantsViewModel
 import com.sportstalk.app.demo.presentation.inappsettings.InAppSettingsViewModel
@@ -11,11 +19,10 @@ import com.sportstalk.app.demo.presentation.rooms.CreateChatroomViewModel
 import com.sportstalk.app.demo.presentation.rooms.UpdateChatroomViewModel
 import com.sportstalk.app.demo.presentation.users.AccountSettingsViewModel
 import com.sportstalk.app.demo.presentation.users.CreateAccountViewModel
-import com.sportstalk.models.ClientConfig
-import com.sportstalk.models.chat.ChatRoom
-import com.sportstalk.models.users.User
+import com.sportstalk.datamodels.ClientConfig
+import com.sportstalk.datamodels.chat.ChatRoom
+import com.sportstalk.datamodels.users.User
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonBuilder
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.core.context.startKoin
@@ -34,8 +41,9 @@ class SportsTalkDemoApplication : MultiDexApplication() {
                     single {
                         Json {
                             prettyPrint = true
-                            isLenient = true
-                            ignoreUnknownKeys = true
+                            strictMode = false
+//                            isLenient = true
+//                            ignoreUnknownKeys = true
                         }
                     }
 
@@ -68,6 +76,18 @@ class SportsTalkDemoApplication : MultiDexApplication() {
                     factory {
                         val config: ClientConfig = get()
                         SportsTalk247.ChatClient(config)
+                    }
+
+                    // RxJava User Client
+                    factory {
+                        val config: ClientConfig = get()
+                        RxSportsTalk247.UserClient(config)
+                    }
+
+                    // RxJava Chat Client
+                    factory {
+                        val config: ClientConfig = get()
+                        RxSportsTalk247.ChatClient(config)
                     }
 
                     /*
@@ -113,6 +133,7 @@ class SportsTalkDemoApplication : MultiDexApplication() {
                             room = room,
                             user = user,
                             chatClient = get(),
+                            rxChatClient = get(),
                             preferences = get()
                         )
                     }

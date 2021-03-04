@@ -2,17 +2,16 @@ package com.sportstalk.app.demo.presentation.rooms
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sportstalk.api.ChatClient
 import com.sportstalk.app.demo.SportsTalkDemoPreferences
-import com.sportstalk.models.SportsTalkException
-import com.sportstalk.models.chat.ChatRoom
-import com.sportstalk.models.chat.CreateChatRoomRequest
+import com.sportstalk.coroutine.api.ChatClient
+import com.sportstalk.datamodels.SportsTalkException
+import com.sportstalk.datamodels.chat.ChatRoom
+import com.sportstalk.datamodels.chat.CreateChatRoomRequest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.channels.sendBlocking
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -27,9 +26,9 @@ class CreateChatroomViewModel(
     val preferences: SportsTalkDemoPreferences
 ) : ViewModel() {
 
-    private val roomName = ConflatedBroadcastChannel<String>()
-    private val roomDescription = ConflatedBroadcastChannel<String>()
-    private val roomCustomId = ConflatedBroadcastChannel<String>()
+    private val roomName = ConflatedBroadcastChannel<String?>(null)
+    private val roomDescription = ConflatedBroadcastChannel<String?>(null)
+    private val roomCustomId = ConflatedBroadcastChannel<String?>(null)
     private val roomAction = ConflatedBroadcastChannel<Boolean>(true)
     private val roomEnterExit = ConflatedBroadcastChannel<Boolean>(true)
     private val roomIsOpen = ConflatedBroadcastChannel<Boolean>(true)
@@ -37,26 +36,31 @@ class CreateChatroomViewModel(
 
     val state = object : ViewState {
         override fun validationRoomName(): Flow<Boolean> =
-            validationRoomName.consumeAsFlow()
+            validationRoomName
+                .consumeAsFlow()
 
         override fun enableSubmit(): Flow<Boolean> =
-            enableSubmit.consumeAsFlow()
+            enableSubmit
+                .consumeAsFlow()
 
         override fun progressCreateChatroom(): Flow<Boolean> =
-            progressCreateChatroom.consumeAsFlow()
+            progressCreateChatroom
+                .consumeAsFlow()
     }
 
-    private val _effect = Channel<ViewEffect>(Channel.RENDEZVOUS)
+    private val _effect = Channel<ViewEffect>(Channel.BUFFERED)
     val effect: Flow<ViewEffect>
-        get() = _effect.consumeAsFlow()
+        get() = _effect
+            .consumeAsFlow()
 
-    private val validationRoomName = Channel<Boolean>(Channel.RENDEZVOUS)
-    private val enableSubmit = Channel<Boolean>(Channel.RENDEZVOUS)
-    private val progressCreateChatroom = Channel<Boolean>(Channel.RENDEZVOUS)
+    private val validationRoomName = Channel<Boolean>(Channel.BUFFERED)
+    private val enableSubmit = Channel<Boolean>(Channel.BUFFERED)
+    private val progressCreateChatroom = Channel<Boolean>(Channel.BUFFERED)
 
     init {
         roomName
             .asFlow()
+            .filterNotNull()
             .map {
                 Regex(REGEX_ROOMNAME).containsMatchIn(it)
             }
@@ -65,26 +69,33 @@ class CreateChatroomViewModel(
             .launchIn(viewModelScope)
     }
 
-    fun roomName(roomName: String) =
+    fun roomName(roomName: String) {
         this.roomName.sendBlocking(roomName)
+    }
 
-    fun roomDescription(roomDescription: String) =
+    fun roomDescription(roomDescription: String) {
         this.roomDescription.sendBlocking(roomDescription)
+    }
 
-    fun roomCustomId(roomCustomId: String) =
+    fun roomCustomId(roomCustomId: String) {
         this.roomCustomId.sendBlocking(roomCustomId)
+    }
 
-    fun roomAction(roomAction: Boolean) =
+    fun roomAction(roomAction: Boolean) {
         this.roomAction.sendBlocking(roomAction)
+    }
 
-    fun roomEnterExit(roomEnterExit: Boolean) =
+    fun roomEnterExit(roomEnterExit: Boolean) {
         this.roomEnterExit.sendBlocking(roomEnterExit)
+    }
 
-    fun roomIsOpen(roomIsOpen: Boolean) =
+    fun roomIsOpen(roomIsOpen: Boolean) {
         this.roomIsOpen.sendBlocking(roomIsOpen)
+    }
 
-    fun roomProfanityEnabled(roomProfanityEnabled: Boolean) =
+    fun roomProfanityEnabled(roomProfanityEnabled: Boolean) {
         this.roomProfanityEnabled.sendBlocking(roomProfanityEnabled)
+    }
 
     fun submit() {
         viewModelScope.launch { performCreateChatroom() }
@@ -98,15 +109,15 @@ class CreateChatroomViewModel(
             val response = withContext(Dispatchers.IO) {
                 chatClient.createRoom(
                     request = CreateChatRoomRequest(
-                        name = roomName.valueOrNull,
-                        description = roomDescription.valueOrNull,
-                        customid = roomCustomId.valueOrNull,
+                        name = roomName.value,
+                        description = roomDescription.value,
+                        customid = roomCustomId.value,
                         userid = preferences.currentUser?.userid,
                         /*moderation = "pre",*/
-                        enableactions = roomAction.valueOrNull,
-                        enableenterandexit = roomEnterExit.valueOrNull,
-                        roomisopen = roomIsOpen.valueOrNull,
-                        enableprofanityfilter = roomProfanityEnabled.valueOrNull
+                        enableactions = roomAction.value,
+                        enableenterandexit = roomEnterExit.value,
+                        roomisopen = roomIsOpen.value,
+                        enableprofanityfilter = roomProfanityEnabled.value
                     )
                 )
             }

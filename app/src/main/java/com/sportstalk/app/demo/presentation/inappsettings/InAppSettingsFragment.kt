@@ -9,16 +9,16 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
-import com.jakewharton.rxbinding3.view.clicks
 import com.sportstalk.app.demo.BuildConfig
 import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.FragmentInappSettingsBinding
+import com.sportstalk.app.demo.extensions.throttleFirst
 import com.sportstalk.app.demo.presentation.BaseFragment
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.rx2.asFlow
 import org.koin.android.ext.android.getKoin
 import org.koin.androidx.viewmodel.koin.getViewModel
+import reactivecircus.flowbinding.android.view.clicks
 import java.util.concurrent.TimeUnit
 
 class InAppSettingsFragment : BaseFragment() {
@@ -69,8 +69,7 @@ class InAppSettingsFragment : BaseFragment() {
             .launchIn(lifecycleScope)
 
         binding.containerUrlEndpoint.clicks()
-            .throttleFirst(1000, TimeUnit.MILLISECONDS)
-            .asFlow()
+            .throttleFirst(1000L)
             .onEach {
                 val textInputLayout = LayoutInflater.from(requireContext())
                     .inflate(
@@ -101,8 +100,7 @@ class InAppSettingsFragment : BaseFragment() {
             .launchIn(lifecycleScope)
 
         binding.containerAuthToken.clicks()
-            .throttleFirst(1000, TimeUnit.MILLISECONDS)
-            .asFlow()
+            .throttleFirst(1000L)
             .onEach {
                 val textInputLayout = LayoutInflater.from(requireContext())
                     .inflate(
@@ -133,8 +131,7 @@ class InAppSettingsFragment : BaseFragment() {
             .launchIn(lifecycleScope)
 
         binding.containerAppId.clicks()
-            .throttleFirst(1000, TimeUnit.MILLISECONDS)
-            .asFlow()
+            .throttleFirst(1000L)
             .onEach {
                 val textInputLayout = LayoutInflater.from(requireContext())
                     .inflate(

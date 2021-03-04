@@ -12,19 +12,17 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
-import com.jakewharton.rxbinding3.swiperefreshlayout.refreshes
 import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.FragmentChatroomListParticipantsBinding
 import com.sportstalk.app.demo.presentation.BaseFragment
 import com.sportstalk.app.demo.presentation.chatroom.listparticipants.adapters.ItemChatroomParticipantAdapter
 import com.sportstalk.app.demo.presentation.utils.EndlessRecyclerViewScrollListener
-import com.sportstalk.models.chat.ChatRoom
-import com.sportstalk.models.users.User
+import com.sportstalk.datamodels.chat.ChatRoom
+import com.sportstalk.datamodels.users.User
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.zip
-import kotlinx.coroutines.rx2.asFlow
 import org.koin.android.ext.android.getKoin
 import org.koin.androidx.viewmodel.koin.getViewModel
 import org.koin.core.parameter.parametersOf
@@ -66,7 +64,7 @@ class ChatroomListParticipantsFragment : BaseFragment() {
 
         val bouncedUsers = when {
             ::room.isInitialized && room.bouncedusers != null -> room.bouncedusers!!
-            else -> listOf()
+            else -> listOf<String>()
         }.map { userid -> User(userid = userid) }
 
         adapter = ItemChatroomParticipantAdapter(
@@ -296,15 +294,11 @@ class ChatroomListParticipantsFragment : BaseFragment() {
         // Bind UI Input Actions
         ///////////////////////////////
 
-        binding.swipeRefresh.refreshes()
-            .asFlow()
-            .onEach {
-                // Perform refresh
-                viewModel.refreshChatroomParticipants()
-                viewModel.fetchBouncedUsers(which = this.room)
-            }
-            .launchIn(lifecycleScope)
-
+        binding.swipeRefresh.setOnRefreshListener {
+            // Perform refresh
+            viewModel.refreshChatroomParticipants()
+            viewModel.fetchBouncedUsers(which = this.room)
+        }
 
         // Initial Fetch Chatroom Participants
         viewModel.fetchChatroomParticipants()

@@ -9,19 +9,19 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.jakewharton.rxbinding3.swiperefreshlayout.refreshes
-import com.jakewharton.rxbinding3.view.clicks
 import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.FragmentAdminListChatroomBinding
+import com.sportstalk.app.demo.extensions.throttleFirst
 import com.sportstalk.app.demo.presentation.BaseFragment
 import com.sportstalk.app.demo.presentation.listrooms.adapters.ItemAdminListChatRoomAdapter
 import com.sportstalk.app.demo.presentation.rooms.UpdateChatroomFragment
 import com.sportstalk.app.demo.presentation.utils.EndlessRecyclerViewScrollListener
-import com.sportstalk.models.chat.ChatRoom
+import com.sportstalk.datamodels.chat.ChatRoom
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.rx2.asFlow
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import reactivecircus.flowbinding.android.view.clicks
+import reactivecircus.flowbinding.swiperefreshlayout.refreshes
 import java.util.concurrent.TimeUnit
 
 class AdminListChatRoomsFragment : BaseFragment() {
@@ -142,8 +142,7 @@ class AdminListChatRoomsFragment : BaseFragment() {
         ///////////////////////////////
 
         binding.fabAdd.clicks()
-            .throttleFirst(1000, TimeUnit.MILLISECONDS)
-            .asFlow()
+            .throttleFirst(1000L)
             .onEach {
                 // Navigate to Create Chatroom
                 appNavController.navigate(
@@ -153,7 +152,6 @@ class AdminListChatRoomsFragment : BaseFragment() {
             .launchIn(lifecycleScope)
 
         binding.swipeRefresh.refreshes()
-            .asFlow()
             .onEach {
                 // Perform fetch upon Refresh
                 viewModel.fetchInitial(forceRefresh = true)
