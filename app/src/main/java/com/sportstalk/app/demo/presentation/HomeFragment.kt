@@ -13,6 +13,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.observe
 import androidx.viewpager2.adapter.FragmentStateAdapter
+import androidx.viewpager2.widget.ViewPager2
 import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.SportsTalkDemoPreferences
 import com.sportstalk.app.demo.databinding.FragmentHomeBinding
@@ -29,7 +30,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import org.koin.android.ext.android.getKoin
 import org.koin.android.ext.android.inject
-import reactivecircus.flowbinding.viewpager2.pageSelections
 
 class HomeFragment : BaseFragment() {
 
@@ -77,6 +77,7 @@ class HomeFragment : BaseFragment() {
         return binding.root
     }
 
+    private var viewPagerPageChangeCallback: ViewPager2.OnPageChangeCallback? = null
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -95,15 +96,16 @@ class HomeFragment : BaseFragment() {
                 val isFirstLoad = binding.viewPager2.adapter?.itemCount != TAB_COUNT
 
                 binding.viewPager2.adapter = ViewPager2Adapter(childFragmentManager, lifecycle)
-                binding.viewPager2.pageSelections(emitImmediately = false)
-                    .onEach { position ->
+                viewPagerPageChangeCallback = object: ViewPager2.OnPageChangeCallback() {
+                    override fun onPageSelected(position: Int) {
                         when (position) {
                             TAB_FAN -> binding.bottomNavView.selectedItemId = R.id.bottomNavFan
                             TAB_ADMIN -> binding.bottomNavView.selectedItemId = R.id.bottomNavAdmin
                             TAB_SETTINGS -> binding.bottomNavView.selectedItemId = R.id.bottomNavSettings
                         }
                     }
-                    .launchIn(lifecycleScope)
+                }
+                binding.viewPager2.registerOnPageChangeCallback(viewPagerPageChangeCallback!!)
 
                 binding.bottomNavView.setOnNavigationItemSelectedListener { item: MenuItem ->
                     when (item.itemId) {
@@ -126,9 +128,14 @@ class HomeFragment : BaseFragment() {
                 if(!isFirstLoad) binding.bottomNavView.selectedItemId = R.id.bottomNavSettings
             }
             .launchIn(lifecycleScope)
+    }
 
-        val chatClient = SportsTalk247.ChatClient(getKoin().get<ClientConfig>())
+    override fun onDestroyView() {
+        if(viewPagerPageChangeCallback != null) {
+            binding.viewPager2.unregisterOnPageChangeCallback(viewPagerPageChangeCallback!!)
+        }
 
+        super.onDestroyView()
     }
 
     inner class ViewPager2Adapter(

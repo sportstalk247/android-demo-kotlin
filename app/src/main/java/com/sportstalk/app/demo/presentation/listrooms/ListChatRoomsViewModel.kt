@@ -10,6 +10,8 @@ import com.sportstalk.datamodels.chat.ChatRoom
 import com.sportstalk.datamodels.users.User
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.ConflatedBroadcastChannel
+import kotlinx.coroutines.channels.sendBlocking
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -27,9 +29,9 @@ class ListChatRoomsViewModel(
 
     private val chatRooms = Channel<List<ChatRoom>>(Channel.BUFFERED)
     private val progressFetchRooms = Channel<Boolean>(Channel.BUFFERED)
-    private val enableAccountSettings = MutableStateFlow<Boolean?>(null)
+    private val enableAccountSettings = ConflatedBroadcastChannel<Boolean>(false)
     // Keep track of cursor
-    private val cursor = MutableStateFlow<String?>(null)
+    private val cursor = ConflatedBroadcastChannel<String?>(null)
     val state = object: ViewState {
         override fun progressFetchChatRooms(): Flow<Boolean> =
             progressFetchRooms
@@ -40,8 +42,7 @@ class ListChatRoomsViewModel(
                 .consumeAsFlow()
 
         override fun enableAccountSettings(): Flow<Boolean> =
-            enableAccountSettings
-                .filterNotNull()
+            enableAccountSettings.asFlow()
     }
 
     private val _effect = Channel<ViewEffect>(Channel.BUFFERED)
@@ -95,7 +96,7 @@ class ListChatRoomsViewModel(
             chatRooms.send(listRoomsResponse.rooms)
             // Emit new cursor(IF NOT BLANK) and if there is MORE
             listRoomsResponse.cursor?.let { nowCursor ->
-                this@ListChatRoomsViewModel.cursor.value = nowCursor
+                this@ListChatRoomsViewModel.cursor.sendBlocking(nowCursor)
             }
 
         } catch (err: SportsTalkException) {
@@ -106,7 +107,7 @@ class ListChatRoomsViewModel(
             progressFetchRooms.send(false)
 
             // EMIT Enable/Disable Account Settings
-            enableAccountSettings.value = preferences.currentUser != null
+            enableAccountSettings.sendBlocking(preferences.currentUser != null)
         }
     }
 

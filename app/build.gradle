@@ -186,16 +186,11 @@ dependencies {
     // Flow Binding
     implementation "io.github.reactivecircus.flowbinding:flowbinding-android:$flowbindingVersion"
     implementation "io.github.reactivecircus.flowbinding:flowbinding-core:$flowbindingVersion"
-    implementation "io.github.reactivecircus.flowbinding:flowbinding-activity:$flowbindingVersion"
     implementation "io.github.reactivecircus.flowbinding:flowbinding-appcompat:$flowbindingVersion"
     implementation "io.github.reactivecircus.flowbinding:flowbinding-drawerlayout:$flowbindingVersion"
-    implementation "io.github.reactivecircus.flowbinding:flowbinding-lifecycle:$flowbindingVersion"
     implementation "io.github.reactivecircus.flowbinding:flowbinding-navigation:$flowbindingVersion"
-    implementation "io.github.reactivecircus.flowbinding:flowbinding-preference:$flowbindingVersion"
     implementation "io.github.reactivecircus.flowbinding:flowbinding-recyclerview:$flowbindingVersion"
     implementation "io.github.reactivecircus.flowbinding:flowbinding-swiperefreshlayout:$flowbindingVersion"
-    implementation "io.github.reactivecircus.flowbinding:flowbinding-viewpager:$flowbindingVersion"
-    implementation "io.github.reactivecircus.flowbinding:flowbinding-viewpager2:$flowbindingVersion"
 
     // RxPermission
     implementation "com.github.tbruyelle:rxpermissions:$rxPermissionVersion"
