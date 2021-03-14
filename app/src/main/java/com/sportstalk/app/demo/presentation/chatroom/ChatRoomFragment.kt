@@ -322,6 +322,8 @@ class ChatRoomFragment : BaseFragment() {
             is ChatRoomViewModel.ViewEffect.ErrorJoinRoom -> {
                 errorJoinSnackBar.setText(effect.err.message ?: "Something went wrong...")
                 errorJoinSnackBar.show()
+
+                appNavController.popBackStack()
             }
             is ChatRoomViewModel.ViewEffect.SuccessExitRoom -> {
                 Toast.makeText(
@@ -334,11 +336,14 @@ class ChatRoomFragment : BaseFragment() {
                 appNavController.popBackStack()
             }
             is ChatRoomViewModel.ViewEffect.ErrorExitRoom -> {
+                Log.e(TAG, "takeViewEffect() -> ChatRoomViewModel.ViewEffect.ErrorExitRoom")
                 Toast.makeText(
                     requireContext(),
-                    R.string.something_went_wrong_please_try_again,
+                    getString(R.string.something_went_wrong_please_try_again),
                     Toast.LENGTH_SHORT
                 ).show()
+                // Popback to Home Screen anyways
+                appNavController.popBackStack()
             }
             is ChatRoomViewModel.ViewEffect.ChatMessageSent -> {
                 // Clear text

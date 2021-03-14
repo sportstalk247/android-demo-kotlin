@@ -14,6 +14,7 @@ import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
+import io.reactivex.functions.Function
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.PublishSubject
@@ -220,6 +221,18 @@ class ChatRoomViewModel(
             chatRoomId = room.id!!,
             frequency = 500L
         )
+            .onErrorResumeNext(Function { err ->
+                // For some reasons, ChatRoom has been deleted and can NO longer be found.
+                if(err is SportsTalkException) {
+                    if(err.code == 404) {
+                        // Emit Error Join Room
+                        rxEffect.onNext(
+                            ViewEffect.ErrorJoinRoom(err)
+                        )
+                    }
+                }
+                Flowable.just(listOf<ChatEvent>())
+            })
             // Filter out empty message(s) generated when performing LIKE action
             /*.map { it.filter { msg -> msg.body?.isNotEmpty() == true } }*/
             .subscribe { newEvents ->

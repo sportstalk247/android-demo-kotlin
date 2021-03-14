@@ -50,6 +50,13 @@ class ListChatRoomsViewModel(
     val effect: Flow<ViewEffect>
         get() = _effect
             .asFlow()
+            .onEach { eff ->
+                when(eff) {
+                    is ViewEffect.ClearListChatrooms -> {
+                        chatRooms.send(emptyList())
+                    }
+                }
+            }
 
     fun fetchInitial(forceRefresh: Boolean) {
         if(!forceRefresh && chatRooms.valueOrNull != null) return
