@@ -81,7 +81,7 @@ class ItemListChatRoomAdapter(
 
     @SuppressLint("StaticFieldLeak")
     @MainThread
-    private fun replace(update: List<ChatRoom>) {
+    fun replace(update: List<ChatRoom>) {
         dataVersion++
         if (items.isEmpty()) {
             items = update

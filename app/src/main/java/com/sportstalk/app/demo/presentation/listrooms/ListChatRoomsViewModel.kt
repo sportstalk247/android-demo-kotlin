@@ -9,6 +9,7 @@ import com.sportstalk.datamodels.SportsTalkException
 import com.sportstalk.datamodels.chat.ChatRoom
 import com.sportstalk.datamodels.users.User
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.channels.sendBlocking
@@ -27,30 +28,32 @@ class ListChatRoomsViewModel(
     private val preferences: SportsTalkDemoPreferences
 ): ViewModel() {
 
-    private val chatRooms = Channel<List<ChatRoom>>(Channel.BUFFERED)
-    private val progressFetchRooms = Channel<Boolean>(Channel.BUFFERED)
+    private val chatRooms = ConflatedBroadcastChannel<List<ChatRoom>>()
+    private val progressFetchRooms = BroadcastChannel<Boolean>(Channel.BUFFERED)
     private val enableAccountSettings = ConflatedBroadcastChannel<Boolean>(false)
     // Keep track of cursor
     private val cursor = ConflatedBroadcastChannel<String?>(null)
     val state = object: ViewState {
         override fun progressFetchChatRooms(): Flow<Boolean> =
             progressFetchRooms
-                .consumeAsFlow()
+                .asFlow()
 
         override fun chatRooms(): Flow<List<ChatRoom>> =
             chatRooms
-                .consumeAsFlow()
+                .asFlow()
 
         override fun enableAccountSettings(): Flow<Boolean> =
             enableAccountSettings.asFlow()
     }
 
-    private val _effect = Channel<ViewEffect>(Channel.BUFFERED)
+    private val _effect = BroadcastChannel<ViewEffect>(Channel.BUFFERED)
     val effect: Flow<ViewEffect>
         get() = _effect
-            .consumeAsFlow()
+            .asFlow()
 
-    fun fetchInitial() {
+    fun fetchInitial(forceRefresh: Boolean) {
+        if(!forceRefresh && chatRooms.valueOrNull != null) return
+
         viewModelScope.launch {
             // Clear List Chatroom Items
             _effect.send(ViewEffect.ClearListChatrooms())
@@ -92,8 +95,17 @@ class ListChatRoomsViewModel(
                     )
                 }
 
+            val accumulatedList = ArrayList<ChatRoom>().apply {
+                if(chatRooms.valueOrNull != null) {
+                    addAll(chatRooms.value + listRoomsResponse.rooms)
+                } else {
+                    addAll(listRoomsResponse.rooms)
+                }
+            }
+                    .distinctBy { it.id }
+
             // Emit update room list
-            chatRooms.send(listRoomsResponse.rooms)
+            chatRooms.send(accumulatedList)
             // Emit new cursor(IF NOT BLANK) and if there is MORE
             listRoomsResponse.cursor?.let { nowCursor ->
                 this@ListChatRoomsViewModel.cursor.sendBlocking(nowCursor)

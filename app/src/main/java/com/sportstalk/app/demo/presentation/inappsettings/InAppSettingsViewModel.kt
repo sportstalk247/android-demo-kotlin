@@ -3,6 +3,7 @@ package com.sportstalk.app.demo.presentation.inappsettings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sportstalk.app.demo.SportsTalkDemoPreferences
+import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.flow.*
@@ -26,9 +27,9 @@ class InAppSettingsViewModel(
             appId.asFlow()
     }
 
-    private val _effect = Channel<ViewEffect>(Channel.BUFFERED)
+    private val _effect = BroadcastChannel<ViewEffect>(Channel.BUFFERED)
     val effect: Flow<ViewEffect> =
-        _effect.consumeAsFlow()
+        _effect.asFlow()
 
     init {
         preferences.urlEndpointChanges()

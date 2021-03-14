@@ -116,12 +116,12 @@ class ListChatRoomsFragment : BaseFragment() {
 
         binding.swipeRefresh.refreshes()
             .onEach {
-                viewModel.fetchInitial()
+                viewModel.fetchInitial(true)
             }
             .launchIn(lifecycleScope)
 
         // Then, fetch initial list
-        viewModel.fetchInitial()
+        viewModel.fetchInitial(false)
     }
 
     override fun onDestroyView() {
@@ -135,15 +135,19 @@ class ListChatRoomsFragment : BaseFragment() {
         Log.d(TAG, "takeProgressFetchChatRooms() -> inProgress = $inProgress")
         binding.swipeRefresh.isRefreshing = inProgress
 
-        if (!inProgress) {
+        if(inProgress) {
+            binding.swipeRefresh.isRefreshing = true
+        } else {
             requireActivity().invalidateOptionsMenu()
+            binding.swipeRefresh.isRefreshing = false
         }
     }
 
     private fun takeChatRooms(chatRooms: List<ChatRoom>) {
         Log.d(TAG, "takeChatRooms() -> chatRooms = $chatRooms")
 
-        adapter.update(chatRooms)
+        // adapter.update(chatRooms)
+        adapter.replace(chatRooms)
     }
 
     private fun takeEnableAccountSettings(isEnabled: Boolean) {

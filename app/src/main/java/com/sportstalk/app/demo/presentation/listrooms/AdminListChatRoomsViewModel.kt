@@ -8,6 +8,7 @@ import com.sportstalk.datamodels.SportsTalkException
 import com.sportstalk.datamodels.chat.*
 import com.sportstalk.datamodels.users.User
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.channels.sendBlocking
@@ -26,39 +27,36 @@ class AdminListChatRoomsViewModel(
     private val preferences: SportsTalkDemoPreferences
 ): ViewModel() {
 
-    private val chatRooms = ConflatedBroadcastChannel<List<ChatRoom>?>(null)
-    private val progressFetchRooms = Channel<Boolean>(Channel.BUFFERED)
-    private val progressDeleteChatRoom = Channel<Boolean>(Channel.BUFFERED)
-    private val progressSendAnnouncement = Channel<Boolean>(Channel.BUFFERED)
+    private val chatRooms = ConflatedBroadcastChannel<List<ChatRoom>>()
+    private val progressFetchRooms = BroadcastChannel<Boolean>(Channel.BUFFERED)
+    private val progressDeleteChatRoom = BroadcastChannel<Boolean>(Channel.BUFFERED)
+    private val progressSendAnnouncement = BroadcastChannel<Boolean>(Channel.BUFFERED)
     // Keep track of cursor
     private val cursor = ConflatedBroadcastChannel<String>("")
     val state = object: ViewState {
         override fun progressFetchChatRooms(): Flow<Boolean> =
             progressFetchRooms
-                .consumeAsFlow()
+                .asFlow()
 
         override fun chatRooms(): Flow<List<ChatRoom>> =
-            chatRooms
-                .asFlow()
-                .filterNotNull()
+            chatRooms.asFlow()
 
         override fun progressDeleteChatRoom(): Flow<Boolean> =
             progressDeleteChatRoom
-                .consumeAsFlow()
+                .asFlow()
 
         override fun progressSendAnnouncement(): Flow<Boolean> =
             progressSendAnnouncement
-                .consumeAsFlow()
+                .asFlow()
     }
 
-    private val _effect = Channel<ViewEffect>(Channel.BUFFERED)
+    private val _effect = BroadcastChannel<ViewEffect>(Channel.BUFFERED)
     val effect: Flow<ViewEffect>
-        get() = _effect
-            .consumeAsFlow()
+        get() = _effect.asFlow()
 
     fun fetchInitial(forceRefresh: Boolean) {
         // Skip if initial fetch has already been performed
-        if(!forceRefresh && chatRooms.value != null) return
+        if(!forceRefresh && chatRooms.valueOrNull != null) return
 
         viewModelScope.launch {
             // Clear List Chatroom Items
@@ -90,7 +88,7 @@ class AdminListChatRoomsViewModel(
                     )
                 }
 
-            val updatedRoomList = ArrayList(chatRooms.value ?: listOf()).apply {
+            val updatedRoomList = ArrayList(chatRooms.valueOrNull ?: listOf()).apply {
                 listRoomsResponse.rooms.forEach { newRoom ->
                     val index = indexOfFirst { oldRoom -> oldRoom.id == newRoom.id }
                     if(index >= 0) {
