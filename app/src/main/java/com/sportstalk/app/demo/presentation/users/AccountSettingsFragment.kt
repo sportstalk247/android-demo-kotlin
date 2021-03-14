@@ -15,7 +15,9 @@ import com.sportstalk.app.demo.extensions.throttleFirst
 import com.sportstalk.app.demo.presentation.BaseFragment
 import com.sportstalk.datamodels.users.User
 import kotlinx.coroutines.flow.*
+import org.koin.android.ext.android.getKoin
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.koin.androidx.viewmodel.koin.getViewModel
 import reactivecircus.flowbinding.android.view.clicks
 import reactivecircus.flowbinding.android.widget.textChanges
 import reactivecircus.flowbinding.swiperefreshlayout.refreshes
@@ -25,7 +27,9 @@ class AccountSettingsFragment : BaseFragment() {
     private lateinit var binding: FragmentAccountSettingsBinding
     private lateinit var menu: Menu
 
-    private val viewModel: AccountSettingsViewModel by viewModel()
+    private val viewModel: AccountSettingsViewModel by /*viewModel()*/lazy {
+        getKoin().getViewModel<AccountSettingsViewModel>(owner = this@AccountSettingsFragment)
+    }
 
     override fun enableBackPressedCallback(): Boolean = true
     override fun onBackPressedCallback(): OnBackPressedCallback.() -> Unit = {

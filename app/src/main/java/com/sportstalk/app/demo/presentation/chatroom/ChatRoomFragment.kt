@@ -17,18 +17,22 @@ import com.sportstalk.datamodels.chat.ChatRoom
 import com.sportstalk.datamodels.users.User
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
+import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.sendBlocking
 import kotlinx.coroutines.flow.*
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
 import reactivecircus.flowbinding.android.view.clicks
+import reactivecircus.flowbinding.appcompat.itemClicks
+import reactivecircus.flowbinding.appcompat.navigationClicks
 import java.text.DecimalFormat
 import java.util.concurrent.TimeUnit
 
 class ChatRoomFragment : BaseFragment() {
 
-    private lateinit var binding: FragmentChatroomBinding
+    private var _binding: FragmentChatroomBinding? = null
+    private val binding: FragmentChatroomBinding by lazy { _binding!! }
     private val viewModel: ChatRoomViewModel by viewModel {
         parametersOf(
             room,
@@ -36,37 +40,26 @@ class ChatRoomFragment : BaseFragment() {
         )
     }
 
-    private val popBackChannel = Channel<Any>(Channel.BUFFERED)
+    private val popBackChannel = BroadcastChannel<Any>(Channel.BUFFERED)
 
     override fun enableBackPressedCallback(): Boolean = true
     override fun onBackPressedCallback(): OnBackPressedCallback.() -> Unit = {
-        lifecycleScope.launchWhenCreated {
-            popBackChannel.send(Any())
-        }
+        popBackChannel.sendBlocking(Any())
     }
 
-    private lateinit var user: User
-    private lateinit var room: ChatRoom
+    private var user: User? = null
+    private var room: ChatRoom? = null
 
-    private lateinit var errorJoinSnackBar: Snackbar
+    private var errorJoinSnackBar: Snackbar? = null
 
-    private lateinit var rxDisposeBag: CompositeDisposable
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        setHasOptionsMenu(true)
-
-        user = requireArguments().getParcelable(INPUT_ARG_USER)!!
-        room = requireArguments().getParcelable(INPUT_ARG_ROOM)!!
-    }
+    private var rxDisposeBag: CompositeDisposable? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        binding = FragmentChatroomBinding.inflate(inflater)
+        _binding = FragmentChatroomBinding.inflate(inflater)
         errorJoinSnackBar = Snackbar.make(
             binding.root,
             R.string.unable_to_join_room_please_try_again,
@@ -77,20 +70,23 @@ class ChatRoomFragment : BaseFragment() {
                 viewModel.joinRoom()
             }
 
-        childFragmentManager
-            .beginTransaction()
-            .replace(
-                R.id.fragmentContainer,
-                LiveChatFragment().apply {
-                    arguments = bundleOf(
-                        LiveChatFragment.INPUT_ARG_ROOM to room,
-                        LiveChatFragment.INPUT_ARG_USER to user
-                    )
-                }
-            )
-            .commit()
-
         rxDisposeBag = CompositeDisposable()
+
+        user = requireArguments().getParcelable(INPUT_ARG_USER)!!
+        room = requireArguments().getParcelable(INPUT_ARG_ROOM)!!
+
+        childFragmentManager
+                .beginTransaction()
+                .replace(
+                        R.id.fragmentContainer,
+                        LiveChatFragment::class.java,
+                        bundleOf(
+                                LiveChatFragment.INPUT_ARG_ROOM to room,
+                                LiveChatFragment.INPUT_ARG_USER to user
+                        ),
+                        LiveChatFragment::class.java.simpleName
+                )
+                .commit()
 
         return binding.root
     }
@@ -98,13 +94,7 @@ class ChatRoomFragment : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        (requireActivity() as? AppCompatActivity)?.let { appActivity ->
-            appActivity.setSupportActionBar(binding.toolbar)
-            appActivity.supportActionBar?.title = room.name
-            appActivity.supportActionBar?.setHomeButtonEnabled(true)
-        }
-
-        popBackChannel.consumeAsFlow()
+        popBackChannel.asFlow()
             .throttleFirst(1000L)
             .onEach {
                 Log.d(TAG, "popBackChannel.asSharedFlow()")
@@ -182,7 +172,7 @@ class ChatRoomFragment : BaseFragment() {
 //            .launchIn(lifecycleScope)
             .filter { it !is ChatRoomViewModel.ViewEffect.ReceiveChatEventUpdates }
             .subscribe(::takeViewEffect)
-            .addTo(rxDisposeBag)
+            .addTo(rxDisposeBag!!)
 
         ///////////////////////////////
         // Bind UI Input Actions
@@ -203,34 +193,72 @@ class ChatRoomFragment : BaseFragment() {
         // Perform Join Chatroom
         viewModel.joinRoom()
 
-    }
+//        binding.toolbar.inflateMenu(R.menu.chatroom)
+//        binding.toolbar.menu.add(0, R.id.action_account_settings, 100, R.string.account_settings)
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        super.onCreateOptionsMenu(menu, inflater)
-        inflater.inflate(R.menu.chatroom, menu)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean =
-        when (item.itemId) {
-            android.R.id.home -> {
-                requireActivity().onBackPressed()
-                true
-            }
-            R.id.action_account_settings -> {
-                // Navigate to Account Settings
-                if(appNavController.currentDestination?.id == R.id.fragmentChatroom) {
-                    appNavController.navigate(
-                        R.id.action_fragmentChatroom_to_fragmentAccountSettings
-                    )
+        binding.toolbar.title = room?.name
+        binding.toolbar.navigationClicks()
+                .throttleFirst(1000L)
+                .onEach {
+                    requireActivity().onBackPressed()
                 }
+                .launchIn(lifecycleScope)
 
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
-        }
+        binding.toolbar.itemClicks()
+                .throttleFirst(1000L)
+                .onEach { item ->
+                    when(item.itemId) {
+                        R.id.action_account_settings -> {
+                            // Navigate to Account Settings
+                            if(appNavController.currentDestination?.id == R.id.fragmentChatroom) {
+                                childFragmentManager.findFragmentByTag(LiveChatFragment::class.java.simpleName)
+                                        ?.let { liveChatFragment ->
+                                            childFragmentManager.beginTransaction()
+                                                    .remove(liveChatFragment)
+                                                    .commit()
+                                        }
+
+                                appNavController.navigate(
+                                        R.id.action_fragmentChatroom_to_fragmentAccountSettings
+                                )
+                            }
+                        }
+                    }
+                }
+                .launchIn(lifecycleScope)
+
+    }
+
+//    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+//        super.onCreateOptionsMenu(menu, inflater)
+//        inflater.inflate(R.menu.chatroom, menu)
+//    }
+//
+//    override fun onOptionsItemSelected(item: MenuItem): Boolean =
+//        when (item.itemId) {
+//            android.R.id.home -> {
+//                requireActivity().onBackPressed()
+//                true
+//            }
+//            R.id.action_account_settings -> {
+//                // Navigate to Account Settings
+//                if(appNavController.currentDestination?.id == R.id.fragmentChatroom) {
+//                    appNavController.navigate(
+//                        R.id.action_fragmentChatroom_to_fragmentAccountSettings
+//                    )
+//                }
+//
+//                true
+//            }
+//            else -> super.onOptionsItemSelected(item)
+//        }
 
     override fun onDestroyView() {
-        rxDisposeBag.dispose()
+        _binding = null
+        rxDisposeBag?.dispose()
+        rxDisposeBag = null
+        errorJoinSnackBar?.dismiss()
+        errorJoinSnackBar = null
 
         super.onDestroyView()
     }
@@ -320,8 +348,8 @@ class ChatRoomFragment : BaseFragment() {
                 viewModel.startListeningToChatUpdates()
             }
             is ChatRoomViewModel.ViewEffect.ErrorJoinRoom -> {
-                errorJoinSnackBar.setText(effect.err.message ?: "Something went wrong...")
-                errorJoinSnackBar.show()
+                errorJoinSnackBar?.setText(effect.err.message ?: "Something went wrong...")
+                errorJoinSnackBar?.show()
 
                 appNavController.popBackStack()
             }
