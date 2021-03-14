@@ -281,30 +281,10 @@ class ChatRoomViewModel(
                     )
                 }
 
-                val updatedChatEventList = ArrayList(chatEvents.value ?: listOf()).apply {
-                    response.events.forEach { newEvent ->
-                        val index = indexOfFirst { oldEvent -> oldEvent.id == newEvent.id }
-                        if (index >= 0) {
-                            set(index, newEvent)
-                        } else {
-                            add(0, newEvent)
-                        }
-                    }
-                }
-                    // Filter out "reaction" event type
-                    .filter { it.eventtype != EventType.REACTION }
-                    .sortedByDescending { it.ts }
-                    .distinctBy { it.id }
-
-                // EMIT Success
-//                _effect.send(
-//                    ViewEffect.SuccessListPreviousEvents(response.events)
-//                )
+                // Emit previous Chat Event List
                 rxEffect.onNext(
                     ViewEffect.SuccessListPreviousEvents(response.events)
                 )
-                // Emit updated Chat Event List
-                chatEvents.send(updatedChatEventList)
 
                 // KEEP cursor
                 previouseventscursor = response.cursor ?: ""

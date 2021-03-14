@@ -302,24 +302,26 @@ class LiveChatFragment : BaseFragment() {
             is ChatRoomViewModel.ViewEffect.ReceiveChatEventUpdates -> {
                 // Dispatch update received new events
                 if (::adapter.isInitialized) {
-                    val chatEvents = effect.eventUpdates.filter {
-                        it.eventtype == EventType.SPEECH
-                                || it.eventtype == EventType.ACTION
-                                || it.eventtype == EventType.REACTION
-                                || it.eventtype == EventType.QUOTE
-                                || it.eventtype == EventType.REPLY
-                    } +
-                            // For responses triggered by DELETE chat event, must replace with "(deleted)" chat event body
+                    val chatEvents = (
                             effect.eventUpdates.filter {
-                                it.eventtype in listOf(EventType.REPLACE, EventType.REMOVE)
-                            }
-                                .mapNotNull { rootEvent ->
-                                    rootEvent.replyto
-                                        ?.copy(
-                                            body = "(deleted)",
-                                            originalbody = rootEvent.replyto?.body
-                                        )
-                                }
+                                it.eventtype == EventType.SPEECH
+                                        || it.eventtype == EventType.ACTION
+                                        || it.eventtype == EventType.REACTION
+                                        || it.eventtype == EventType.QUOTE
+                                        || it.eventtype == EventType.REPLY
+                            } +
+                                    // For responses triggered by DELETE chat event, must replace with "(deleted)" chat event body
+                                    effect.eventUpdates.filter {
+                                        it.eventtype in listOf(EventType.REPLACE, EventType.REMOVE)
+                                    }
+                                            .mapNotNull { rootEvent ->
+                                                rootEvent.replyto
+                                                        ?.copy(
+                                                                body = "(deleted)",
+                                                                originalbody = rootEvent.replyto?.body
+                                                        )
+                                            }
+                            )
                                     .distinctBy { it.id }
 
                     if(!::json.isInitialized) json = getKoin().get<Json>()
@@ -385,7 +387,9 @@ class LiveChatFragment : BaseFragment() {
                 ).show()
             }
             is ChatRoomViewModel.ViewEffect.SuccessListPreviousEvents -> {
-
+                if(::adapter.isInitialized) {
+                    adapter.update(effect.previousEvents)
+                }
             }
             is ChatRoomViewModel.ViewEffect.ErrorListPreviousEvents -> {
                 Toast.makeText(
