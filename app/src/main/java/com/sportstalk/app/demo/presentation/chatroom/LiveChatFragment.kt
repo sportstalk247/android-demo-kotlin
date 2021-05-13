@@ -28,6 +28,7 @@ import com.sportstalk.datamodels.users.User
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.serialization.json.Json
@@ -180,12 +181,12 @@ class LiveChatFragment : BaseFragment() {
             override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
                 Log.d(TAG, "adapterObserver::onItemRangeInserted -> positionStart = $positionStart | itemCount = $itemCount")
                 lifecycleScope.launchWhenCreated {
-                    delay(25L)
+                    delay(50L)
                     val item = adapter?.getItem(positionStart)
                     if(item?.userid == user?.userid) {
                         binding.recyclerView.scrollToPosition(0)
                     } else {
-                        val firstVisibleItemPosition = (rvLayoutManager?.findFirstVisibleItemPosition() ?: 1) - 1
+                        val firstVisibleItemPosition = (rvLayoutManager?.findFirstVisibleItemPosition() ?: 1) - /*1*/itemCount
                         binding.recyclerView.scrollToPosition(firstVisibleItemPosition)
                     }
                 }
@@ -194,7 +195,7 @@ class LiveChatFragment : BaseFragment() {
             override fun onItemRangeChanged(positionStart: Int, itemCount: Int) {
                 Log.d(TAG, "adapterObserver::onItemRangeChanged -> positionStart = $positionStart | itemCount = $itemCount")
                 lifecycleScope.launchWhenCreated {
-                    delay(25L)
+                    delay(50L)
                     val firstVisibleItemPosition = (rvLayoutManager?.findFirstVisibleItemPosition() ?: 1) - 1
                     binding.recyclerView.scrollToPosition(firstVisibleItemPosition)
                 }
@@ -242,6 +243,7 @@ class LiveChatFragment : BaseFragment() {
          * Emits the overall list of events(includes results from `previouseventscursor` and `nexteventscursor`)
          */
         viewModel.state.chatEvents()
+            /*.debounce(100L)*/
             .onEach(::takeChatEvents)
             .launchIn(lifecycleScope)
 
@@ -259,6 +261,7 @@ class LiveChatFragment : BaseFragment() {
         viewModel.effect
 //            .onEach(::takeViewEffect)
 //            .launchIn(lifecycleScope)
+            .delay(250L, TimeUnit.MILLISECONDS)
             .subscribe(::takeViewEffect)
             .addTo(rxDisposeBag!!)
 
@@ -303,7 +306,7 @@ class LiveChatFragment : BaseFragment() {
     }
 
     private suspend fun takeChatEvents(chatEvents: List<ChatEvent>) {
-        Log.d(TAG, "takeChatEvents() -> chatEvents = $chatEvents")
+        Log.d(TAG, "takeChatEvents() -> chatEvents[${chatEvents.size}] = $chatEvents")
 
         if(adapter != null) {
             adapter?.replace(chatEvents)
@@ -331,35 +334,20 @@ class LiveChatFragment : BaseFragment() {
             is ChatRoomViewModel.ViewEffect.ReceiveChatEventUpdates -> {
                 // Dispatch update received new events
                 if (adapter != null) {
-                    val chatEvents = (
-                            effect.eventUpdates.filter {
-                                it.eventtype == EventType.SPEECH
-                                        || it.eventtype == EventType.ACTION
-                                        || it.eventtype == EventType.REACTION
-                                        || it.eventtype == EventType.QUOTE
-                                        || it.eventtype == EventType.REPLY
-                            } +
-                                    // For responses triggered by DELETE chat event, must replace with "(deleted)" chat event body
-                                    effect.eventUpdates.filter {
-                                        it.eventtype in listOf(EventType.REPLACE, EventType.REMOVE)
-                                    }
-                                            .mapNotNull { rootEvent ->
-                                                rootEvent.replyto
-                                                        ?.copy(
-                                                                body = "(deleted)",
-                                                                originalbody = rootEvent.replyto?.body
-                                                        )
-                                            }
-                            )
-                                    .distinctBy { it.id }
+                    val chatEvents = effect.eventUpdates
 
                     if(!::json.isInitialized) json = getKoin().get<Json>()
-                    chatEvents.forEach { event ->
-                        Log.d(TAG, "takeViewEffect() -> event = ${json.stringify(ChatEvent.serializer(), event)}")
+                    if(chatEvents.size < 10) {
+                        chatEvents.forEach { event ->
+                            Log.d(TAG, "takeViewEffect() -> event = ${json.stringify(ChatEvent.serializer(), event)}")
+                        }
+                    } else {
+                        chatEvents.forEach { event ->
+                            Log.d(TAG, "takeViewEffect() -> event = { id: '${event.id}', body: '${event.body}' }")
+                        }
                     }
 
-                    // Append to Chat list
-                    adapter?.update(chatEvents)
+                    // (This is just a side effect) ViewModel already automatically appended the updated list
 
                     // Other events
 

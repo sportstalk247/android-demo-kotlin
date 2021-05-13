@@ -182,7 +182,7 @@ class ChatRoomFragment : BaseFragment() {
             .onEach {
                 // Perform send
                 viewModel.sendChatMessage(
-                    message = binding.tietChatMessage.text.toString().trim() ?: ""
+                    message = binding.tietChatMessage.text.toString()/*.trim()*/ ?: ""
                 )
                 // Clear text
                 binding.tietChatMessage.setText("")

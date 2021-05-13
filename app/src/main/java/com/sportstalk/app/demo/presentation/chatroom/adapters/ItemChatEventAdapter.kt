@@ -88,6 +88,10 @@ class ItemChatEventAdapter(
             .sortedByDescending { it.ts }
             .distinctBy { it.id }
 
+//        val updatedList = (items + itemUpdates)
+//                .sortedByDescending { it.ts }
+//                .distinctBy { it.id }
+
         // Perform Update
         replace(updatedList)
     }

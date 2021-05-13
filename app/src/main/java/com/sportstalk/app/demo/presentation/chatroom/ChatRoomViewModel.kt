@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx2.await
 import kotlinx.coroutines.withContext
+import java.util.concurrent.TimeUnit
 
 class ChatRoomViewModel(
     private val room: ChatRoom,
@@ -127,6 +128,43 @@ class ChatRoomViewModel(
         roomName.sendBlocking(room.name ?: "")
         // Emit Room Attendees Count
         attendeesCount.sendBlocking(room.inroom ?: 0L)
+
+        // Append to chat event list received event updates
+        rxEffect
+                .filter { it is ViewEffect.ReceiveChatEventUpdates }
+                .map {
+                    val eventUpdates = (it as ViewEffect.ReceiveChatEventUpdates).eventUpdates
+                    return@map eventUpdates
+                            .filter {
+                                it.eventtype == EventType.SPEECH
+                                        || it.eventtype == EventType.ACTION
+                                        || it.eventtype == EventType.REACTION
+                                        || it.eventtype == EventType.QUOTE
+                                        || it.eventtype == EventType.REPLY
+                            } +
+                            // For responses triggered by DELETE chat event, must replace with "(deleted)" chat event body
+                            eventUpdates.filter {
+                                it.eventtype in listOf(EventType.REPLACE, EventType.REMOVE)
+                            }
+                                    .mapNotNull { rootEvent ->
+                                        rootEvent.replyto
+                                                ?.copy(
+                                                        body = "(deleted)",
+                                                        originalbody = rootEvent.replyto?.body
+                                                )
+                                    }
+                }
+                .filter { it.isNotEmpty() }
+                .toFlowable(BackpressureStrategy.BUFFER)
+                .subscribe { newEvents ->
+                    val currentList = chatEvents.valueOrNull ?: listOf()
+                    val updatedList = (newEvents + currentList)
+                            .sortedByDescending { it.ts }
+                            .distinctBy { it.id }
+
+                    chatEvents.sendBlocking(updatedList)
+                }
+                .addTo(rxDisposeBag)
     }
 
     override fun onCleared() {
@@ -144,13 +182,20 @@ class ChatRoomViewModel(
 
                 // Perform Join Room
                 val response = withContext(Dispatchers.IO) {
-                    chatClient.joinRoom(
+//                    chatClient.joinRoom(
+//                        chatRoomId = room.id!!,
+//                        request = JoinChatRoomRequest(
+//                            userid = user.userid!!,
+//                            handle = user.handle
+//                        )
+//                    )
+                    rxChatClient.joinRoom(
                         chatRoomId = room.id!!,
                         request = JoinChatRoomRequest(
                             userid = user.userid!!,
                             handle = user.handle
                         )
-                    )
+                    ).await()
                 }
 
                 // Emit join initial events list
@@ -219,7 +264,10 @@ class ChatRoomViewModel(
 
         disposableAllEventUpdates = rxChatClient.allEventUpdates(
             chatRoomId = room.id!!,
-            frequency = 500L
+            frequency = 1500L,
+            smoothEventUpdates = true,
+            eventSpacingMs = 350L,
+            maxEventBufferSize = 30
         )
             .onErrorResumeNext(Function { err ->
                 // For some reasons, ChatRoom has been deleted and can NO longer be found.
@@ -274,11 +322,16 @@ class ChatRoomViewModel(
 
                 // Perform List Previous Events SDK Operation
                 val response = withContext(Dispatchers.IO) {
-                    chatClient.listPreviousEvents(
+//                    chatClient.listPreviousEvents(
+//                        chatRoomId = room.id!!,
+//                        limit = LIST_LIMIT,
+//                        cursor = previouseventscursor
+//                    )
+                    rxChatClient.listPreviousEvents(
                         chatRoomId = room.id!!,
                         limit = LIST_LIMIT,
                         cursor = previouseventscursor
-                    )
+                    ).await()
                 }
 
                 // Emit previous Chat Event List
@@ -326,13 +379,20 @@ class ChatRoomViewModel(
                         progressSendChatMessage.send(true)
 
                         val response = withContext(Dispatchers.IO) {
-                            chatClient.executeChatCommand(
+//                            chatClient.executeChatCommand(
+//                                chatRoomId = room.id!!,
+//                                request = ExecuteChatCommandRequest(
+//                                    command = message,
+//                                    userid = user.userid!!
+//                                )
+//                            )
+                            rxChatClient.executeChatCommand(
                                 chatRoomId = room.id!!,
                                 request = ExecuteChatCommandRequest(
                                     command = message,
                                     userid = user.userid!!
                                 )
-                            )
+                            ).await()
                         }
 
                         // Emit SUCCESS Send Chat Message
@@ -379,7 +439,20 @@ class ChatRoomViewModel(
                 progressSendChatMessage.send(true)
 
                 val response = withContext(Dispatchers.IO) {
-                    chatClient.sendQuotedReply(
+//                    chatClient.sendQuotedReply(
+//                        chatRoomId = room.id!!,
+//                        request = SendQuotedReplyRequest(
+//                            userid = user.userid!!,
+//                            body = message,
+//                            customid = customid,
+//                            custompayload = custompayload,
+//                            customfield1 = customfield1,
+//                            customfield2 = customfield2,
+//                            customtags = customtags
+//                        ),
+//                        replyTo = replyTo.id!!
+//                    )
+                    rxChatClient.sendQuotedReply(
                         chatRoomId = room.id!!,
                         request = SendQuotedReplyRequest(
                             userid = user.userid!!,
@@ -391,7 +464,7 @@ class ChatRoomViewModel(
                             customtags = customtags
                         ),
                         replyTo = replyTo.id!!
-                    )
+                    ).await()
                 }
 
                 // EMIT SUCCESS Quoted Reply
@@ -436,7 +509,18 @@ class ChatRoomViewModel(
                 progressSendChatMessage.send(true)
 
                 val response = withContext(Dispatchers.IO) {
-                    chatClient.sendThreadedReply(
+//                    chatClient.sendThreadedReply(
+//                        chatRoomId = room.id!!,
+//                        replyTo = replyTo.id!!,
+//                        request = SendThreadedReplyRequest(
+//                            body = message,
+//                            userid = user.userid!!,
+//                            customid = customid,
+//                            custompayload = custompayload,
+//                            customtype = customtype
+//                        )
+//                    )
+                    rxChatClient.sendThreadedReply(
                         chatRoomId = room.id!!,
                         replyTo = replyTo.id!!,
                         request = SendThreadedReplyRequest(
@@ -446,7 +530,7 @@ class ChatRoomViewModel(
                             custompayload = custompayload,
                             customtype = customtype
                         )
-                    )
+                    ).await()
                 }
 
                 // EMIT SUCCESS Quoted Reply
@@ -477,14 +561,22 @@ class ChatRoomViewModel(
                 progressReportMessage.send(true)
 
                 val response = withContext(Dispatchers.IO) {
-                    chatClient.reportMessage(
+//                    chatClient.reportMessage(
+//                        chatRoomId = room.id!!,
+//                        eventId = which.id!!,
+//                        request = ReportMessageRequest(
+//                            reporttype = reporttype,
+//                            userid = user.userid!!
+//                        )
+//                    )
+                    rxChatClient.reportMessage(
                         chatRoomId = room.id!!,
                         eventId = which.id!!,
                         request = ReportMessageRequest(
                             reporttype = reporttype,
                             userid = user.userid!!
                         )
-                    )
+                    ).await()
                 }
 
                 // EMIT Success
@@ -512,7 +604,16 @@ class ChatRoomViewModel(
 
                 // Perform React To a Message SDK Operation
                 val response = withContext(Dispatchers.IO) {
-                    chatClient.reactToEvent(
+//                    chatClient.reactToEvent(
+//                        chatRoomId = room.id!!,
+//                        eventId = event.id!!,
+//                        request = ReactToAMessageRequest(
+//                            userid = user.userid!!,
+//                            reaction = EventReaction.LIKE,
+//                            reacted = !reacted
+//                        )
+//                    )
+                    rxChatClient.reactToEvent(
                         chatRoomId = room.id!!,
                         eventId = event.id!!,
                         request = ReactToAMessageRequest(
@@ -520,7 +621,7 @@ class ChatRoomViewModel(
                             reaction = EventReaction.LIKE,
                             reacted = !reacted
                         )
-                    )
+                    ).await()
                 }
 
                 // Emit Success
@@ -562,21 +663,33 @@ class ChatRoomViewModel(
                     when(isPermanentDelete) {
                         // Perform Permanent Delete
                         true -> {
-                            chatClient.permanentlyDeleteEvent(
+//                            chatClient.permanentlyDeleteEvent(
+//                                chatRoomId = room.id!!,
+//                                userid = user.userid!!,
+//                                eventId = which.id!!
+//                            )
+                            rxChatClient.permanentlyDeleteEvent(
                                 chatRoomId = room.id!!,
                                 userid = user.userid!!,
                                 eventId = which.id!!
-                            )
+                            ).await()
                         }
                         // Perform Flag Event as Deleted
                         false -> {
-                            chatClient.flagEventLogicallyDeleted(
+//                            chatClient.flagEventLogicallyDeleted(
+//                                chatRoomId = room.id!!,
+//                                userid = user.userid!!,
+//                                eventId = which.id!!,
+//                                deleted = true,
+//                                permanentifnoreplies = permanentifnoreplies
+//                            )
+                            rxChatClient.flagEventLogicallyDeleted(
                                 chatRoomId = room.id!!,
                                 userid = user.userid!!,
                                 eventId = which.id!!,
                                 deleted = true,
                                 permanentifnoreplies = permanentifnoreplies
-                            )
+                            ).await()
                         }
                     }
                 }
@@ -636,10 +749,14 @@ class ChatRoomViewModel(
                 progressExitRoom.send(true)
                 // Perform `Exit Room` SDK Operation
                 val response = withContext(Dispatchers.IO) {
-                    chatClient.exitRoom(
+//                    chatClient.exitRoom(
+//                        chatRoomId = room.id!!,
+//                        userId = user.userid!!
+//                    )
+                    rxChatClient.exitRoom(
                         chatRoomId = room.id!!,
                         userId = user.userid!!
-                    )
+                    ).await()
                 }
 
                 // EMIT Success
@@ -664,14 +781,22 @@ class ChatRoomViewModel(
                 progressBounceUser.send(true)
 
                 val response = withContext(Dispatchers.IO) {
-                    chatClient.bounceUser(
+//                    chatClient.bounceUser(
+//                        chatRoomId = room.id!!,
+//                        request = BounceUserRequest(
+//                            userid = who.userid!!,
+//                            bounce = bounce,
+//                            announcement = announcement
+//                        )
+//                    )
+                    rxChatClient.bounceUser(
                         chatRoomId = room.id!!,
                         request = BounceUserRequest(
                             userid = who.userid!!,
                             bounce = bounce,
                             announcement = announcement
                         )
-                    )
+                    ).await()
                 }
 
                 // EMIT Success

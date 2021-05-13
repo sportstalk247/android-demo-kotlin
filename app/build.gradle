@@ -90,10 +90,12 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    //implementation("com.gitlab.sportstalk247.sdk-android-kotlin:sdk-coroutine:v$sportstalk247SdkVersion")
-    implementation("com.gitlab.sportstalk247.sdk-android-kotlin:sdk-coroutine:develop-SNAPSHOT")
-    //implementation("com.gitlab.sportstalk247.sdk-android-kotlin:sdk-reactive-rx2:v$sportstalk247SdkVersion")
-    implementation("com.gitlab.sportstalk247.sdk-android-kotlin:sdk-reactive-rx2:develop-SNAPSHOT")
+    implementation("com.gitlab.sportstalk247.sdk-android-kotlin:sdk-coroutine:v$sportstalk247SdkVersion")
+    //implementation("com.gitlab.sportstalk247.sdk-android-kotlin:sdk-coroutine:36e0af154b")
+    //implementation("com.gitlab.sportstalk247.sdk-android-kotlin:sdk-coroutine:56eef4aed1")
+    implementation("com.gitlab.sportstalk247.sdk-android-kotlin:sdk-reactive-rx2:v$sportstalk247SdkVersion")
+    //implementation("com.gitlab.sportstalk247.sdk-android-kotlin:sdk-reactive-rx2:36e0af154b")
+    //implementation("com.gitlab.sportstalk247.sdk-android-kotlin:sdk-reactive-rx2:56eef4aed1")
 
     // Multi-DEX
     implementation "androidx.multidex:multidex:$multidex_version"
