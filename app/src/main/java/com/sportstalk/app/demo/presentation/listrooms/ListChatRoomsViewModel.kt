@@ -2,16 +2,13 @@ package com.sportstalk.app.demo.presentation.listrooms
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sportstalk.api.ChatClient
+import com.sportstalk.coroutine.api.ChatClient
 import com.sportstalk.app.demo.SportsTalkDemoPreferences
-import com.sportstalk.models.SportsTalkException
-import com.sportstalk.models.chat.ChatRoom
-import com.sportstalk.models.users.User
+import com.sportstalk.datamodels.SportsTalkException
+import com.sportstalk.datamodels.chat.ChatRoom
+import com.sportstalk.datamodels.users.User
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.channels.BroadcastChannel
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.ConflatedBroadcastChannel
-import kotlinx.coroutines.channels.sendBlocking
+import kotlinx.coroutines.channels.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
@@ -67,9 +64,9 @@ class ListChatRoomsViewModel(
     fun join(which: ChatRoom) {
         val currentUser = preferences.currentUser
         if(currentUser != null) {
-            _effect.sendBlocking(ViewEffect.NavigateToChatRoom(which, currentUser))
+            _effect.trySendBlocking(ViewEffect.NavigateToChatRoom(which, currentUser))
         } else {
-            _effect.sendBlocking(ViewEffect.NavigateToCreateProfile(which))
+            _effect.trySendBlocking(ViewEffect.NavigateToCreateProfile(which))
         }
 
     }

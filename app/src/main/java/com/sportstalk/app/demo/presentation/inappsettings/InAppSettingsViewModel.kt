@@ -6,6 +6,7 @@ import com.sportstalk.app.demo.SportsTalkDemoPreferences
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.channels.sendBlocking
+import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -69,7 +70,7 @@ class InAppSettingsViewModel(
         // Clear operation automatically sets original values
         preferences.clear()
         // Emit [ViewEffect.SuccessReset]]
-        _effect.sendBlocking(ViewEffect.SuccessReset())
+        _effect.trySendBlocking(ViewEffect.SuccessReset())
     }
 
     interface ViewState {

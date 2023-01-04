@@ -3,12 +3,12 @@ package com.sportstalk.app.demo.presentation.chatroom
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sportstalk.api.ChatClient
-import com.sportstalk.api.polling.coroutines.allEventUpdates
+import com.sportstalk.coroutine.api.ChatClient
 import com.sportstalk.app.demo.SportsTalkDemoPreferences
-import com.sportstalk.models.SportsTalkException
-import com.sportstalk.models.chat.*
-import com.sportstalk.models.users.User
+import com.sportstalk.coroutine.api.polling.allEventUpdates
+import com.sportstalk.datamodels.SportsTalkException
+import com.sportstalk.datamodels.chat.*
+import com.sportstalk.datamodels.users.User
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.BroadcastChannel
@@ -173,7 +173,7 @@ class ChatRoomViewModel(
         // Subscribe to Chat Event Updates
         jobAllEventUpdates = chatClient.allEventUpdates(
             chatRoomId = room.id!!,
-            frequency = 500L
+            frequency = 1000L
         )
             // Filter out empty message(s) generated when performing LIKE action
             .map { it.filter { msg -> msg.body?.isNotEmpty() == true } }
@@ -494,26 +494,13 @@ class ChatRoomViewModel(
                 progressRemoveMessage.emit(true)
 
                 val response = withContext(Dispatchers.IO) {
-                    when(isPermanentDelete) {
-                        // Perform Permanent Delete
-                        true -> {
-                            chatClient.deleteEvent(
-                                chatRoomId = room.id!!,
-                                userid = user.userid!!,
-                                eventId = which.id!!
-                            )
-                        }
-                        // Perform Flag Event as Deleted
-                        false -> {
-                            chatClient.setMessageAsDeleted(
-                                chatRoomId = room.id!!,
-                                userid = user.userid!!,
-                                eventId = which.id!!,
-                                deleted = false,
-                                permanentifnoreplies = permanentifnoreplies
-                            )
-                        }
-                    }
+                    chatClient.flagEventLogicallyDeleted(
+                        chatRoomId = room.id!!,
+                        userid = user.userid!!,
+                        eventId = which.id!!,
+                        deleted = isPermanentDelete,
+                        permanentifnoreplies = permanentifnoreplies,
+                    )
                 }
 
                 // EMIT Success
@@ -677,7 +664,7 @@ class ChatRoomViewModel(
         data class ErrorSendChatMessage(val err: SportsTalkException) : ViewEffect()
         data class QuotedReplySent(val response: ChatEvent) : ViewEffect()
         data class ErrorSendQuotedReply(val err: SportsTalkException) : ViewEffect()
-        data class ThreadedReplySent(val response: ExecuteChatCommandResponse) : ViewEffect()
+        data class ThreadedReplySent(val response: ChatEvent) : ViewEffect()
         data class ErrorSendThreadedReply(val err: SportsTalkException) : ViewEffect()
 
         data class SuccessReactToAMessage(val response: ChatEvent) : ViewEffect()

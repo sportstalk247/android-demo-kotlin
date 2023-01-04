@@ -2,16 +2,16 @@ package com.sportstalk.app.demo.presentation.users
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sportstalk.api.UserClient
+import com.sportstalk.coroutine.api.UserClient
 import com.sportstalk.app.demo.SportsTalkDemoPreferences
-import com.sportstalk.models.SportsTalkException
-import com.sportstalk.models.users.CreateUpdateUserRequest
-import com.sportstalk.models.users.DeleteUserResponse
-import com.sportstalk.models.users.User
+import com.sportstalk.datamodels.SportsTalkException
+import com.sportstalk.datamodels.users.CreateUpdateUserRequest
+import com.sportstalk.datamodels.users.DeleteUserResponse
+import com.sportstalk.datamodels.users.User
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
-import kotlinx.coroutines.channels.sendBlocking
+import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
@@ -171,16 +171,16 @@ class AccountSettingsViewModel(
     }
 
     fun displayName(displayName: String) =
-        this.displayName.sendBlocking(displayName)
+        this.displayName.trySendBlocking(displayName)
 
     fun handleName(handleName: String) =
-        this.handleName.sendBlocking(handleName)
+        this.handleName.trySendBlocking(handleName)
 
     fun profileLink(profileLink: String) =
-        this.profileLink.sendBlocking(profileLink)
+        this.profileLink.trySendBlocking(profileLink)
 
     fun photoLink(photoLink: String) =
-        this.photoLink.sendBlocking(photoLink)
+        this.photoLink.trySendBlocking(photoLink)
 
     fun save() {
         viewModelScope.launch {
@@ -276,7 +276,7 @@ class AccountSettingsViewModel(
                     userId = preferences.currentUser?.userid!!,
                     // `true` - if not yet banned
                     // `false` - if already banned
-                    banned = !(preferences.currentUser?.banned ?: false)
+                    applyeffect = !(preferences.currentUser?.banned ?: false)
                 )
             }
 

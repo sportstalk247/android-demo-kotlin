@@ -2,15 +2,15 @@ package com.sportstalk.app.demo.presentation.rooms
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sportstalk.api.ChatClient
+import com.sportstalk.coroutine.api.ChatClient
 import com.sportstalk.app.demo.SportsTalkDemoPreferences
-import com.sportstalk.models.SportsTalkException
-import com.sportstalk.models.chat.ChatRoom
-import com.sportstalk.models.chat.CreateChatRoomRequest
+import com.sportstalk.datamodels.SportsTalkException
+import com.sportstalk.datamodels.chat.ChatRoom
+import com.sportstalk.datamodels.chat.CreateChatRoomRequest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
-import kotlinx.coroutines.channels.sendBlocking
+import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
@@ -66,25 +66,25 @@ class CreateChatroomViewModel(
     }
 
     fun roomName(roomName: String) =
-        this.roomName.sendBlocking(roomName)
+        this.roomName.trySendBlocking(roomName)
 
     fun roomDescription(roomDescription: String) =
-        this.roomDescription.sendBlocking(roomDescription)
+        this.roomDescription.trySendBlocking(roomDescription)
 
     fun roomCustomId(roomCustomId: String) =
-        this.roomCustomId.sendBlocking(roomCustomId)
+        this.roomCustomId.trySendBlocking(roomCustomId)
 
     fun roomAction(roomAction: Boolean) =
-        this.roomAction.sendBlocking(roomAction)
+        this.roomAction.trySendBlocking(roomAction)
 
     fun roomEnterExit(roomEnterExit: Boolean) =
-        this.roomEnterExit.sendBlocking(roomEnterExit)
+        this.roomEnterExit.trySendBlocking(roomEnterExit)
 
     fun roomIsOpen(roomIsOpen: Boolean) =
-        this.roomIsOpen.sendBlocking(roomIsOpen)
+        this.roomIsOpen.trySendBlocking(roomIsOpen)
 
     fun roomProfanityEnabled(roomProfanityEnabled: Boolean) =
-        this.roomProfanityEnabled.sendBlocking(roomProfanityEnabled)
+        this.roomProfanityEnabled.trySendBlocking(roomProfanityEnabled)
 
     fun submit() {
         viewModelScope.launch { performCreateChatroom() }

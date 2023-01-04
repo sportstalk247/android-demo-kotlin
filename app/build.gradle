@@ -1,6 +1,6 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-parcelize'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'kotlinx-serialization'
 
@@ -17,7 +17,6 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
-        multiDexEnabled true
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -54,16 +53,16 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
         freeCompilerArgs += [
-                "-Xuse-experimental=kotlinx.coroutines.InternalCoroutinesApi",
-                "-Xuse-experimental=kotlinx.coroutines.ExperimentalCoroutinesApi",
-                "-Xuse-experimental=kotlinx.coroutines.FlowPreview",
-                "-Xuse-experimental=kotlinx.coroutines.ObsoleteCoroutinesApi",
-                "-Xuse-experimental=kotlinx.serialization.UnstableDefault"
+                "-opt-in=kotlinx.coroutines.InternalCoroutinesApi",
+                "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
+                "-opt-in=kotlinx.coroutines.FlowPreview",
+                "-opt-in=kotlinx.coroutines.ObsoleteCoroutinesApi",
+                "-opt-in=kotlinx.serialization.UnstableDefault"
         ]
     }
 
-    viewBinding {
-        enabled = true
+    buildFeatures {
+        viewBinding true
     }
 
     compileOptions {
@@ -90,10 +89,8 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    implementation("com.gitlab.sportstalk247:sdk-android-kotlin:v$sportstalk247SdkVersion")
-
-    // Multi-DEX
-    implementation "androidx.multidex:multidex:$multidex_version"
+    implementation("com.gitlab.sportstalk247.sdk-android-kotlin:sdk-coroutine:v$sportstalk247SdkVersion")
+    implementation("com.gitlab.sportstalk247.sdk-android-kotlin:datamodels:v$sportstalk247SdkVersion")
 
     // Jetbrains Kotlin Dependencies
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
@@ -200,7 +197,7 @@ dependencies {
 
     // Glide
     implementation "com.github.bumptech.glide:glide:$glideVersion"
-    annotationProcessor "com.github.bumptech.glide:compiler:$glideVersion"
+    kapt "com.github.bumptech.glide:compiler:$glideVersion"
 
 }
 

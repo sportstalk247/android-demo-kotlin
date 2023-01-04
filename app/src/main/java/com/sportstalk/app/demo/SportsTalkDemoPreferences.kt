@@ -3,9 +3,10 @@ package com.sportstalk.app.demo
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
-import com.sportstalk.models.users.User
+import com.sportstalk.datamodels.users.User
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.sendBlocking
+import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.serialization.json.Json
@@ -54,7 +55,7 @@ class SportsTalkDemoPreferences(
         // Preference Value Change Listener
         val onSharedPrefChanges = SharedPreferences.OnSharedPreferenceChangeListener { pref, key ->
             if(key == KEY_URL_ENDPOINT) {
-                sendBlocking(
+                trySendBlocking(
                     pref.getString(key, "")!!.takeIf { it.isNotEmpty() }
                         ?: ORIGINAL_URL_ENDPOINT
                 )
@@ -81,7 +82,7 @@ class SportsTalkDemoPreferences(
         // Preference Value Change Listener
         val onSharedPrefChanges = SharedPreferences.OnSharedPreferenceChangeListener { pref, key ->
             if(key == KEY_AUTH_TOKEN) {
-                sendBlocking(
+                trySendBlocking(
                     pref.getString(key, "")!!.takeIf { it.isNotEmpty() }
                         ?: ORIGINAL_AUTH_TOKEN
                 )
@@ -108,7 +109,7 @@ class SportsTalkDemoPreferences(
         // Preference Value Change Listener
         val onSharedPrefChanges = SharedPreferences.OnSharedPreferenceChangeListener { pref, key ->
             if(key == KEY_APP_ID) {
-                sendBlocking(
+                trySendBlocking(
                     pref.getString(key, "")!!.takeIf { it.isNotEmpty() }
                         ?: ORIGINAL_APP_ID
                 )

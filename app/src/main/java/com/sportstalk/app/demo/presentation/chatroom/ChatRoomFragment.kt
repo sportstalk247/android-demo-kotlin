@@ -14,8 +14,8 @@ import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.FragmentChatroomBinding
 import com.sportstalk.app.demo.extensions.throttleFirst
 import com.sportstalk.app.demo.presentation.BaseFragment
-import com.sportstalk.models.chat.ChatRoom
-import com.sportstalk.models.users.User
+import com.sportstalk.datamodels.chat.ChatRoom
+import com.sportstalk.datamodels.users.User
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.sendBlocking
 import kotlinx.coroutines.flow.*
@@ -382,7 +382,7 @@ class ChatRoomFragment : BaseFragment() {
                     Toast.LENGTH_SHORT
                 ).show()
             }
-
+            else -> {}
         }
     }
 

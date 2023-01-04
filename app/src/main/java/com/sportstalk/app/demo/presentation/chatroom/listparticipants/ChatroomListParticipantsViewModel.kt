@@ -2,11 +2,11 @@ package com.sportstalk.app.demo.presentation.chatroom.listparticipants
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sportstalk.api.ChatClient
-import com.sportstalk.api.UserClient
-import com.sportstalk.models.SportsTalkException
-import com.sportstalk.models.chat.*
-import com.sportstalk.models.users.User
+import com.sportstalk.coroutine.api.ChatClient
+import com.sportstalk.coroutine.api.UserClient
+import com.sportstalk.datamodels.SportsTalkException
+import com.sportstalk.datamodels.chat.*
+import com.sportstalk.datamodels.users.User
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
@@ -142,7 +142,7 @@ class ChatroomListParticipantsViewModel(
                 val response = withContext(Dispatchers.IO) {
                     userClient.setBanStatus(
                         userId = of.userid!!,
-                        banned = isBanned
+                        applyeffect = isBanned
                     )
                 }
 

@@ -15,7 +15,7 @@ import com.jakewharton.rxbinding3.widget.textChanges
 import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.FragmentAccountSettingsBinding
 import com.sportstalk.app.demo.presentation.BaseFragment
-import com.sportstalk.models.users.User
+import com.sportstalk.datamodels.users.User
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map

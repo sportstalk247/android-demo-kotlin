@@ -20,11 +20,11 @@ import com.sportstalk.app.demo.databinding.FragmentChatroomLiveChatBinding
 import com.sportstalk.app.demo.presentation.BaseFragment
 import com.sportstalk.app.demo.presentation.chatroom.adapters.ItemChatEventAdapter
 import com.sportstalk.app.demo.presentation.utils.EndlessRecyclerViewScrollListener
-import com.sportstalk.models.chat.ChatEvent
-import com.sportstalk.models.chat.ChatRoom
-import com.sportstalk.models.chat.EventType
-import com.sportstalk.models.chat.ReportType
-import com.sportstalk.models.users.User
+import com.sportstalk.datamodels.chat.ChatEvent
+import com.sportstalk.datamodels.chat.ChatRoom
+import com.sportstalk.datamodels.chat.EventType
+import com.sportstalk.datamodels.chat.ReportType
+import com.sportstalk.datamodels.users.User
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.rx2.asFlow
@@ -314,7 +314,7 @@ class LiveChatFragment : BaseFragment() {
                     // TODO:: Handle Reaction Events
 
                     val roomOpenEvents = effect.eventUpdates.filter {
-                        it.eventtype == EventType.ROOM_OPEN
+                        it.eventtype == EventType.ROOM_OPENED
                     }
                     // TODO:: Handle Room Open Events
 
@@ -407,6 +407,7 @@ class LiveChatFragment : BaseFragment() {
                 Log.d(TAG, "ChatRoomViewModel.ViewEffect.SuccessUnbounceUser -> this.room = effect.response.room!!")
                 this.room = effect.response.room!!
             }
+            else -> {}
         }
     }
 

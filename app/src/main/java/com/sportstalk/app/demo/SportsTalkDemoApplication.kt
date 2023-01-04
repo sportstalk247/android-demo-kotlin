@@ -1,7 +1,7 @@
 package com.sportstalk.app.demo
 
-import androidx.multidex.MultiDexApplication
-import com.sportstalk.SportsTalk247
+import android.app.Application
+import com.sportstalk.coroutine.SportsTalk247
 import com.sportstalk.app.demo.presentation.chatroom.ChatRoomViewModel
 import com.sportstalk.app.demo.presentation.chatroom.listparticipants.ChatroomListParticipantsViewModel
 import com.sportstalk.app.demo.presentation.inappsettings.InAppSettingsViewModel
@@ -11,17 +11,16 @@ import com.sportstalk.app.demo.presentation.rooms.CreateChatroomViewModel
 import com.sportstalk.app.demo.presentation.rooms.UpdateChatroomViewModel
 import com.sportstalk.app.demo.presentation.users.AccountSettingsViewModel
 import com.sportstalk.app.demo.presentation.users.CreateAccountViewModel
-import com.sportstalk.models.ClientConfig
-import com.sportstalk.models.chat.ChatRoom
-import com.sportstalk.models.users.User
+import com.sportstalk.datamodels.ClientConfig
+import com.sportstalk.datamodels.chat.ChatRoom
+import com.sportstalk.datamodels.users.User
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonBuilder
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
 
-class SportsTalkDemoApplication : MultiDexApplication() {
+class SportsTalkDemoApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()

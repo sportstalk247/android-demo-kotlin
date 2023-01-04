@@ -22,8 +22,8 @@ import com.sportstalk.app.demo.presentation.inappsettings.InAppSettingsFragment
 import com.sportstalk.app.demo.presentation.listrooms.AdminListChatRoomsFragment
 import com.sportstalk.app.demo.presentation.listrooms.ListChatRoomsFragment
 import com.sportstalk.app.demo.presentation.users.CreateAccountFragment
-import com.sportstalk.models.chat.ChatRoom
-import com.sportstalk.models.users.User
+import com.sportstalk.datamodels.chat.ChatRoom
+import com.sportstalk.datamodels.users.User
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.rx2.asFlow
