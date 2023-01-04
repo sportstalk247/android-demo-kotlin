@@ -9,21 +9,17 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.Snackbar
-import com.jakewharton.rxbinding3.view.clicks
 import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.FragmentChatroomBinding
 import com.sportstalk.app.demo.extensions.throttleFirst
 import com.sportstalk.app.demo.presentation.BaseFragment
 import com.sportstalk.datamodels.chat.ChatRoom
 import com.sportstalk.datamodels.users.User
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.sendBlocking
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.rx2.asFlow
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
+import reactivecircus.flowbinding.android.view.clicks
 import java.text.DecimalFormat
-import java.util.concurrent.TimeUnit
 
 class ChatRoomFragment : BaseFragment() {
 
@@ -179,8 +175,7 @@ class ChatRoomFragment : BaseFragment() {
         // Bind UI Input Actions
         ///////////////////////////////
         binding.btnSend.clicks()
-            .throttleFirst(500, TimeUnit.MILLISECONDS)
-            .asFlow()
+            .throttleFirst(500)
             .onEach {
                 // Perform send
                 viewModel.sendChatMessage(

@@ -8,11 +8,9 @@ import com.sportstalk.datamodels.SportsTalkException
 import com.sportstalk.datamodels.chat.*
 import com.sportstalk.datamodels.users.User
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -29,46 +27,50 @@ class ChatroomListParticipantsViewModel(
     private val chatClient: ChatClient
 ) : ViewModel() {
 
-    private val progressFetchChatroomParticipants = Channel<Boolean>(Channel.RENDEZVOUS)
-    private val progressFetchBouncedUsers = BroadcastChannel<Boolean>(Channel.BUFFERED)
-    private val progressUserSetBanStatus = Channel<Boolean>(Channel.RENDEZVOUS)
-    private val progressBounceUser = BroadcastChannel<Boolean>(Channel.BUFFERED)
-    private val progressPurgeUserMessages = Channel<Boolean>(Channel.RENDEZVOUS)
+    private val progressFetchChatroomParticipants = Channel<Boolean>(Channel.BUFFERED)
+    private val progressFetchBouncedUsers = Channel<Boolean>(Channel.BUFFERED)
+    private val progressUserSetBanStatus = Channel<Boolean>(Channel.BUFFERED)
+    private val progressBounceUser = Channel<Boolean>(Channel.BUFFERED)
+    private val progressPurgeUserMessages = Channel<Boolean>(Channel.BUFFERED)
 
-    private val chatroomParticipants = BroadcastChannel<List<User>>(Channel.BUFFERED)
-    private val bouncedUsers = BroadcastChannel<List<User>>(Channel.BUFFERED)
+    private val chatroomParticipants = ConflatedBroadcastChannel<List<User>?>(null)
+    private val bouncedUsers = ConflatedBroadcastChannel<List<User>?>(null)
 
     private var cursor: String? = null
 
-    val state = object: ViewState {
+    val state = object : ViewState {
         override fun progressFetchChatroomParticipants(): Flow<Boolean> =
-            progressFetchChatroomParticipants.receiveAsFlow()
+            progressFetchChatroomParticipants
+                .consumeAsFlow()
 
         override fun progressFetchBouncedUsers(): Flow<Boolean> =
-            progressFetchBouncedUsers.asFlow()
+            progressFetchBouncedUsers
+                .consumeAsFlow()
 
         override fun chatroomParticipants(): Flow<List<User>> =
-            chatroomParticipants
-                .asFlow()
-                .distinctUntilChanged()
+            chatroomParticipants.asFlow()
+                .filterNotNull()
 
         override fun bouncedUsers(): Flow<List<User>> =
-            bouncedUsers
-                .asFlow()
-                .distinctUntilChanged()
+            bouncedUsers.asFlow()
+                .filterNotNull()
 
         override fun progressUserSetBanStatus(): Flow<Boolean> =
-            progressUserSetBanStatus.receiveAsFlow()
+            progressUserSetBanStatus
+                .consumeAsFlow()
 
         override fun progressBounceUser(): Flow<Boolean> =
-            progressBounceUser.asFlow()
+            progressBounceUser
+                .consumeAsFlow()
 
         override fun progressPurgeUserMessages(): Flow<Boolean> =
-            progressPurgeUserMessages.receiveAsFlow()
+            progressPurgeUserMessages
+                .consumeAsFlow()
     }
 
-    private val _effect = BroadcastChannel<ViewEffect>(Channel.BUFFERED)
-    val effect: Flow<ViewEffect> = _effect.asFlow()
+    private val _effect = Channel<ViewEffect>(Channel.BUFFERED)
+    val effect: Flow<ViewEffect> = _effect
+        .consumeAsFlow()
 
     fun refreshChatroomParticipants() {
         cursor = null
@@ -181,7 +183,7 @@ class ChatroomListParticipantsViewModel(
                 }
 
                 // EMIT Success
-                if(bounce) {
+                if (bounce) {
                     _effect.send(ViewEffect.SuccessBounceUser(response))
                 } else {
                     _effect.send(
@@ -279,11 +281,15 @@ class ChatroomListParticipantsViewModel(
         data class ErrorFetchBouncedUsers(val err: SportsTalkException) : ViewEffect()
         data class SuccessUserSetBanStatus(val user: User) : ViewEffect()
         data class ErrorUserSetBanStatus(val err: SportsTalkException) : ViewEffect()
-        data class SuccessPurgeUserMessages(val who: User, val response: ExecuteChatCommandResponse): ViewEffect()
-        data class ErrorPurgeUserMessages(val err: SportsTalkException): ViewEffect()
-        data class SuccessBounceUser(val response: BounceUserResponse): ViewEffect()
-        data class SuccessUnbounceUser(val response: BounceUserResponse): ViewEffect()
-        data class ErrorBounceUser(val err: SportsTalkException): ViewEffect()
+        data class SuccessPurgeUserMessages(
+            val who: User,
+            val response: ExecuteChatCommandResponse
+        ) : ViewEffect()
+
+        data class ErrorPurgeUserMessages(val err: SportsTalkException) : ViewEffect()
+        data class SuccessBounceUser(val response: BounceUserResponse) : ViewEffect()
+        data class SuccessUnbounceUser(val response: BounceUserResponse) : ViewEffect()
+        data class ErrorBounceUser(val err: SportsTalkException) : ViewEffect()
     }
 
     companion object {

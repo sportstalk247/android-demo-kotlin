@@ -20,4 +20,19 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
--dontobfuscate
+#-dontobfuscate
+
+# kotlinx-serialization
+-keepattributes *Annotation*, InnerClasses
+-dontnote kotlinx.serialization.SerializationKt
+
+######################################
+## Rx2Java
+######################################
+
+-dontwarn java.util.concurrent.Flow*
+
+-dontwarn org.mockito.**
+-dontwarn sun.reflect.**
+-dontwarn android.test.**
+-dontwarn org.junit.**

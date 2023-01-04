@@ -13,7 +13,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.observe
 import androidx.viewpager2.adapter.FragmentStateAdapter
-import com.jakewharton.rxbinding3.viewpager2.pageSelections
 import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.SportsTalkDemoPreferences
 import com.sportstalk.app.demo.databinding.FragmentHomeBinding
@@ -26,8 +25,8 @@ import com.sportstalk.datamodels.chat.ChatRoom
 import com.sportstalk.datamodels.users.User
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.rx2.asFlow
 import org.koin.android.ext.android.inject
+import reactivecircus.flowbinding.viewpager2.pageSelections
 
 class HomeFragment : BaseFragment() {
 
@@ -95,7 +94,6 @@ class HomeFragment : BaseFragment() {
                 binding.viewPager2.adapter = ViewPager2Adapter(childFragmentManager, lifecycle)
                 binding.viewPager2.pageSelections()
                     .skipInitialValue()
-                    .asFlow()
                     .onEach { position ->
                         when (position) {
                             TAB_FAN -> binding.bottomNavView.selectedItemId = R.id.bottomNavFan

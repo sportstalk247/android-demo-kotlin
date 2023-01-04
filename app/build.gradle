@@ -146,8 +146,8 @@ dependencies {
     implementation "androidx.recyclerview:recyclerview:$androidXRecyclerViewVersion"
     implementation "androidx.cardview:cardview:$androidXCardViewVersion"
     implementation "androidx.appcompat:appcompat:$androidXAppCompatVersion"
-    implementation "androidx.appcompat:appcompat-resources:$androidXAppCompatVersion"
     implementation "androidx.constraintlayout:constraintlayout:$constraintLayoutVersion"
+    implementation "androidx.swiperefreshlayout:swiperefreshlayout:$androidXSwipeRefreshLayout"
     // ViewPager2
     implementation "androidx.viewpager2:viewpager2:$viewPager2Version"
     // Google FlexboxLayout
@@ -169,28 +169,16 @@ dependencies {
 
     // Coroutine
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-rx2:$coroutinesVersion"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$coroutinesVersion"
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion"
 
-    // Rx3Java
-    implementation "io.reactivex.rxjava2:rxjava:$rxAndroidVersion"
-    implementation "io.reactivex.rxjava2:rxkotlin:$rxkotlinVersion"
-    // RxAndroid Binding
-    implementation "com.jakewharton.rxbinding3:rxbinding:$rxBindingVersion"
-    implementation "com.jakewharton.rxbinding3:rxbinding-core:$rxBindingVersion"
-    implementation "com.jakewharton.rxbinding3:rxbinding-appcompat:$rxBindingVersion"
-    implementation "com.jakewharton.rxbinding3:rxbinding-drawerlayout:$rxBindingVersion"
-    implementation "com.jakewharton.rxbinding3:rxbinding-leanback:$rxBindingVersion"
-    implementation "com.jakewharton.rxbinding3:rxbinding-recyclerview:$rxBindingVersion"
-    implementation "com.jakewharton.rxbinding3:rxbinding-slidingpanelayout:$rxBindingVersion"
-    implementation "com.jakewharton.rxbinding3:rxbinding-swiperefreshlayout:$rxBindingVersion"
-    implementation "com.jakewharton.rxbinding3:rxbinding-viewpager:$rxBindingVersion"
-    implementation "com.jakewharton.rxbinding3:rxbinding-viewpager2:$rxBindingVersion"
-
-    // RxPermission
-    implementation "com.github.tbruyelle:rxpermissions:$rxPermissionVersion"
+    implementation "io.github.reactivecircus.flowbinding:flowbinding-core:$flowBindingVersion"
+    implementation "io.github.reactivecircus.flowbinding:flowbinding-android:$flowBindingVersion"
+    implementation "io.github.reactivecircus.flowbinding:flowbinding-activity:$flowBindingVersion"
+    implementation "io.github.reactivecircus.flowbinding:flowbinding-appcompat:$flowBindingVersion"
+    implementation "io.github.reactivecircus.flowbinding:flowbinding-swiperefreshlayout:$flowBindingVersion"
+    implementation "io.github.reactivecircus.flowbinding:flowbinding-viewpager2:$flowBindingVersion"
 
     // Circle ImageView
     implementation "de.hdodenhof:circleimageview:$hdodenhofcircleimageview"
