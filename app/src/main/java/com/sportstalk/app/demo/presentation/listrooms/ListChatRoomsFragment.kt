@@ -116,12 +116,12 @@ class ListChatRoomsFragment : BaseFragment() {
 
         binding.swipeRefresh.refreshes()
             .onEach {
-                viewModel.fetchInitial(true)
+                viewModel.fetchInitial()
             }
             .launchIn(lifecycleScope)
 
         // Then, fetch initial list
-        viewModel.fetchInitial(false)
+        viewModel.fetchInitial()
     }
 
     override fun onDestroyView() {

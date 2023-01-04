@@ -14,9 +14,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
-import com.jakewharton.rxbinding3.view.clicks
 import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.FragmentChatroomLiveChatBinding
+import com.sportstalk.app.demo.extensions.throttleFirst
 import com.sportstalk.app.demo.presentation.BaseFragment
 import com.sportstalk.app.demo.presentation.chatroom.adapters.ItemChatEventAdapter
 import com.sportstalk.app.demo.presentation.utils.EndlessRecyclerViewScrollListener
@@ -27,11 +27,9 @@ import com.sportstalk.datamodels.chat.ReportType
 import com.sportstalk.datamodels.users.User
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.rx2.asFlow
 import org.koin.android.ext.android.getKoin
-import org.koin.androidx.viewmodel.ext.android.getViewModel
 import org.koin.androidx.viewmodel.koin.getViewModel
-import java.util.concurrent.TimeUnit
+import reactivecircus.flowbinding.android.view.clicks
 
 class LiveChatFragment : BaseFragment() {
 
@@ -241,8 +239,7 @@ class LiveChatFragment : BaseFragment() {
          * On click Clear Quoted Reply
          */
         binding.btnClear.clicks()
-            .throttleFirst(1000, TimeUnit.MILLISECONDS)
-            .asFlow()
+            .throttleFirst(1000)
             .onEach {
                 viewModel.clearQuotedReply()
             }

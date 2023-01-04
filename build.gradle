@@ -33,6 +33,7 @@ ext {
     googleFlexBoxVersion = '2.0.1'
     androidXCardViewVersion = '1.0.0'
     constraintLayoutVersion = '2.0.0-beta4'
+    androidXSwipeRefreshLayout = "1.1.0"
     viewPager2Version = '1.0.0-rc01'
     googleFlexBoxVersion = '2.0.1'
     // Material Components
@@ -50,6 +51,8 @@ ext {
     rxJavaVersion = '2.2.19'
     rxBindingVersion = '3.1.0'
     rxPermissionVersion = '0.10.2'
+
+    flowBindingVersion = '1.2.0'
 
     // Android X - Jetpack Components
     androidXLifecycleVersion = /*'2.5.0'*/'2.2.0'

@@ -218,7 +218,8 @@ class UpdateChatroomFragment : BaseFragment() {
         ///////////////////////////////
 
         // Room Name
-        binding.tietName.textChanges(emitImmediately = false)
+        binding.tietName.textChanges()
+            .skipInitialValue()
             .debounce(350)
             .map { it.toString() }
             .onEach { updateChatroomViewModel.roomName(it) }

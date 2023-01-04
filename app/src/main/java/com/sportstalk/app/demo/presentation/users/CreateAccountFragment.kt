@@ -124,25 +124,29 @@ class CreateAccountFragment: BaseFragment() {
         // Bind UI Input Actions
         ///////////////////////////////
 
-        binding.tietDisplayName.textChanges(emitImmediately = false)
+        binding.tietDisplayName.textChanges()
+            .skipInitialValue()
             .debounce(350)
             .map { it.toString() }
             .onEach { viewModel.displayName(it) }
             .launchIn(lifecycleScope)
 
-        binding.tietHandleUsername.textChanges(emitImmediately = false)
+        binding.tietHandleUsername.textChanges()
+            .skipInitialValue()
             .debounce(350)
             .map { it.toString() }
             .onEach { viewModel.handleName(it) }
             .launchIn(lifecycleScope)
 
-        binding.tietProfileLink.textChanges(emitImmediately = false)
+        binding.tietProfileLink.textChanges()
+            .skipInitialValue()
             .debounce(350)
             .map { it.toString() }
             .onEach { viewModel.profileLink(it) }
             .launchIn(lifecycleScope)
 
-        binding.tietPhotoLink.textChanges(emitImmediately = false)
+        binding.tietPhotoLink.textChanges()
+            .skipInitialValue()
             .debounce(350)
             .map { it.toString() }
             .onEach { viewModel.photoLink(it) }

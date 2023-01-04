@@ -25,7 +25,7 @@ class ListChatRoomsViewModel(
     private val preferences: SportsTalkDemoPreferences
 ): ViewModel() {
 
-    private val chatRooms = BroadcastChannel<List<ChatRoom>>(Channel.BUFFERED)
+    private val chatRooms = MutableStateFlow<List<ChatRoom>>(emptyList())
     private val progressFetchRooms = BroadcastChannel<Boolean>(Channel.BUFFERED)
     private val enableAccountSettings = MutableStateFlow<Boolean?>(null)
     // Keep track of cursor
@@ -35,7 +35,7 @@ class ListChatRoomsViewModel(
             progressFetchRooms.asFlow()
 
         override fun chatRooms(): Flow<List<ChatRoom>> =
-            chatRooms.asFlow()
+            chatRooms.asStateFlow()
 
         override fun enableAccountSettings(): Flow<Boolean> =
             enableAccountSettings
@@ -49,7 +49,7 @@ class ListChatRoomsViewModel(
     fun fetchInitial() {
         viewModelScope.launch {
             // Clear List Chatroom Items
-            _effect.send(ViewEffect.ClearListChatrooms())
+            // _effect.send(ViewEffect.ClearListChatrooms())
             performFetch()
         }
     }
@@ -88,10 +88,15 @@ class ListChatRoomsViewModel(
                 }
 
             // Emit update room list
-            chatRooms.send(listRoomsResponse.rooms)
-            // Emit new cursor(IF NOT BLANK) and if there is MORE
+            chatRooms.update { currentChatRooms ->
+                (currentChatRooms + listRoomsResponse.rooms).distinctBy { it.id }
+            }
+
             listRoomsResponse.cursor?.let { nowCursor ->
+                // Emit new cursor(IF NOT BLANK) and if there is MORE
                 this@ListChatRoomsViewModel.cursor.value = nowCursor
+            } ?: run {
+                this@ListChatRoomsViewModel.cursor.value = null
             }
 
         } catch (err: SportsTalkException) {
