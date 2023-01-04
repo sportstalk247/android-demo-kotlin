@@ -2,18 +2,15 @@ package com.sportstalk.app.demo.presentation.listrooms
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-
-import com.sportstalk.app.demo.SportsTalkDemoPreferences
 import com.sportstalk.coroutine.api.ChatClient
+import com.sportstalk.app.demo.SportsTalkDemoPreferences
 import com.sportstalk.datamodels.SportsTalkException
 import com.sportstalk.datamodels.chat.ChatRoom
 import com.sportstalk.datamodels.users.User
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.channels.BroadcastChannel
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.ConflatedBroadcastChannel
-import kotlinx.coroutines.channels.sendBlocking
+import kotlinx.coroutines.channels.*
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -28,39 +25,28 @@ class ListChatRoomsViewModel(
     private val preferences: SportsTalkDemoPreferences
 ): ViewModel() {
 
-    private val chatRooms = ConflatedBroadcastChannel<List<ChatRoom>>()
+    private val chatRooms = BroadcastChannel<List<ChatRoom>>(Channel.BUFFERED)
     private val progressFetchRooms = BroadcastChannel<Boolean>(Channel.BUFFERED)
-    private val enableAccountSettings = ConflatedBroadcastChannel<Boolean>(false)
+    private val enableAccountSettings = MutableStateFlow<Boolean?>(null)
     // Keep track of cursor
-    private val cursor = ConflatedBroadcastChannel<String?>(null)
+    private val cursor = MutableStateFlow<String?>(null)
     val state = object: ViewState {
         override fun progressFetchChatRooms(): Flow<Boolean> =
-            progressFetchRooms
-                .asFlow()
+            progressFetchRooms.asFlow()
 
         override fun chatRooms(): Flow<List<ChatRoom>> =
-            chatRooms
-                .asFlow()
+            chatRooms.asFlow()
 
         override fun enableAccountSettings(): Flow<Boolean> =
-            enableAccountSettings.asFlow()
+            enableAccountSettings
+                .filterNotNull()
     }
 
     private val _effect = BroadcastChannel<ViewEffect>(Channel.BUFFERED)
     val effect: Flow<ViewEffect>
-        get() = _effect
-            .asFlow()
-            .onEach { eff ->
-                when(eff) {
-                    is ViewEffect.ClearListChatrooms -> {
-                        chatRooms.send(emptyList())
-                    }
-                }
-            }
+        get() = _effect.asFlow()
 
-    fun fetchInitial(forceRefresh: Boolean) {
-        if(!forceRefresh && chatRooms.valueOrNull != null) return
-
+    fun fetchInitial() {
         viewModelScope.launch {
             // Clear List Chatroom Items
             _effect.send(ViewEffect.ClearListChatrooms())
@@ -76,14 +62,13 @@ class ListChatRoomsViewModel(
     }
 
     fun join(which: ChatRoom) {
-        viewModelScope.launch {
-            val currentUser = preferences.currentUser
-            if(currentUser != null) {
-                _effect.send(ViewEffect.NavigateToChatRoom(which, currentUser))
-            } else {
-                _effect.send(ViewEffect.NavigateToCreateProfile(which))
-            }
+        val currentUser = preferences.currentUser
+        if(currentUser != null) {
+            _effect.trySendBlocking(ViewEffect.NavigateToChatRoom(which, currentUser))
+        } else {
+            _effect.trySendBlocking(ViewEffect.NavigateToCreateProfile(which))
         }
+
     }
 
     private suspend fun performFetch(cursor: String? = null) {
@@ -102,20 +87,11 @@ class ListChatRoomsViewModel(
                     )
                 }
 
-            val accumulatedList = ArrayList<ChatRoom>().apply {
-                if(chatRooms.valueOrNull != null) {
-                    addAll(chatRooms.value + listRoomsResponse.rooms)
-                } else {
-                    addAll(listRoomsResponse.rooms)
-                }
-            }
-                    .distinctBy { it.id }
-
             // Emit update room list
-            chatRooms.send(accumulatedList)
+            chatRooms.send(listRoomsResponse.rooms)
             // Emit new cursor(IF NOT BLANK) and if there is MORE
             listRoomsResponse.cursor?.let { nowCursor ->
-                this@ListChatRoomsViewModel.cursor.sendBlocking(nowCursor)
+                this@ListChatRoomsViewModel.cursor.value = nowCursor
             }
 
         } catch (err: SportsTalkException) {
@@ -126,7 +102,7 @@ class ListChatRoomsViewModel(
             progressFetchRooms.send(false)
 
             // EMIT Enable/Disable Account Settings
-            enableAccountSettings.sendBlocking(preferences.currentUser != null)
+            enableAccountSettings.value = preferences.currentUser != null
         }
     }
 

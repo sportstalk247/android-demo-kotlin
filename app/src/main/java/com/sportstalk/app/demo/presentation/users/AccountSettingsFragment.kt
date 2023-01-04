@@ -9,27 +9,27 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.jakewharton.rxbinding3.swiperefreshlayout.refreshes
+import com.jakewharton.rxbinding3.view.clicks
+import com.jakewharton.rxbinding3.widget.textChanges
 import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.FragmentAccountSettingsBinding
-import com.sportstalk.app.demo.extensions.throttleFirst
 import com.sportstalk.app.demo.presentation.BaseFragment
 import com.sportstalk.datamodels.users.User
-import kotlinx.coroutines.flow.*
-import org.koin.android.ext.android.getKoin
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.rx2.asFlow
 import org.koin.androidx.viewmodel.ext.android.viewModel
-import org.koin.androidx.viewmodel.koin.getViewModel
-import reactivecircus.flowbinding.android.view.clicks
-import reactivecircus.flowbinding.android.widget.textChanges
-import reactivecircus.flowbinding.swiperefreshlayout.refreshes
+import java.util.concurrent.TimeUnit
 
 class AccountSettingsFragment : BaseFragment() {
 
     private lateinit var binding: FragmentAccountSettingsBinding
     private lateinit var menu: Menu
 
-    private val viewModel: AccountSettingsViewModel by /*viewModel()*/lazy {
-        getKoin().getViewModel<AccountSettingsViewModel>(owner = this@AccountSettingsFragment)
-    }
+    private val viewModel: AccountSettingsViewModel by viewModel()
 
     override fun enableBackPressedCallback(): Boolean = true
     override fun onBackPressedCallback(): OnBackPressedCallback.() -> Unit = {
@@ -155,33 +155,43 @@ class AccountSettingsFragment : BaseFragment() {
         // Bind UI Input Actions
         ///////////////////////////////
 
-        binding.tietDisplayName.textChanges(emitImmediately = false)
-            .debounce(350L)
+        binding.tietDisplayName.textChanges()
+            .skipInitialValue()
+            .debounce(350, TimeUnit.MILLISECONDS)
+            .asFlow()
             .map { it.toString() }
             .onEach { viewModel.displayName(it) }
             .launchIn(lifecycleScope)
 
-        binding.tietHandleUsername.textChanges(emitImmediately = false)
-            .debounce(350L)
+        binding.tietHandleUsername.textChanges()
+            .skipInitialValue()
+            .debounce(350, TimeUnit.MILLISECONDS)
+            .asFlow()
             .map { it.toString() }
             .onEach { viewModel.handleName(it) }
             .launchIn(lifecycleScope)
 
-        binding.tietProfileLink.textChanges(emitImmediately = false)
-            .debounce(350L)
+        binding.tietProfileLink.textChanges()
+            .skipInitialValue()
+            .debounce(350, TimeUnit.MILLISECONDS)
+            .asFlow()
             .map { it.toString() }
             .onEach { viewModel.profileLink(it) }
             .launchIn(lifecycleScope)
 
-        binding.tietPhotoLink.textChanges(emitImmediately = false)
-            .debounce(350L)
+        binding.tietPhotoLink.textChanges()
+            .skipInitialValue()
+            .debounce(350, TimeUnit.MILLISECONDS)
+            .asFlow()
             .map { it.toString() }
             .onEach { viewModel.photoLink(it) }
             .launchIn(lifecycleScope)
 
         // Update Photo Realtime
-        binding.tietProfileLink.textChanges(emitImmediately = false)
+        binding.tietProfileLink.textChanges()
+            .skipInitialValue()
             .filter { it.isNotEmpty() }
+            .asFlow()
             .debounce(500)
             .map { it.toString() }
             .onEach { urlStr ->
@@ -195,7 +205,8 @@ class AccountSettingsFragment : BaseFragment() {
 
         // "DELETE Account"
         binding.fabDeleteAccount.clicks()
-            .throttleFirst(1000L)
+            .throttleFirst(1000, TimeUnit.MILLISECONDS)
+            .asFlow()
             .onEach {
                 // Perform Delete Account
                 viewModel.deleteAccount()
@@ -204,7 +215,8 @@ class AccountSettingsFragment : BaseFragment() {
 
         // "Ban/Restore Account"
         binding.fabBanAccount.clicks()
-            .throttleFirst(1000L)
+            .throttleFirst(1000, TimeUnit.MILLISECONDS)
+            .asFlow()
             .onEach {
                 // Perform Ban/Restore Account
                 viewModel.banRestoreAccount()
@@ -212,6 +224,7 @@ class AccountSettingsFragment : BaseFragment() {
             .launchIn(lifecycleScope)
 
         binding.swipeRefresh.refreshes()
+            .asFlow()
             .onEach {
                 // Perform Get User Details Operation
                 viewModel.fetchUserDetails()

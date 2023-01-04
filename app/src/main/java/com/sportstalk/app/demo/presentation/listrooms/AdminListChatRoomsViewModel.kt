@@ -2,8 +2,8 @@ package com.sportstalk.app.demo.presentation.listrooms
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sportstalk.app.demo.SportsTalkDemoPreferences
 import com.sportstalk.coroutine.api.ChatClient
+import com.sportstalk.app.demo.SportsTalkDemoPreferences
 import com.sportstalk.datamodels.SportsTalkException
 import com.sportstalk.datamodels.chat.*
 import com.sportstalk.datamodels.users.User
@@ -13,6 +13,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.channels.sendBlocking
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -27,40 +28,47 @@ class AdminListChatRoomsViewModel(
     private val preferences: SportsTalkDemoPreferences
 ): ViewModel() {
 
-    private val chatRooms = ConflatedBroadcastChannel<List<ChatRoom>>()
-    private val progressFetchRooms = BroadcastChannel<Boolean>(Channel.BUFFERED)
-    private val progressDeleteChatRoom = BroadcastChannel<Boolean>(Channel.BUFFERED)
-    private val progressSendAnnouncement = BroadcastChannel<Boolean>(Channel.BUFFERED)
+    private val chatRooms = MutableStateFlow<List<ChatRoom>?>(null)
+    private val progressFetchRooms = MutableSharedFlow<Boolean>()
+    private val progressDeleteChatRoom = MutableSharedFlow<Boolean>()
+    private val progressSendAnnouncement = MutableSharedFlow<Boolean>()
     // Keep track of cursor
     private val cursor = ConflatedBroadcastChannel<String>("")
     val state = object: ViewState {
         override fun progressFetchChatRooms(): Flow<Boolean> =
             progressFetchRooms
-                .asFlow()
+                .apply { resetReplayCache() }
+                .asSharedFlow()
 
         override fun chatRooms(): Flow<List<ChatRoom>> =
-            chatRooms.asFlow()
+            chatRooms
+                .asStateFlow()
+                .filterNotNull()
 
         override fun progressDeleteChatRoom(): Flow<Boolean> =
             progressDeleteChatRoom
-                .asFlow()
+                .apply { resetReplayCache() }
+                .asSharedFlow()
 
         override fun progressSendAnnouncement(): Flow<Boolean> =
             progressSendAnnouncement
-                .asFlow()
+                .apply { resetReplayCache() }
+                .asSharedFlow()
     }
 
-    private val _effect = BroadcastChannel<ViewEffect>(Channel.BUFFERED)
+    private val _effect = MutableSharedFlow<ViewEffect>()
     val effect: Flow<ViewEffect>
-        get() = _effect.asFlow()
+        get() = _effect
+            .apply { resetReplayCache() }
+            .asSharedFlow()
 
     fun fetchInitial(forceRefresh: Boolean) {
         // Skip if initial fetch has already been performed
-        if(!forceRefresh && chatRooms.valueOrNull != null) return
+        if(!forceRefresh && chatRooms.value != null) return
 
         viewModelScope.launch {
             // Clear List Chatroom Items
-            _effect.send(ViewEffect.ClearListChatrooms())
+            _effect.emit(ViewEffect.ClearListChatrooms())
             performFetch()
         }
     }
@@ -74,7 +82,7 @@ class AdminListChatRoomsViewModel(
 
     private suspend fun performFetch(cursor: String? = null) {
         // Emit DISPLAY Progress indicator
-        progressFetchRooms.send(true)
+        progressFetchRooms.emit(true)
 
         try {
             ////////////////////////////////////////////////////////
@@ -88,7 +96,7 @@ class AdminListChatRoomsViewModel(
                     )
                 }
 
-            val updatedRoomList = ArrayList(chatRooms.valueOrNull ?: listOf()).apply {
+            val updatedRoomList = ArrayList(chatRooms.value ?: listOf()).apply {
                 listRoomsResponse.rooms.forEach { newRoom ->
                     val index = indexOfFirst { oldRoom -> oldRoom.id == newRoom.id }
                     if(index >= 0) {
@@ -100,25 +108,25 @@ class AdminListChatRoomsViewModel(
             }
 
             // Emit update room list
-            chatRooms.send(updatedRoomList)
+            chatRooms.value = updatedRoomList
             // Emit new cursor(IF NOT BLANK) and if there is MORE
             listRoomsResponse.cursor?.let { nowCursor ->
-                this@AdminListChatRoomsViewModel.cursor.sendBlocking(nowCursor)
+                this@AdminListChatRoomsViewModel.cursor.send(nowCursor)
             }
 
         } catch (err: SportsTalkException) {
             // Emit error if encountered
-            _effect.send(ViewEffect.ErrorFetchListChatrooms(err = err))
+            _effect.emit(ViewEffect.ErrorFetchListChatrooms(err = err))
         } finally {
             // Emit HIDE Progress indicator
-            progressFetchRooms.send(false)
+            progressFetchRooms.emit(false)
         }
     }
 
     fun update(which: ChatRoom) {
         val user = preferences.currentUser ?: return
         viewModelScope.launch {
-            _effect.send(
+            _effect.emit(
                 ViewEffect.NavigateToChatRoomDetails(user, which)
             )
         }
@@ -128,7 +136,7 @@ class AdminListChatRoomsViewModel(
         viewModelScope.launch {
             try {
                 // DISPLAY Progress Indicator
-                progressDeleteChatRoom.send(true)
+                progressDeleteChatRoom.emit(true)
 
                 val response = withContext(Dispatchers.IO) {
                     chatClient.deleteRoom(
@@ -137,17 +145,17 @@ class AdminListChatRoomsViewModel(
                 }
 
                 // Emit Success
-                _effect.send(
+                _effect.emit(
                     ViewEffect.SuccessDeleteRoom(response)
                 )
 
             } catch (err: SportsTalkException) {
-                _effect.send(
+                _effect.emit(
                     ViewEffect.ErrorDeleteRoom(err)
                 )
             } finally {
                 // HIDE Progress Indicator
-                progressDeleteChatRoom.send(false)
+                progressDeleteChatRoom.emit(false)
             }
 
         }
@@ -157,7 +165,7 @@ class AdminListChatRoomsViewModel(
         viewModelScope.launch {
             try {
                 // DISPLAY Progress Indicator
-                progressSendAnnouncement.send(true)
+                progressSendAnnouncement.emit(true)
 
                 val response = withContext(Dispatchers.IO) {
                     chatClient.executeChatCommand(
@@ -172,13 +180,13 @@ class AdminListChatRoomsViewModel(
                 }
 
                 // EMIT Response
-                _effect.send(ViewEffect.SuccessSendAnnouncement(response))
+                _effect.emit(ViewEffect.SuccessSendAnnouncement(response))
             } catch (err: SportsTalkException) {
                 // EMIT Error
-                _effect.send(ViewEffect.ErrorSendAnnouncement(err))
+                _effect.emit(ViewEffect.ErrorSendAnnouncement(err))
             } finally {
                 // DISPLAY Progress Indicator
-                progressSendAnnouncement.send(false)
+                progressSendAnnouncement.emit(false)
             }
         }
     }

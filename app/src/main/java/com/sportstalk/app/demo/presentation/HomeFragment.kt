@@ -13,7 +13,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.observe
 import androidx.viewpager2.adapter.FragmentStateAdapter
-import androidx.viewpager2.widget.ViewPager2
+import com.jakewharton.rxbinding3.viewpager2.pageSelections
 import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.SportsTalkDemoPreferences
 import com.sportstalk.app.demo.databinding.FragmentHomeBinding
@@ -22,13 +22,11 @@ import com.sportstalk.app.demo.presentation.inappsettings.InAppSettingsFragment
 import com.sportstalk.app.demo.presentation.listrooms.AdminListChatRoomsFragment
 import com.sportstalk.app.demo.presentation.listrooms.ListChatRoomsFragment
 import com.sportstalk.app.demo.presentation.users.CreateAccountFragment
-import com.sportstalk.datamodels.ClientConfig
 import com.sportstalk.datamodels.chat.ChatRoom
 import com.sportstalk.datamodels.users.User
-import com.sportstalk.reactive.rx2.SportsTalk247
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
-import org.koin.android.ext.android.getKoin
+import kotlinx.coroutines.rx2.asFlow
 import org.koin.android.ext.android.inject
 
 class HomeFragment : BaseFragment() {
@@ -77,7 +75,6 @@ class HomeFragment : BaseFragment() {
         return binding.root
     }
 
-    private var viewPagerPageChangeCallback: ViewPager2.OnPageChangeCallback? = null
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -96,16 +93,17 @@ class HomeFragment : BaseFragment() {
                 val isFirstLoad = binding.viewPager2.adapter?.itemCount != TAB_COUNT
 
                 binding.viewPager2.adapter = ViewPager2Adapter(childFragmentManager, lifecycle)
-                viewPagerPageChangeCallback = object: ViewPager2.OnPageChangeCallback() {
-                    override fun onPageSelected(position: Int) {
+                binding.viewPager2.pageSelections()
+                    .skipInitialValue()
+                    .asFlow()
+                    .onEach { position ->
                         when (position) {
                             TAB_FAN -> binding.bottomNavView.selectedItemId = R.id.bottomNavFan
                             TAB_ADMIN -> binding.bottomNavView.selectedItemId = R.id.bottomNavAdmin
                             TAB_SETTINGS -> binding.bottomNavView.selectedItemId = R.id.bottomNavSettings
                         }
                     }
-                }
-                binding.viewPager2.registerOnPageChangeCallback(viewPagerPageChangeCallback!!)
+                    .launchIn(lifecycleScope)
 
                 binding.bottomNavView.setOnNavigationItemSelectedListener { item: MenuItem ->
                     when (item.itemId) {
@@ -128,14 +126,7 @@ class HomeFragment : BaseFragment() {
                 if(!isFirstLoad) binding.bottomNavView.selectedItemId = R.id.bottomNavSettings
             }
             .launchIn(lifecycleScope)
-    }
 
-    override fun onDestroyView() {
-        if(viewPagerPageChangeCallback != null) {
-            binding.viewPager2.unregisterOnPageChangeCallback(viewPagerPageChangeCallback!!)
-        }
-
-        super.onDestroyView()
     }
 
     inner class ViewPager2Adapter(

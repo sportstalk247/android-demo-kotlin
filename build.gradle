@@ -1,27 +1,27 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 ext {
-    minSdkVersion = /*19*/21
-    targetSdkVersion = 29
-    compileSdkVersion = 29
-    buildToolsVersion = '29.0.3'
+    minSdkVersion = 19
+    targetSdkVersion = 31/*29*/
+    compileSdkVersion = 31/*29*/
+    buildToolsVersion = '30.0.3'/*'29.0.3'*/
 
     // SportsTalk247 SDK Version
-    sportstalk247SdkVersion = '1.1.7'
+    sportstalk247SdkVersion = '1.2.2'/*'1.2.0'*/
 
     multidex_version = "2.0.1"
 
-    junitVersion = '4.12'
+    junitVersion = '4.13.2'/*'4.12'*/
     mockitoVersion = '3.1.0'
     androidXCoreTesting = '2.0.0'
-    androidXTest = '1.1.1'
+    androidXTest = '1.4.0'/*'1.1.1'*/
     androidXTestExt = '1.0.0'
     mockKVersion = '1.9.3'
     // Roboelectric
-    roboelectricVersion = '4.3'
+    roboelectricVersion = '4.5.1'/*'4.3'*/
 
     // Coroutines
-    coroutinesVersion = '1.3.0'/*'1.4.0-M1'*/
+    coroutinesVersion = '1.6.4'/*'1.4.0-M1'*/
 
     // AndroidX Framework
     androidXAppCompatVersion = '1.1.0'
@@ -33,7 +33,6 @@ ext {
     googleFlexBoxVersion = '2.0.1'
     androidXCardViewVersion = '1.0.0'
     constraintLayoutVersion = '2.0.0-beta4'
-    swipeRefreshLayout = '1.1.0'
     viewPager2Version = '1.0.0-rc01'
     googleFlexBoxVersion = '2.0.1'
     // Material Components
@@ -45,21 +44,18 @@ ext {
     // AndroidX Navigation
     androidXNavigationVersion = '2.3.0'
 
-    // UI FlowBinding(https://github.com/ReactiveCircus/FlowBinding)
-    flowbindingVersion = '0.5.0'/*'1.0.0'*/
-
     // Rx3Java
     rxAndroidVersion = '2.1.1'/*'3.0.3'*/
     rxkotlinVersion = '2.4.0'/*'3.0.0'*/
-    rxJavaVersion = '2.2.0'
-    //rxBindingVersion = '3.1.0'
+    rxJavaVersion = '2.2.19'
+    rxBindingVersion = '3.1.0'
     rxPermissionVersion = '0.10.2'
 
     // Android X - Jetpack Components
-    androidXLifecycleVersion = '2.2.0'
+    androidXLifecycleVersion = /*'2.5.0'*/'2.2.0'
 
     // Dependency Injection Framework
-    koinVersion = '2.1.5'
+    koinVersion = /*'2.2.3'*/'2.1.5'
     
     hdodenhofcircleimageview = '3.1.0'
 
@@ -69,14 +65,16 @@ ext {
 }
 
 buildscript {
-    ext.kotlin_version = /*'1.4.20'*/'1.3.50'
-    ext.buildGradleToolVersion = '4.1.2'
-    ext.kotlinx_serialization_version = /*'1.0.1'*/'0.12.0'
+    ext.kotlin_version = '1.7.20'/*'1.4.20'*/
+    ext.buildGradleToolVersion = '7.2.2'/*'4.1.0'*/
+    ext.kotlinx_serialization_version = '1.4.1'/*'1.0.1'*/
 
     repositories {
         google()
+        gradlePluginPortal()
         jcenter()
-        
+        mavenCentral()
+        maven { url "https://maven.google.com" }
     }
     dependencies {
         classpath "com.android.tools.build:gradle:$buildGradleToolVersion"
@@ -91,8 +89,10 @@ buildscript {
 allprojects {
     repositories {
         google()
+        mavenCentral()
         jcenter()
         maven { url "https://jitpack.io" }
+        maven { url "https://maven.google.com" }
     }
 }
 

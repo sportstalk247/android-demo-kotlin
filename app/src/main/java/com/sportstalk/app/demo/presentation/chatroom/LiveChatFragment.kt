@@ -14,9 +14,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
+import com.jakewharton.rxbinding3.view.clicks
 import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.FragmentChatroomLiveChatBinding
-import com.sportstalk.app.demo.extensions.throttleFirst
 import com.sportstalk.app.demo.presentation.BaseFragment
 import com.sportstalk.app.demo.presentation.chatroom.adapters.ItemChatEventAdapter
 import com.sportstalk.app.demo.presentation.utils.EndlessRecyclerViewScrollListener
@@ -25,54 +25,48 @@ import com.sportstalk.datamodels.chat.ChatRoom
 import com.sportstalk.datamodels.chat.EventType
 import com.sportstalk.datamodels.chat.ReportType
 import com.sportstalk.datamodels.users.User
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.rxkotlin.addTo
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.serialization.json.Json
+import kotlinx.coroutines.rx2.asFlow
 import org.koin.android.ext.android.getKoin
 import org.koin.androidx.viewmodel.ext.android.getViewModel
 import org.koin.androidx.viewmodel.koin.getViewModel
-import reactivecircus.flowbinding.android.view.clicks
 import java.util.concurrent.TimeUnit
 
 class LiveChatFragment : BaseFragment() {
 
-    private var _binding: FragmentChatroomLiveChatBinding? = null
-    private val binding: FragmentChatroomLiveChatBinding by lazy { _binding!! }
+    private lateinit var binding: FragmentChatroomLiveChatBinding
     private val viewModel: ChatRoomViewModel by lazy {
         getKoin().getViewModel<ChatRoomViewModel>(owner = requireParentFragment())
     }
 
-    private var scrollListener: RecyclerView.OnScrollListener? = null
-    private var adapterObserver:  RecyclerView.AdapterDataObserver? = null
+    private lateinit var scrollListener: RecyclerView.OnScrollListener
 
-    private var user: User? = null
-    private var room: ChatRoom? = null
+    private lateinit var user: User
+    private lateinit var room: ChatRoom
 
-    private var adapter: ItemChatEventAdapter? = null
-    private var rvLayoutManager: LinearLayoutManager? = null
+    private lateinit var adapter: ItemChatEventAdapter
 
-    private var rxDisposeBag: CompositeDisposable? = null
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        user = requireArguments().getParcelable(ChatRoomFragment.INPUT_ARG_USER)!!
+        room = requireArguments().getParcelable(ChatRoomFragment.INPUT_ARG_ROOM)!!
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        _binding = FragmentChatroomLiveChatBinding.inflate(inflater)
+        binding = FragmentChatroomLiveChatBinding.inflate(inflater)
 
         // Setup RecyclerView
-        rvLayoutManager = LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, true)
-        binding.recyclerView.layoutManager = rvLayoutManager
-
-        user = requireArguments().getParcelable(ChatRoomFragment.INPUT_ARG_USER)!!
-        room = requireArguments().getParcelable(ChatRoomFragment.INPUT_ARG_ROOM)!!
+        binding.recyclerView.layoutManager =
+            LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, true)
 
         adapter = ItemChatEventAdapter(
-            me = user!!,
+            me = user,
             initialItems = listOf(),
             onTapChatEventItem = { chatEvent: ChatEvent ->
                 Log.d(TAG, "onTapChatEventItem() -> chatEvent = $chatEvent")
@@ -81,14 +75,14 @@ class LiveChatFragment : BaseFragment() {
                     resources.getStringArray(R.array.chat_message_tap_options).toList()
                 ).run {
                     // User's sent chat message(Prompt "Like", "Reply", "Report", "Flag as Deleted", or "Delete Permanently" options)
-                    if(chatEvent.userid == user?.userid)
+                    if(chatEvent.userid == user.userid)
                         slice(0 until size)
                     // Other's chat message(Prompt "Like", "Reply" and "Report" options ONLY)
                     else
                         slice(0 until 3)
 
                     // Bounce/Unbounce option
-                    if(room != null && room?.bouncedusers?.contains(chatEvent.userid) == true) {
+                    if(::room.isInitialized && room.bouncedusers?.contains(chatEvent.userid) == true) {
                         add(getString(R.string.chat_message_tap_option_unbounce))
                     } else {
                         add(getString(R.string.chat_message_tap_option_bounce))
@@ -121,8 +115,8 @@ class LiveChatFragment : BaseFragment() {
                             getString(R.string.chat_message_tap_option_flag_as_deleted) -> {
                                 viewModel.removeMessage(
                                     which = chatEvent,
-                                    isPermanentDelete = false,
-                                    permanentifnoreplies = /*false*/true
+                                    isPermanentDelete = true,
+                                    permanentifnoreplies = false/*true*/
                                 )
                             }
                             // Delete Permanently
@@ -177,31 +171,15 @@ class LiveChatFragment : BaseFragment() {
             }
         )
 
-        adapterObserver = object: RecyclerView.AdapterDataObserver() {
+        adapter.registerAdapterDataObserver(object: RecyclerView.AdapterDataObserver() {
             override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
-                Log.d(TAG, "adapterObserver::onItemRangeInserted -> positionStart = $positionStart | itemCount = $itemCount")
-                lifecycleScope.launchWhenCreated {
-                    delay(50L)
-                    val item = adapter?.getItem(positionStart)
-                    if(item?.userid == user?.userid) {
-                        binding.recyclerView.scrollToPosition(0)
-                    } else {
-                        val firstVisibleItemPosition = (rvLayoutManager?.findFirstVisibleItemPosition() ?: 1) - /*1*/itemCount
-                        binding.recyclerView.scrollToPosition(firstVisibleItemPosition)
-                    }
+                super.onItemRangeInserted(positionStart, itemCount)
+                val item = adapter.getItem(positionStart)
+                if(item.userid == user.userid) {
+                    binding.recyclerView.scrollToPosition(0)
                 }
             }
-
-            override fun onItemRangeChanged(positionStart: Int, itemCount: Int) {
-                Log.d(TAG, "adapterObserver::onItemRangeChanged -> positionStart = $positionStart | itemCount = $itemCount")
-                lifecycleScope.launchWhenCreated {
-                    delay(50L)
-                    val firstVisibleItemPosition = (rvLayoutManager?.findFirstVisibleItemPosition() ?: 1) - 1
-                    binding.recyclerView.scrollToPosition(firstVisibleItemPosition)
-                }
-            }
-        }
-        adapter?.registerAdapterDataObserver(adapterObserver!!)
+        })
 
         binding.recyclerView.adapter = adapter
 
@@ -216,9 +194,7 @@ class LiveChatFragment : BaseFragment() {
             }
         }
 
-        binding.recyclerView.addOnScrollListener(scrollListener!!)
-
-        rxDisposeBag = CompositeDisposable()
+        binding.recyclerView.addOnScrollListener(scrollListener)
 
         return binding.root
     }
@@ -243,7 +219,6 @@ class LiveChatFragment : BaseFragment() {
          * Emits the overall list of events(includes results from `previouseventscursor` and `nexteventscursor`)
          */
         viewModel.state.chatEvents()
-            /*.debounce(100L)*/
             .onEach(::takeChatEvents)
             .launchIn(lifecycleScope)
 
@@ -259,17 +234,15 @@ class LiveChatFragment : BaseFragment() {
         // Bind View Effect
         ///////////////////////////////
         viewModel.effect
-//            .onEach(::takeViewEffect)
-//            .launchIn(lifecycleScope)
-            .delay(250L, TimeUnit.MILLISECONDS)
-            .subscribe(::takeViewEffect)
-            .addTo(rxDisposeBag!!)
+            .onEach(::takeViewEffect)
+            .launchIn(lifecycleScope)
 
         /**
          * On click Clear Quoted Reply
          */
         binding.btnClear.clicks()
-            .throttleFirst(1000L)
+            .throttleFirst(1000, TimeUnit.MILLISECONDS)
+            .asFlow()
             .onEach {
                 viewModel.clearQuotedReply()
             }
@@ -278,24 +251,9 @@ class LiveChatFragment : BaseFragment() {
     }
 
     override fun onDestroyView() {
-        if(rvLayoutManager != null) {
-            binding.recyclerView.layoutManager = null
+        if(::scrollListener.isInitialized) {
+            binding.recyclerView.removeOnScrollListener(scrollListener)
         }
-        rvLayoutManager = null
-        if(scrollListener != null) {
-            binding.recyclerView.removeOnScrollListener(scrollListener!!)
-        }
-        scrollListener = null
-        if(adapterObserver != null) {
-            adapter?.unregisterAdapterDataObserver(adapterObserver!!)
-        }
-        adapterObserver = null
-
-        _binding = null
-
-        rxDisposeBag?.dispose()
-        rxDisposeBag = null
-        adapter = null
 
         super.onDestroyView()
     }
@@ -306,10 +264,10 @@ class LiveChatFragment : BaseFragment() {
     }
 
     private suspend fun takeChatEvents(chatEvents: List<ChatEvent>) {
-        Log.d(TAG, "takeChatEvents() -> chatEvents[${chatEvents.size}] = $chatEvents")
+        Log.d(TAG, "takeChatEvents() -> chatEvents = $chatEvents")
 
-        if(adapter != null) {
-            adapter?.replace(chatEvents)
+        if(::adapter.isInitialized) {
+            adapter.replace(chatEvents)
         }
     }
 
@@ -326,28 +284,22 @@ class LiveChatFragment : BaseFragment() {
         }
     }
 
-    lateinit var json: Json
-    private fun takeViewEffect(effect: ChatRoomViewModel.ViewEffect) {
+    private suspend fun takeViewEffect(effect: ChatRoomViewModel.ViewEffect) {
         Log.d(TAG, "takeViewEffect() -> effect = ${effect::class.java.simpleName}")
 
         when (effect) {
             is ChatRoomViewModel.ViewEffect.ReceiveChatEventUpdates -> {
                 // Dispatch update received new events
-                if (adapter != null) {
-                    val chatEvents = effect.eventUpdates
-
-                    if(!::json.isInitialized) json = getKoin().get<Json>()
-                    if(chatEvents.size < 10) {
-                        chatEvents.forEach { event ->
-                            Log.d(TAG, "takeViewEffect() -> event = ${json.stringify(ChatEvent.serializer(), event)}")
-                        }
-                    } else {
-                        chatEvents.forEach { event ->
-                            Log.d(TAG, "takeViewEffect() -> event = { id: '${event.id}', body: '${event.body}' }")
-                        }
+                if (::adapter.isInitialized) {
+                    val chatEvents = effect.eventUpdates.filter {
+                        it.eventtype == EventType.SPEECH
+                                || it.eventtype == EventType.ACTION
+                                || it.eventtype == EventType.REACTION
+                                || it.eventtype == EventType.QUOTE
+                                || it.eventtype == EventType.REPLY
                     }
-
-                    // (This is just a side effect) ViewModel already automatically appended the updated list
+                    // Append to Chat list
+                    adapter.update(chatEvents)
 
                     // Other events
 
@@ -404,9 +356,7 @@ class LiveChatFragment : BaseFragment() {
                 ).show()
             }
             is ChatRoomViewModel.ViewEffect.SuccessListPreviousEvents -> {
-                if(adapter != null) {
-                    adapter?.update(effect.previousEvents)
-                }
+
             }
             is ChatRoomViewModel.ViewEffect.ErrorListPreviousEvents -> {
                 Toast.makeText(
@@ -417,8 +367,8 @@ class LiveChatFragment : BaseFragment() {
             }
             is ChatRoomViewModel.ViewEffect.SuccessReactToAMessage -> {
                 // Pre-emptively Update React State of Reacted ChatEvent
-                if (adapter != null) {
-                    adapter?.update(effect.response)
+                if (::adapter.isInitialized) {
+                    adapter.update(effect.response)
                 }
             }
             is ChatRoomViewModel.ViewEffect.ErrorReactToAMessage -> {
@@ -433,12 +383,12 @@ class LiveChatFragment : BaseFragment() {
                 Log.d(TAG, "ChatRoomViewModel.ViewEffect.SuccessRemoveMessage:: removedEvent = ${effect.response.event}")
 
                 // Pre-emptively Remove ChatEvent
-                if (adapter != null) {
+                if (::adapter.isInitialized) {
                     effect.response.event?.let { removedEvent ->
                         if(effect.response.permanentdelete == true) {
-                            adapter?.remove(removedEvent)
+                            adapter.remove(removedEvent)
                         } else {
-                            adapter?.update(removedEvent)
+                            adapter.update(removedEvent)
                         }
                     }
                 }
@@ -457,6 +407,7 @@ class LiveChatFragment : BaseFragment() {
                 Log.d(TAG, "ChatRoomViewModel.ViewEffect.SuccessUnbounceUser -> this.room = effect.response.room!!")
                 this.room = effect.response.room!!
             }
+            else -> {}
         }
     }
 

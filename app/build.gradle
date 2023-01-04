@@ -1,6 +1,6 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-parcelize'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'kotlinx-serialization'
 
@@ -15,9 +15,8 @@ android {
         applicationId "com.sportstalk.app.demo"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 2
-        versionName "1.1.0"
-        multiDexEnabled true
+        versionCode 1
+        versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -35,7 +34,7 @@ android {
         }
         release {
             debuggable false
-            minifyEnabled true
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
 
             resValue "string", "sportstalk247_urlEndpoint", localProperties.getProperty("sportstalk247.urlEndpoint", "")
@@ -54,16 +53,16 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
         freeCompilerArgs += [
-                "-Xuse-experimental=kotlinx.coroutines.InternalCoroutinesApi",
-                "-Xuse-experimental=kotlinx.coroutines.ExperimentalCoroutinesApi",
-                "-Xuse-experimental=kotlinx.coroutines.FlowPreview",
-                "-Xuse-experimental=kotlinx.coroutines.ObsoleteCoroutinesApi",
-                "-Xuse-experimental=kotlinx.serialization.UnstableDefault"
+                "-opt-in=kotlinx.coroutines.InternalCoroutinesApi",
+                "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
+                "-opt-in=kotlinx.coroutines.FlowPreview",
+                "-opt-in=kotlinx.coroutines.ObsoleteCoroutinesApi",
+                "-opt-in=kotlinx.serialization.UnstableDefault"
         ]
     }
 
-    viewBinding {
-        enabled = true
+    buildFeatures {
+        viewBinding true
     }
 
     compileOptions {
@@ -91,21 +90,13 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
     implementation("com.gitlab.sportstalk247.sdk-android-kotlin:sdk-coroutine:v$sportstalk247SdkVersion")
-    //implementation("com.gitlab.sportstalk247.sdk-android-kotlin:sdk-coroutine:36e0af154b")
-    //implementation("com.gitlab.sportstalk247.sdk-android-kotlin:sdk-coroutine:56eef4aed1")
-    implementation("com.gitlab.sportstalk247.sdk-android-kotlin:sdk-reactive-rx2:v$sportstalk247SdkVersion")
-    //implementation("com.gitlab.sportstalk247.sdk-android-kotlin:sdk-reactive-rx2:36e0af154b")
-    //implementation("com.gitlab.sportstalk247.sdk-android-kotlin:sdk-reactive-rx2:56eef4aed1")
-
-    // Multi-DEX
-    implementation "androidx.multidex:multidex:$multidex_version"
+    implementation("com.gitlab.sportstalk247.sdk-android-kotlin:datamodels:v$sportstalk247SdkVersion")
 
     // Jetbrains Kotlin Dependencies
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     implementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    // implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinx_serialization_version"
-    implementation "org.jetbrains.kotlinx:kotlinx-serialization-runtime:$kotlinx_serialization_version"
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinx_serialization_version"
 
     // Dependencies for local unit tests
     testImplementation "junit:junit:$junitVersion"
@@ -153,7 +144,6 @@ dependencies {
     implementation "com.google.android.material:material:$rootProject.androidMaterialComponentsVersion"
     // UI Components
     implementation "androidx.recyclerview:recyclerview:$androidXRecyclerViewVersion"
-    implementation "androidx.swiperefreshlayout:swiperefreshlayout:$swipeRefreshLayout"
     implementation "androidx.cardview:cardview:$androidXCardViewVersion"
     implementation "androidx.appcompat:appcompat:$androidXAppCompatVersion"
     implementation "androidx.appcompat:appcompat-resources:$androidXAppCompatVersion"
@@ -187,14 +177,17 @@ dependencies {
     // Rx3Java
     implementation "io.reactivex.rxjava2:rxjava:$rxAndroidVersion"
     implementation "io.reactivex.rxjava2:rxkotlin:$rxkotlinVersion"
-    // Flow Binding
-    implementation "io.github.reactivecircus.flowbinding:flowbinding-android:$flowbindingVersion"
-    implementation "io.github.reactivecircus.flowbinding:flowbinding-core:$flowbindingVersion"
-    implementation "io.github.reactivecircus.flowbinding:flowbinding-appcompat:$flowbindingVersion"
-    implementation "io.github.reactivecircus.flowbinding:flowbinding-drawerlayout:$flowbindingVersion"
-    implementation "io.github.reactivecircus.flowbinding:flowbinding-navigation:$flowbindingVersion"
-    implementation "io.github.reactivecircus.flowbinding:flowbinding-recyclerview:$flowbindingVersion"
-    implementation "io.github.reactivecircus.flowbinding:flowbinding-swiperefreshlayout:$flowbindingVersion"
+    // RxAndroid Binding
+    implementation "com.jakewharton.rxbinding3:rxbinding:$rxBindingVersion"
+    implementation "com.jakewharton.rxbinding3:rxbinding-core:$rxBindingVersion"
+    implementation "com.jakewharton.rxbinding3:rxbinding-appcompat:$rxBindingVersion"
+    implementation "com.jakewharton.rxbinding3:rxbinding-drawerlayout:$rxBindingVersion"
+    implementation "com.jakewharton.rxbinding3:rxbinding-leanback:$rxBindingVersion"
+    implementation "com.jakewharton.rxbinding3:rxbinding-recyclerview:$rxBindingVersion"
+    implementation "com.jakewharton.rxbinding3:rxbinding-slidingpanelayout:$rxBindingVersion"
+    implementation "com.jakewharton.rxbinding3:rxbinding-swiperefreshlayout:$rxBindingVersion"
+    implementation "com.jakewharton.rxbinding3:rxbinding-viewpager:$rxBindingVersion"
+    implementation "com.jakewharton.rxbinding3:rxbinding-viewpager2:$rxBindingVersion"
 
     // RxPermission
     implementation "com.github.tbruyelle:rxpermissions:$rxPermissionVersion"
@@ -204,7 +197,7 @@ dependencies {
 
     // Glide
     implementation "com.github.bumptech.glide:glide:$glideVersion"
-    annotationProcessor "com.github.bumptech.glide:compiler:$glideVersion"
+    kapt "com.github.bumptech.glide:compiler:$glideVersion"
 
 }
 

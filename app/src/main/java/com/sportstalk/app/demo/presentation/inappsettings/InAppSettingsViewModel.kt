@@ -3,11 +3,14 @@ package com.sportstalk.app.demo.presentation.inappsettings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sportstalk.app.demo.SportsTalkDemoPreferences
-import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
-import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.channels.sendBlocking
+import kotlinx.coroutines.channels.trySendBlocking
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.receiveAsFlow
 
 class InAppSettingsViewModel(
     private val preferences: SportsTalkDemoPreferences
@@ -18,18 +21,24 @@ class InAppSettingsViewModel(
     private val appId = ConflatedBroadcastChannel<String?>(preferences.appId)
     val state = object: ViewState {
         override fun urlEndpoint(): Flow<String?> =
-            urlEndpoint.asFlow()
+            urlEndpoint
+                .openSubscription()
+                .receiveAsFlow()
 
         override fun authToken(): Flow<String?> =
-            authToken.asFlow()
+            authToken
+                .openSubscription()
+                .receiveAsFlow()
 
         override fun appId(): Flow<String?> =
-            appId.asFlow()
+            appId
+                .openSubscription()
+                .receiveAsFlow()
     }
 
-    private val _effect = BroadcastChannel<ViewEffect>(Channel.BUFFERED)
+    private val _effect = Channel<ViewEffect>(Channel.RENDEZVOUS)
     val effect: Flow<ViewEffect> =
-        _effect.asFlow()
+        _effect.receiveAsFlow()
 
     init {
         preferences.urlEndpointChanges()
@@ -61,9 +70,7 @@ class InAppSettingsViewModel(
         // Clear operation automatically sets original values
         preferences.clear()
         // Emit [ViewEffect.SuccessReset]]
-        viewModelScope.launch {
-            _effect.send(ViewEffect.SuccessReset())
-        }
+        _effect.trySendBlocking(ViewEffect.SuccessReset())
     }
 
     interface ViewState {
