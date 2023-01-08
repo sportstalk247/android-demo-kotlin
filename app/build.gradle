@@ -17,6 +17,7 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
+        multiDexEnabled true
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -105,6 +106,9 @@ dependencies {
     testImplementation "io.mockk:mockk:$mockKVersion"
     // Roboelectric
     testImplementation "org.robolectric:robolectric:$roboelectricVersion"
+
+    // Multi-DEX
+    implementation "androidx.multidex:multidex:$multidex_version"
 
     // Android Testing Support Library's runner and rules
     androidTestImplementation "androidx.test:runner:$androidXTest"
