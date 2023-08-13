@@ -8,6 +8,7 @@ import com.sportstalk.app.demo.SportsTalkDemoPreferences
 import com.sportstalk.coroutine.api.polling.allEventUpdates
 import com.sportstalk.datamodels.SportsTalkException
 import com.sportstalk.datamodels.chat.*
+import com.sportstalk.datamodels.reactions.ReactionType
 import com.sportstalk.datamodels.users.User
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -446,7 +447,7 @@ class ChatRoomViewModel(
         viewModelScope.launch {
 
             try {
-                val reacted = event.reactions.firstOrNull { r -> r.type == EventReaction.LIKE }
+                val reacted = event.reactions.firstOrNull { r -> r.type == ReactionType.LIKE }
                     ?.users?.any { u -> u.userid == user.userid } ?: false
 
                 // Perform React To a Message SDK Operation
@@ -456,7 +457,7 @@ class ChatRoomViewModel(
                         eventId = event.id!!,
                         request = ReactToAMessageRequest(
                             userid = user.userid!!,
-                            reaction = EventReaction.LIKE,
+                            reaction = ReactionType.LIKE,
                             reacted = !reacted
                         )
                     )

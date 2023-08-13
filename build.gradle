@@ -1,13 +1,13 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 ext {
-    minSdkVersion = 19
-    targetSdkVersion = 31/*29*/
-    compileSdkVersion = 31/*29*/
+    minSdkVersion = 21
+    targetSdkVersion = 33/*29*/
+    compileSdkVersion = 33/*29*/
     buildToolsVersion = '30.0.3'/*'29.0.3'*/
 
     // SportsTalk247 SDK Version
-    sportstalk247SdkVersion = '1.2.3'/*'1.2.0'*/
+    sportstalk247SdkVersion = '1.2.10'/*'1.2.0'*/
 
     multidex_version = "2.0.1"
 
@@ -30,12 +30,11 @@ ext {
     androidXAnnotationVersion = '1.1.0'
     // AndroidX UI Components
     androidXRecyclerViewVersion = '1.1.0'
-    googleFlexBoxVersion = '2.0.1'
+    googleFlexBoxVersion = '3.0.0'/*'2.0.1'*/
     androidXCardViewVersion = '1.0.0'
     constraintLayoutVersion = '2.0.0-beta4'
     androidXSwipeRefreshLayout = "1.1.0"
     viewPager2Version = '1.0.0-rc01'
-    googleFlexBoxVersion = '2.0.1'
     // Material Components
     androidMaterialComponentsVersion = '1.1.0'
     // AndroidX Activity
@@ -58,7 +57,7 @@ ext {
     androidXLifecycleVersion = /*'2.5.0'*/'2.2.0'
 
     // Dependency Injection Framework
-    koinVersion = /*'2.2.3'*/'2.1.5'
+    koinVersion = '2.2.3'/*'2.1.5'*/
     
     hdodenhofcircleimageview = '3.1.0'
 
@@ -68,14 +67,15 @@ ext {
 }
 
 buildscript {
-    ext.kotlin_version = '1.7.20'/*'1.4.20'*/
-    ext.buildGradleToolVersion = '7.2.2'/*'4.1.0'*/
+    ext.kotlin_version = '1.8.10'/*'1.7.20'*//*'1.4.20'*/
+    ext.buildGradleToolVersion = '7.4.1'/*'7.2.2'*//*'4.1.0'*/
     ext.kotlinx_serialization_version = '1.4.1'/*'1.0.1'*/
 
     repositories {
+        mavenLocal()
         google()
         gradlePluginPortal()
-        jcenter()
+        /*jcenter()*/
         mavenCentral()
         maven { url "https://maven.google.com" }
     }
@@ -91,10 +91,9 @@ buildscript {
 
 allprojects {
     repositories {
+        mavenLocal()
         google()
         mavenCentral()
-        jcenter()
-        maven { url "https://jitpack.io" }
         maven { url "https://maven.google.com" }
     }
 }

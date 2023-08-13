@@ -15,8 +15,8 @@ import com.bumptech.glide.Glide
 import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.*
 import com.sportstalk.datamodels.chat.ChatEvent
-import com.sportstalk.datamodels.chat.EventReaction
 import com.sportstalk.datamodels.chat.EventType
+import com.sportstalk.datamodels.reactions.ReactionType
 import com.sportstalk.datamodels.users.User
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
@@ -269,7 +269,7 @@ class ItemChatEventAdapter(
             }
             binding.actvChatMessage.text = item.body
 
-            val likeCount = item.reactions.firstOrNull { it.type == EventReaction.LIKE }?.count ?: 0
+            val likeCount = item.reactions.firstOrNull { it.type == ReactionType.LIKE }?.count ?: 0
             if(likeCount > 0) {
                 binding.actvLikes.text = context.getString(R.string.chat_likes_count, likeCount.toString(10))
                 binding.actvLikes.visibility = View.VISIBLE
@@ -343,7 +343,7 @@ class ItemChatEventAdapter(
 
             binding.actvChatMessage.text = item.body
 
-            val likeCount = item.reactions.firstOrNull { it.type == EventReaction.LIKE }?.count ?: 0
+            val likeCount = item.reactions.firstOrNull { it.type == ReactionType.LIKE }?.count ?: 0
             if(likeCount > 0) {
                 binding.actvLikes.text = context.getString(R.string.chat_likes_count, likeCount.toString(10))
                 binding.actvLikes.visibility = View.VISIBLE

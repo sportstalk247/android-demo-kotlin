@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.navigation.Navigation
 import com.sportstalk.app.demo.R
 import org.koin.android.ext.android.getKoin
+import org.koin.androidx.viewmodel.ViewModelOwner
 import org.koin.androidx.viewmodel.koin.getViewModel
 import org.koin.core.parameter.ParametersDefinition
 import org.koin.core.qualifier.Qualifier
@@ -20,6 +21,11 @@ inline fun <reified VM : ViewModel> Fragment.sharedGraphViewModel(
     noinline parameters: ParametersDefinition? = null
 ) = lazy {
     val owner = Navigation.findNavController(requireActivity(), R.id.navHostFragmentApp)
-        .getViewModelStoreOwner(navGraphId)
-    getKoin().getViewModel(owner, VM::class, qualifier, parameters)
+        .getViewModelStoreOwner(navGraphId).viewModelStore
+    /*getKoin().getViewModel(owner, VM::class, qualifier, parameters)*/
+    getKoin().getViewModel<VM>(
+        qualifier = qualifier,
+        owner = { ViewModelOwner(owner) },
+        parameters = parameters,
+    )
 }

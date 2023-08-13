@@ -10,8 +10,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import kotlinx.coroutines.cancelChildren
-import kotlinx.coroutines.isActive
 import org.koin.android.ext.android.getKoin
+import org.koin.androidx.viewmodel.ViewModelOwner
 import org.koin.androidx.viewmodel.koin.getViewModel
 import org.koin.core.parameter.ParametersDefinition
 import org.koin.core.qualifier.Qualifier
@@ -73,10 +73,19 @@ inline fun <reified VM : ViewModel> BaseFragment.getSharedGraphViewModel(
     @IdRes navGraphId: Int,
     qualifier: Qualifier? = null,
     noinline parameters: ParametersDefinition? = null
-): VM =
+): VM /*=
     getKoin().getViewModel(
         findNavController().getViewModelStoreOwner(
             navGraphId
         ),
         VM::class, qualifier, parameters
+    )*/ {
+    val owner = findNavController().getViewModelStoreOwner(navGraphId).viewModelStore
+
+
+    return getKoin().getViewModel<VM>(
+        qualifier = qualifier,
+        owner = { ViewModelOwner(owner) },
+        parameters = parameters,
     )
+}

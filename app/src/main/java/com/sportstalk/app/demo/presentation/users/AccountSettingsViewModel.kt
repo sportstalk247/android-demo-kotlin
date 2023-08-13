@@ -28,66 +28,66 @@ class AccountSettingsViewModel(
     val preferences: SportsTalkDemoPreferences
 ) : ViewModel() {
 
-    private val displayName = ConflatedBroadcastChannel<String>()
-    private val handleName = ConflatedBroadcastChannel<String>()
-    private val profileLink = ConflatedBroadcastChannel<String>()
-    private val photoLink = ConflatedBroadcastChannel<String>()
+    private val displayName = MutableStateFlow<String?>(null)
+    private val handleName = MutableStateFlow<String?>(null)
+    private val profileLink = MutableStateFlow<String?>(null)
+    private val photoLink = MutableStateFlow<String?>(null)
 
-    private val userDetails = ConflatedBroadcastChannel<User>(preferences.currentUser!!)
+    private val userDetails = MutableStateFlow<User>(preferences.currentUser!!)
 
-    private val validationDisplayName = ConflatedBroadcastChannel/*Channel*/<Boolean>(/*Channel.RENDEZVOUS*/)
-    private val validationHandleName = ConflatedBroadcastChannel/*Channel*/<Boolean>(/*Channel.RENDEZVOUS*/)
-    private val validationProfileLink = ConflatedBroadcastChannel/*Channel*/<Boolean>(/*Channel.RENDEZVOUS*/)
-    private val validationPhotoLink = ConflatedBroadcastChannel/*Channel*/<Boolean>(/*Channel.RENDEZVOUS*/)
-    private val progressFetchUserDetails = Channel<Boolean>(Channel.RENDEZVOUS)
-    private val progressUpdateUser = Channel<Boolean>(Channel.RENDEZVOUS)
-    private val progressDeleteUser = Channel<Boolean>(Channel.RENDEZVOUS)
-    private val progressBanAccount = Channel<Boolean>(Channel.RENDEZVOUS)
+    private val validationDisplayName = MutableSharedFlow/*Channel*/<Boolean>(/*Channel.RENDEZVOUS*/)
+    private val validationHandleName = MutableSharedFlow/*Channel*/<Boolean>(/*Channel.RENDEZVOUS*/)
+    private val validationProfileLink = MutableSharedFlow/*Channel*/<Boolean>(/*Channel.RENDEZVOUS*/)
+    private val validationPhotoLink = MutableSharedFlow/*Channel*/<Boolean>(/*Channel.RENDEZVOUS*/)
+    private val progressFetchUserDetails = MutableStateFlow<Boolean>(false/*Channel.RENDEZVOUS*/)
+    private val progressUpdateUser = MutableStateFlow<Boolean>(false/*Channel.RENDEZVOUS*/)
+    private val progressDeleteUser = MutableStateFlow<Boolean>(false/*Channel.RENDEZVOUS*/)
+    private val progressBanAccount = MutableStateFlow<Boolean>(false/*Channel.RENDEZVOUS*/)
 
     val state = object : ViewState {
         override fun progressFetchUserDetails(): Flow<Boolean> =
             progressFetchUserDetails
-                .consumeAsFlow()
+                .asStateFlow()
 
         override fun userDetails(): Flow<User> =
-            userDetails.asFlow()
+            userDetails.asStateFlow()
 
         override fun validationDisplayName(): Flow<Boolean> =
             validationDisplayName
                 /*.consumeAsFlow()*/
-                .asFlow()
+                .asSharedFlow()
 
         override fun validationHandleName(): Flow<Boolean> =
             validationHandleName
                 /*.consumeAsFlow()*/
-                .asFlow()
+                .asSharedFlow()
 
         override fun validationProfileLink(): Flow<Boolean> =
             validationProfileLink
                 /*.consumeAsFlow()*/
-                .asFlow()
+                .asSharedFlow()
 
         override fun validationPhotoLink(): Flow<Boolean> =
             validationPhotoLink
                 /*.consumeAsFlow()*/
-                .asFlow()
+                .asSharedFlow()
 
         override fun enableSave(): Flow<Boolean> =
             validationDisplayName/*.consumeAsFlow()
                 .onStart { emit(false) }*/
-                .asFlow()
+                .asSharedFlow()
 
         override fun progressUpdateUser(): Flow<Boolean> =
             progressUpdateUser
-                .consumeAsFlow()
+                .asStateFlow()
 
         override fun progressDeleteUser(): Flow<Boolean> =
             progressDeleteUser
-                .consumeAsFlow()
+                .asStateFlow()
 
         override fun progressBanAccount(): Flow<Boolean> =
             progressBanAccount
-                .consumeAsFlow()
+                .asStateFlow()
     }
 
     private val _effect = Channel<ViewEffect>(Channel.RENDEZVOUS)
@@ -97,42 +97,42 @@ class AccountSettingsViewModel(
     init {
         // Display Name Validation
         displayName
-            .asFlow()
+            .asStateFlow()
             .map {
                 /*Regex(AccountSettingsViewModel.REGEX_DISPLAYNAME).containsMatchIn(it)*/
                 true
             }
             .onEach { isValid ->
-                validationDisplayName.send(isValid)
+                validationDisplayName.emit(isValid)
             }
             .launchIn(viewModelScope)
 
         // Handlename Validation
         handleName
-            .asFlow()
+            .asStateFlow()
             .map {
-                Regex(AccountSettingsViewModel.REGEX_HANDLENAME).containsMatchIn(it)
+                Regex(AccountSettingsViewModel.REGEX_HANDLENAME).containsMatchIn(it ?: "")
             }
             .onEach { isValid ->
-                validationHandleName.send(isValid)
+                validationHandleName.emit(isValid)
             }
             .launchIn(viewModelScope)
 
         // Profile Link URL Validation
         profileLink
-            .asFlow()
-            .map { Regex(AccountSettingsViewModel.REGEX_IMAGE_URL).containsMatchIn(it) }
+            .asStateFlow()
+            .map { Regex(AccountSettingsViewModel.REGEX_IMAGE_URL).containsMatchIn(it ?: "") }
             .onEach { isValid ->
-                validationProfileLink.send(isValid)
+                validationProfileLink.emit(isValid)
             }
             .launchIn(viewModelScope)
 
         // Photo Link URL Validation
         photoLink
-            .asFlow()
-            .map { Regex(AccountSettingsViewModel.REGEX_IMAGE_URL).containsMatchIn(it) }
+            .asStateFlow()
+            .map { Regex(AccountSettingsViewModel.REGEX_IMAGE_URL).containsMatchIn(it ?: "") }
             .onEach { isValid ->
-                validationPhotoLink.send(isValid)
+                validationPhotoLink.emit(isValid)
             }
             .launchIn(viewModelScope)
     }
@@ -146,7 +146,7 @@ class AccountSettingsViewModel(
     private suspend fun performGetUserDetails() {
         try {
             // DISPLAY Progress Indicator
-            progressFetchUserDetails.send(true)
+            progressFetchUserDetails.emit(true)
 
             val response = withContext(Dispatchers.IO) {
                 userClient.getUserDetails(
@@ -155,7 +155,7 @@ class AccountSettingsViewModel(
             }
 
             // EMIT Success
-            userDetails.send(response)
+            userDetails.emit(response)
             // Then, persist to app preferences
             preferences.currentUser = response
 
@@ -166,21 +166,21 @@ class AccountSettingsViewModel(
             )
         } finally {
             // HIDE Progress Indicator
-            progressFetchUserDetails.send(false)
+            progressFetchUserDetails.emit(false)
         }
     }
 
     fun displayName(displayName: String) =
-        this.displayName.trySendBlocking(displayName)
+        this.displayName.tryEmit(displayName)
 
     fun handleName(handleName: String) =
-        this.handleName.trySendBlocking(handleName)
+        this.handleName.tryEmit(handleName)
 
     fun profileLink(profileLink: String) =
-        this.profileLink.trySendBlocking(profileLink)
+        this.profileLink.tryEmit(profileLink)
 
     fun photoLink(photoLink: String) =
-        this.photoLink.trySendBlocking(photoLink)
+        this.photoLink.tryEmit(photoLink)
 
     fun save() {
         viewModelScope.launch {
@@ -191,18 +191,18 @@ class AccountSettingsViewModel(
     private suspend fun performUpdateUser() {
         try {
             // DISPLAY Progress Indicator
-            progressUpdateUser.send(true)
+            progressUpdateUser.emit(true)
 
             val response = withContext(Dispatchers.IO) {
                 userClient.createOrUpdateUser(
                     request = CreateUpdateUserRequest(
                         userid = preferences.currentUser?.userid!!,
-                        displayname = displayName.valueOrNull
+                        displayname = displayName.value
                             ?: preferences.currentUser?.displayname,
-                        handle = (handleName.valueOrNull ?: preferences.currentUser?.handle)
+                        handle = (handleName.value ?: preferences.currentUser?.handle)
                             ?.replaceFirst("@", ""),
-                        profileurl = profileLink.valueOrNull ?: preferences.currentUser?.profileurl,
-                        pictureurl = photoLink.valueOrNull ?: preferences.currentUser?.pictureurl
+                        profileurl = profileLink.value ?: preferences.currentUser?.profileurl,
+                        pictureurl = photoLink.value ?: preferences.currentUser?.pictureurl
                     )
                 )
             }
@@ -221,7 +221,7 @@ class AccountSettingsViewModel(
             )
         } finally {
             // HIDE Progress Indicator
-            progressUpdateUser.send(false)
+            progressUpdateUser.emit(false)
         }
     }
 
@@ -234,7 +234,7 @@ class AccountSettingsViewModel(
     private suspend fun performDeleteAccount() {
         try {
             // DISPLAY Progress Indicator
-            progressDeleteUser.send(true)
+            progressDeleteUser.emit(true)
 
             val response = withContext(Dispatchers.IO) {
                 userClient.deleteUser(
@@ -256,7 +256,7 @@ class AccountSettingsViewModel(
             )
         } finally {
             // HIDE Progress Indicator
-            progressDeleteUser.send(false)
+            progressDeleteUser.emit(false)
         }
     }
 
@@ -269,7 +269,7 @@ class AccountSettingsViewModel(
     private suspend fun performBanRestoreAccount() {
         try {
             // DISPLAY Progress Indicator
-            progressBanAccount.send(true)
+            progressBanAccount.emit(true)
 
             val response = withContext(Dispatchers.IO) {
                 userClient.setBanStatus(
@@ -294,7 +294,7 @@ class AccountSettingsViewModel(
             )
         } finally {
             // HIDe Progress Indicator
-            progressBanAccount.send(false)
+            progressBanAccount.emit(false)
         }
     }
 

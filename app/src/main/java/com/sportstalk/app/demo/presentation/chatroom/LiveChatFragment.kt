@@ -23,11 +23,12 @@ import com.sportstalk.app.demo.presentation.utils.EndlessRecyclerViewScrollListe
 import com.sportstalk.datamodels.chat.ChatEvent
 import com.sportstalk.datamodels.chat.ChatRoom
 import com.sportstalk.datamodels.chat.EventType
-import com.sportstalk.datamodels.chat.ReportType
+import com.sportstalk.datamodels.reports.ReportType
 import com.sportstalk.datamodels.users.User
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import org.koin.android.ext.android.getKoin
+import org.koin.androidx.viewmodel.ViewModelOwner
 import org.koin.androidx.viewmodel.koin.getViewModel
 import reactivecircus.flowbinding.android.view.clicks
 
@@ -35,7 +36,7 @@ class LiveChatFragment : BaseFragment() {
 
     private lateinit var binding: FragmentChatroomLiveChatBinding
     private val viewModel: ChatRoomViewModel by lazy {
-        getKoin().getViewModel<ChatRoomViewModel>(owner = requireParentFragment())
+        getKoin().getViewModel<ChatRoomViewModel>(owner = { ViewModelOwner(requireParentFragment().viewModelStore) })
     }
 
     private lateinit var scrollListener: RecyclerView.OnScrollListener

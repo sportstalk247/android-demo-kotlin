@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.zip
 import org.koin.android.ext.android.getKoin
+import org.koin.androidx.viewmodel.ViewModelOwner
 import org.koin.androidx.viewmodel.koin.getViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -32,7 +33,7 @@ class ChatroomListParticipantsFragment : BaseFragment() {
     private lateinit var binding: FragmentChatroomListParticipantsBinding
     private val viewModel: ChatroomListParticipantsViewModel by lazy {
         getKoin().getViewModel<ChatroomListParticipantsViewModel>(
-            owner = requireParentFragment(),
+            owner = { ViewModelOwner(requireParentFragment().viewModelStore) },
             parameters = {
                 parametersOf(
                     room,

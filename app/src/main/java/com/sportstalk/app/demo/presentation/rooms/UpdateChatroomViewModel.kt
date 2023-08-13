@@ -31,50 +31,43 @@ class UpdateChatroomViewModel(
     val preferences: SportsTalkDemoPreferences
 ) : ViewModel() {
 
-    private val chatroomDetails = ConflatedBroadcastChannel<ChatRoom>()
-    private val roomName = ConflatedBroadcastChannel<String>()
-    private val roomDescription = ConflatedBroadcastChannel<String>()
-    private val roomCustomId = ConflatedBroadcastChannel<String>()
-    private val roomAction = ConflatedBroadcastChannel<Boolean>(true)
-    private val roomEnterExit = ConflatedBroadcastChannel<Boolean>(true)
-    private val roomIsOpen = ConflatedBroadcastChannel<Boolean>(true)
-    private val roomProfanityEnabled = ConflatedBroadcastChannel<Boolean>(true)
+    private val chatroomDetails = MutableStateFlow<ChatRoom?>(null)
+    private val roomName = MutableStateFlow<String?>(null)
+    private val roomDescription = MutableStateFlow<String?>(null)
+    private val roomCustomId = MutableStateFlow<String?>(null)
+    private val roomAction = MutableStateFlow<Boolean>(true)
+    private val roomEnterExit = MutableStateFlow<Boolean>(true)
+    private val roomIsOpen = MutableStateFlow<Boolean>(true)
+    private val roomProfanityEnabled = MutableStateFlow<Boolean>(true)
 
     val state = object : ViewState {
         override fun initialRoomName(): Flow<String?> =
-            chatroomDetails.openSubscription()
-                .consumeAsFlow()
-                .map { it.name }
+            chatroomDetails.asStateFlow()
+                .map { it?.name }
 
         override fun initialRoomDescription(): Flow<String?> =
-            chatroomDetails.openSubscription()
-                .consumeAsFlow()
-                .map { it.description }
+            chatroomDetails.asStateFlow()
+                .map { it?.description }
 
         override fun initialRoomCustomId(): Flow<String?> =
-            chatroomDetails.openSubscription()
-                .consumeAsFlow()
-                .map { it.customid }
+            chatroomDetails.asStateFlow()
+                .map { it?.customid }
 
         override fun initialRoomAction(): Flow<Boolean?> =
-            chatroomDetails.openSubscription()
-                .consumeAsFlow()
-                .map { it.enableactions }
+            chatroomDetails.asStateFlow()
+                .map { it?.enableactions }
 
         override fun initialRoomEnterExit(): Flow<Boolean?> =
-            chatroomDetails.openSubscription()
-                .consumeAsFlow()
-                .map { it.enableenterandexit }
+            chatroomDetails.asStateFlow()
+                .map { it?.enableenterandexit }
 
         override fun initialRoomIsOpen(): Flow<Boolean?> =
-            chatroomDetails.openSubscription()
-                .consumeAsFlow()
-                .map { it.open }
+            chatroomDetails.asStateFlow()
+                .map { it?.open }
 
         override fun initialRoomProfanityFilter(): Flow<Boolean?> =
-            chatroomDetails.openSubscription()
-                .consumeAsFlow()
-                .map { it.enableprofanityfilter }
+            chatroomDetails.asStateFlow()
+                .map { it?.enableprofanityfilter }
 
         override fun progressGetChatroomDetails(): Flow<Boolean> =
             progressGetChatroomDetails.consumeAsFlow()
@@ -98,29 +91,24 @@ class UpdateChatroomViewModel(
             progressSendAnnouncement.consumeAsFlow()
 
         override fun roomAdded(): Flow<String?> =
-            chatroomDetails.openSubscription()
-                .consumeAsFlow()
-                .map { it.added }
+            chatroomDetails.asStateFlow()
+                .map { it?.added }
 
         override fun roomModified(): Flow<String?> =
-            chatroomDetails.openSubscription()
-                .consumeAsFlow()
-                .map { it.whenmodified }
+            chatroomDetails.asStateFlow()
+                .map { it?.whenmodified }
 
         override fun roomModeration(): Flow<String?> =
-            chatroomDetails.openSubscription()
-                .consumeAsFlow()
-                .map { it.moderation }
+            chatroomDetails.asStateFlow()
+                .map { it?.moderation }
 
         override fun roomMaxReports(): Flow<Long?> =
-            chatroomDetails.openSubscription()
-                .consumeAsFlow()
-                .map { it.maxreports }
+            chatroomDetails.asStateFlow()
+                .map { it?.maxreports }
 
         override fun roomAttendeesCount(): Flow<Long?> =
-            chatroomDetails.openSubscription()
-                .consumeAsFlow()
-                .map { it.inroom }
+            chatroomDetails.asStateFlow()
+                .map { it?.inroom }
     }
 
     private val _effect = Channel<ViewEffect>(Channel.RENDEZVOUS)
@@ -137,9 +125,9 @@ class UpdateChatroomViewModel(
 
     init {
         roomName
-            .asFlow()
+            .asStateFlow()
             .map {
-                Regex(REGEX_ROOMNAME).containsMatchIn(it)
+                Regex(REGEX_ROOMNAME).containsMatchIn(it ?: "")
             }
             .onEach { isValid -> validationRoomName.send(isValid) }
             .onEach { isValid -> enableSave.send(isValid) }
@@ -147,25 +135,25 @@ class UpdateChatroomViewModel(
     }
 
     fun roomName(roomName: String) =
-        this.roomName.trySendBlocking(roomName)
+        this.roomName.tryEmit(roomName)
 
     fun roomDescription(roomDescription: String) =
-        this.roomDescription.trySendBlocking(roomDescription)
+        this.roomDescription.tryEmit(roomDescription)
 
     fun roomCustomId(roomCustomId: String) =
-        this.roomCustomId.trySendBlocking(roomCustomId)
+        this.roomCustomId.tryEmit(roomCustomId)
 
     fun roomAction(roomAction: Boolean) =
-        this.roomAction.trySendBlocking(roomAction)
+        this.roomAction.tryEmit(roomAction)
 
     fun roomEnterExit(roomEnterExit: Boolean) =
-        this.roomEnterExit.trySendBlocking(roomEnterExit)
+        this.roomEnterExit.tryEmit(roomEnterExit)
 
     fun roomIsOpen(roomIsOpen: Boolean) =
-        this.roomIsOpen.trySendBlocking(roomIsOpen)
+        this.roomIsOpen.tryEmit(roomIsOpen)
 
     fun roomProfanityEnabled(roomProfanityEnabled: Boolean) =
-        this.roomProfanityEnabled.trySendBlocking(roomProfanityEnabled)
+        this.roomProfanityEnabled.tryEmit(roomProfanityEnabled)
 
     fun getChatroomDetails() {
         viewModelScope.launch {
@@ -194,7 +182,7 @@ class UpdateChatroomViewModel(
 
 
             // EMIT Success
-            chatroomDetails.send(response.room!!)
+            chatroomDetails.emit(response.room!!)
         } catch (err: SportsTalkException) {
             // EMIT Error
             _effect.send(
@@ -217,15 +205,15 @@ class UpdateChatroomViewModel(
 
             val response = withContext(Dispatchers.IO) {
                 chatClient.updateRoom(
-                    chatRoomId = chatroomDetails.valueOrNull?.id!!,
+                    chatRoomId = chatroomDetails.value?.id!!,
                     request = UpdateChatRoomRequest(
-                        customid = roomCustomId.valueOrNull,
-                        name = roomName.valueOrNull,
-                        description = roomDescription.valueOrNull,
-                        enableactions = roomAction.valueOrNull,
-                        enableenterandexit = roomEnterExit.valueOrNull,
-                        roomisopen = roomIsOpen.valueOrNull,
-                        enableprofanityfilter = roomProfanityEnabled.valueOrNull
+                        customid = roomCustomId.value,
+                        name = roomName.value,
+                        description = roomDescription.value,
+                        enableactions = roomAction.value,
+                        enableenterandexit = roomEnterExit.value,
+                        roomisopen = roomIsOpen.value,
+                        enableprofanityfilter = roomProfanityEnabled.value
                     )
                 )
             }
@@ -260,7 +248,7 @@ class UpdateChatroomViewModel(
             // Execute chat command with appropriate keyword
             val response = withContext(Dispatchers.IO) {
                 chatClient.executeChatCommand(
-                    chatRoomId = chatroomDetails.valueOrNull?.id!!,
+                    chatRoomId = chatroomDetails.value?.id!!,
                     request = ExecuteChatCommandRequest(
                         command = "*deleteallevents zola",
                         userid = user.userid!!
@@ -293,7 +281,7 @@ class UpdateChatroomViewModel(
 
             val response = withContext(Dispatchers.IO) {
                 chatClient.deleteRoom(
-                    chatRoomId = chatroomDetails.valueOrNull?.id!!
+                    chatRoomId = chatroomDetails.value?.id!!
                 )
             }
 

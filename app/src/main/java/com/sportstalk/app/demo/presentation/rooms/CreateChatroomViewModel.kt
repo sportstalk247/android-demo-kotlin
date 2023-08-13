@@ -27,13 +27,13 @@ class CreateChatroomViewModel(
     val preferences: SportsTalkDemoPreferences
 ) : ViewModel() {
 
-    private val roomName = ConflatedBroadcastChannel<String>()
-    private val roomDescription = ConflatedBroadcastChannel<String>()
-    private val roomCustomId = ConflatedBroadcastChannel<String>()
-    private val roomAction = ConflatedBroadcastChannel<Boolean>(true)
-    private val roomEnterExit = ConflatedBroadcastChannel<Boolean>(true)
-    private val roomIsOpen = ConflatedBroadcastChannel<Boolean>(true)
-    private val roomProfanityEnabled = ConflatedBroadcastChannel<Boolean>(true)
+    private val roomName = MutableStateFlow<String?>(null)
+    private val roomDescription = MutableStateFlow<String?>(null)
+    private val roomCustomId = MutableStateFlow<String?>(null)
+    private val roomAction = MutableStateFlow<Boolean>(true)
+    private val roomEnterExit = MutableStateFlow<Boolean>(true)
+    private val roomIsOpen = MutableStateFlow<Boolean>(true)
+    private val roomProfanityEnabled = MutableStateFlow<Boolean>(true)
 
     val state = object : ViewState {
         override fun validationRoomName(): Flow<Boolean> =
@@ -56,9 +56,9 @@ class CreateChatroomViewModel(
 
     init {
         roomName
-            .asFlow()
+            .asStateFlow()
             .map {
-                Regex(REGEX_ROOMNAME).containsMatchIn(it)
+                Regex(REGEX_ROOMNAME).containsMatchIn(it ?: "")
             }
             .onEach { isValid -> validationRoomName.send(isValid) }
             .onEach { isValid -> enableSubmit.send(isValid) }
@@ -66,25 +66,25 @@ class CreateChatroomViewModel(
     }
 
     fun roomName(roomName: String) =
-        this.roomName.trySendBlocking(roomName)
+        this.roomName.tryEmit(roomName)
 
     fun roomDescription(roomDescription: String) =
-        this.roomDescription.trySendBlocking(roomDescription)
+        this.roomDescription.tryEmit(roomDescription)
 
     fun roomCustomId(roomCustomId: String) =
-        this.roomCustomId.trySendBlocking(roomCustomId)
+        this.roomCustomId.tryEmit(roomCustomId)
 
     fun roomAction(roomAction: Boolean) =
-        this.roomAction.trySendBlocking(roomAction)
+        this.roomAction.tryEmit(roomAction)
 
     fun roomEnterExit(roomEnterExit: Boolean) =
-        this.roomEnterExit.trySendBlocking(roomEnterExit)
+        this.roomEnterExit.tryEmit(roomEnterExit)
 
     fun roomIsOpen(roomIsOpen: Boolean) =
-        this.roomIsOpen.trySendBlocking(roomIsOpen)
+        this.roomIsOpen.tryEmit(roomIsOpen)
 
     fun roomProfanityEnabled(roomProfanityEnabled: Boolean) =
-        this.roomProfanityEnabled.trySendBlocking(roomProfanityEnabled)
+        this.roomProfanityEnabled.tryEmit(roomProfanityEnabled)
 
     fun submit() {
         viewModelScope.launch { performCreateChatroom() }
@@ -98,15 +98,15 @@ class CreateChatroomViewModel(
             val response = withContext(Dispatchers.IO) {
                 chatClient.createRoom(
                     request = CreateChatRoomRequest(
-                        name = roomName.valueOrNull,
-                        description = roomDescription.valueOrNull,
-                        customid = roomCustomId.valueOrNull,
+                        name = roomName.value,
+                        description = roomDescription.value,
+                        customid = roomCustomId.value,
                         userid = preferences.currentUser?.userid,
                         /*moderation = "pre",*/
-                        enableactions = roomAction.valueOrNull,
-                        enableenterandexit = roomEnterExit.valueOrNull,
-                        roomisopen = roomIsOpen.valueOrNull,
-                        enableprofanityfilter = roomProfanityEnabled.valueOrNull
+                        enableactions = roomAction.value,
+                        enableenterandexit = roomEnterExit.value,
+                        roomisopen = roomIsOpen.value,
+                        enableprofanityfilter = roomProfanityEnabled.value
                     )
                 )
             }

@@ -29,49 +29,49 @@ class CreateAccountViewModel(
     val preferences: SportsTalkDemoPreferences
 ) : ViewModel() {
 
-    private val displayName = ConflatedBroadcastChannel<String>()
-    private val handleName = ConflatedBroadcastChannel<String>()
-    private val profileLink = ConflatedBroadcastChannel<String>()
-    private val photoLink = ConflatedBroadcastChannel<String>()
+    private val displayName = MutableStateFlow<String?>(null)
+    private val handleName = MutableStateFlow<String?>(null)
+    private val profileLink = MutableStateFlow<String?>(null)
+    private val photoLink = MutableStateFlow<String?>(null)
 
-    private val validationDisplayName = ConflatedBroadcastChannel/*Channel*/<Boolean>(false/*Channel.RENDEZVOUS*/)
-    private val validationHandleName = ConflatedBroadcastChannel/*Channel*/<Boolean>(false/*Channel.RENDEZVOUS*/)
-    private val validationProfileLink = ConflatedBroadcastChannel/*Channel*/<Boolean>(false/*Channel.RENDEZVOUS*/)
-    private val validationPhotoLink = ConflatedBroadcastChannel/*Channel*/<Boolean>(false/*Channel.RENDEZVOUS*/)
-    private val progressCreateUser = ConflatedBroadcastChannel/*Channel*/<Boolean>(false/*Channel.RENDEZVOUS*/)
+    private val validationDisplayName = MutableStateFlow/*Channel*/<Boolean>(false/*Channel.RENDEZVOUS*/)
+    private val validationHandleName = MutableStateFlow/*Channel*/<Boolean>(false/*Channel.RENDEZVOUS*/)
+    private val validationProfileLink = MutableStateFlow/*Channel*/<Boolean>(false/*Channel.RENDEZVOUS*/)
+    private val validationPhotoLink = MutableStateFlow/*Channel*/<Boolean>(false/*Channel.RENDEZVOUS*/)
+    private val progressCreateUser = MutableStateFlow/*Channel*/<Boolean>(false/*Channel.RENDEZVOUS*/)
 
     val state = object : ViewState {
         override fun validationDisplayName(): Flow<Boolean> =
             validationDisplayName
                 /*.consumeAsFlow()*/
-                .asFlow()
+                .asStateFlow()
 
         override fun validationHandleName(): Flow<Boolean> =
             validationHandleName
                 /*.consumeAsFlow()*/
-                .asFlow()
+                .asStateFlow()
 
         override fun validationProfileLink(): Flow<Boolean> =
             validationProfileLink
                 /*.consumeAsFlow()*/
-                .asFlow()
+                .asStateFlow()
 
         override fun validationPhotoLink(): Flow<Boolean> =
             validationPhotoLink
                 /*.consumeAsFlow()*/
-                .asFlow()
+                .asStateFlow()
 
         override fun enableSubmit(): Flow<Boolean> =
             /*combine(
                 validationDisplayName.consumeAsFlow(),
                 validationHandleName.consumeAsFlow()
             ) { validDisplayName, validHandle -> validDisplayName && validHandle }*/
-            validationDisplayName.asFlow()
+            validationDisplayName.asStateFlow()
 
         override fun progressCreateUser(): Flow<Boolean> =
             progressCreateUser
                 /*.receiveAsFlow()*/
-                .asFlow()
+                .asStateFlow()
     }
 
     private val _effect = Channel<ViewEffect>(Channel.RENDEZVOUS)
@@ -81,55 +81,55 @@ class CreateAccountViewModel(
     init {
         // Display Name Validation
         displayName
-            .asFlow()
+            .asStateFlow()
             .map {
-                Regex(REGEX_DISPLAYNAME).containsMatchIn(it)
+                Regex(REGEX_DISPLAYNAME).containsMatchIn(it ?: "")
             }
             .onEach { isValid ->
-                validationDisplayName.send(isValid)
+                validationDisplayName.emit(isValid)
             }
             .launchIn(viewModelScope)
 
         // Handlename Validation
         handleName
-            .asFlow()
-            .map { Regex(REGEX_HANDLENAME).containsMatchIn(it) }
+            .asStateFlow()
+            .map { Regex(REGEX_HANDLENAME).containsMatchIn(it ?: "") }
             .onEach { isValid ->
-                validationHandleName.send(isValid)
+                validationHandleName.emit(isValid)
             }
             .launchIn(viewModelScope)
 
         // Profile Link URL Validation
         profileLink
-            .asFlow()
-            .map { Regex(REGEX_IMAGE_URL).containsMatchIn(it) }
+            .asStateFlow()
+            .map { Regex(REGEX_IMAGE_URL).containsMatchIn(it ?: "") }
             .onEach { isValid ->
-                validationProfileLink.send(isValid)
+                validationProfileLink.emit(isValid)
             }
             .launchIn(viewModelScope)
 
         // Photo Link URL Validation
         photoLink
-            .asFlow()
-            .map { Regex(REGEX_IMAGE_URL).containsMatchIn(it) }
+            .asStateFlow()
+            .map { Regex(REGEX_IMAGE_URL).containsMatchIn(it ?: "") }
             .onEach { isValid ->
-                validationPhotoLink.send(isValid)
+                validationPhotoLink.emit(isValid)
             }
             .launchIn(viewModelScope)
 
     }
 
     fun displayName(displayName: String) =
-        this.displayName.trySendBlocking(displayName)
+        this.displayName.tryEmit(displayName)
 
     fun handleName(handleName: String) =
-        this.handleName.trySendBlocking(handleName)
+        this.handleName.tryEmit(handleName)
 
     fun profileLink(profileLink: String) =
-        this.profileLink.trySendBlocking(profileLink)
+        this.profileLink.tryEmit(profileLink)
 
     fun photoLink(photoLink: String) =
-        this.photoLink.trySendBlocking(photoLink)
+        this.photoLink.tryEmit(photoLink)
 
     fun submit() {
         viewModelScope.launch {
@@ -140,18 +140,18 @@ class CreateAccountViewModel(
     private suspend fun performCreateUser() {
         try {
             // DISPLAY Progress Indicator
-            this.progressCreateUser.send(true)
+            this.progressCreateUser.emit(true)
 
             val response = withContext(Dispatchers.IO) {
                 userClient.createOrUpdateUser(
                     request = CreateUpdateUserRequest(
                         userid = UUID.randomUUID().toString(),
-                        displayname = displayName.valueOrNull ?: "",
-                        handle = handleName.valueOrNull
+                        displayname = displayName.value ?: "",
+                        handle = handleName.value
                             ?.replaceFirst("@", "")
                             ?: "",
-                        profileurl = profileLink.valueOrNull ?: "",
-                        pictureurl = photoLink.valueOrNull ?: ""
+                        profileurl = profileLink.value ?: "",
+                        pictureurl = photoLink.value ?: ""
                     )
                 )
             }
@@ -169,7 +169,7 @@ class CreateAccountViewModel(
             this._effect.send(ViewEffect.ErrorCreateUser(err))
         } finally {
             // HIDE Progress Indicator
-            this.progressCreateUser.send(false)
+            this.progressCreateUser.emit(false)
         }
 
     }

@@ -26,13 +26,13 @@ class ListChatRoomsViewModel(
 ): ViewModel() {
 
     private val chatRooms = MutableStateFlow<List<ChatRoom>>(emptyList())
-    private val progressFetchRooms = BroadcastChannel<Boolean>(Channel.BUFFERED)
+    private val progressFetchRooms = MutableSharedFlow<Boolean>(extraBufferCapacity = 1)
     private val enableAccountSettings = MutableStateFlow<Boolean?>(null)
     // Keep track of cursor
     private val cursor = MutableStateFlow<String?>(null)
     val state = object: ViewState {
         override fun progressFetchChatRooms(): Flow<Boolean> =
-            progressFetchRooms.asFlow()
+            progressFetchRooms.asSharedFlow()
 
         override fun chatRooms(): Flow<List<ChatRoom>> =
             chatRooms.asStateFlow()
@@ -42,9 +42,9 @@ class ListChatRoomsViewModel(
                 .filterNotNull()
     }
 
-    private val _effect = BroadcastChannel<ViewEffect>(Channel.BUFFERED)
+    private val _effect = MutableSharedFlow<ViewEffect>(extraBufferCapacity = 1)
     val effect: Flow<ViewEffect>
-        get() = _effect.asFlow()
+        get() = _effect.asSharedFlow()
 
     fun fetchInitial() {
         viewModelScope.launch {
@@ -64,16 +64,16 @@ class ListChatRoomsViewModel(
     fun join(which: ChatRoom) {
         val currentUser = preferences.currentUser
         if(currentUser != null) {
-            _effect.trySendBlocking(ViewEffect.NavigateToChatRoom(which, currentUser))
+            _effect.tryEmit(ViewEffect.NavigateToChatRoom(which, currentUser))
         } else {
-            _effect.trySendBlocking(ViewEffect.NavigateToCreateProfile(which))
+            _effect.tryEmit(ViewEffect.NavigateToCreateProfile(which))
         }
 
     }
 
     private suspend fun performFetch(cursor: String? = null) {
         // Emit DISPLAY Progress indicator
-        progressFetchRooms.send(true)
+        progressFetchRooms.emit(true)
 
         try {
             ////////////////////////////////////////////////////////
@@ -101,10 +101,10 @@ class ListChatRoomsViewModel(
 
         } catch (err: SportsTalkException) {
             // Emit error if encountered
-            _effect.send(ViewEffect.ErrorFetchListChatrooms(err = err))
+            _effect.emit(ViewEffect.ErrorFetchListChatrooms(err = err))
         } finally {
             // Emit HIDE Progress indicator
-            progressFetchRooms.send(false)
+            progressFetchRooms.emit(false)
 
             // EMIT Enable/Disable Account Settings
             enableAccountSettings.value = preferences.currentUser != null

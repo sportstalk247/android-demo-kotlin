@@ -33,8 +33,8 @@ class ChatroomListParticipantsViewModel(
     private val progressBounceUser = Channel<Boolean>(Channel.BUFFERED)
     private val progressPurgeUserMessages = Channel<Boolean>(Channel.BUFFERED)
 
-    private val chatroomParticipants = ConflatedBroadcastChannel<List<User>?>(null)
-    private val bouncedUsers = ConflatedBroadcastChannel<List<User>?>(null)
+    private val chatroomParticipants = MutableStateFlow<List<User>?>(null)
+    private val bouncedUsers = MutableStateFlow<List<User>?>(null)
 
     private var cursor: String? = null
 
@@ -48,11 +48,11 @@ class ChatroomListParticipantsViewModel(
                 .consumeAsFlow()
 
         override fun chatroomParticipants(): Flow<List<User>> =
-            chatroomParticipants.asFlow()
+            chatroomParticipants.asStateFlow()
                 .filterNotNull()
 
         override fun bouncedUsers(): Flow<List<User>> =
-            bouncedUsers.asFlow()
+            bouncedUsers.asStateFlow()
                 .filterNotNull()
 
         override fun progressUserSetBanStatus(): Flow<Boolean> =
@@ -92,7 +92,7 @@ class ChatroomListParticipantsViewModel(
                 }
 
                 // EMIT SUCCESS
-                chatroomParticipants.send(response.participants.mapNotNull { it.user })
+                chatroomParticipants.emit(response.participants.mapNotNull { it.user })
                 // Update cursor
                 cursor = response.cursor
 
@@ -124,7 +124,7 @@ class ChatroomListParticipantsViewModel(
                 }
 
                 // EMIT Bounced Users
-                bouncedUsers.send(bouncedUsersWithDetails)
+                bouncedUsers.emit(bouncedUsersWithDetails)
             } catch (err: SportsTalkException) {
                 // EMIT Error
                 _effect.send(ViewEffect.ErrorFetchBouncedUsers(err))

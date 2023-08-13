@@ -17,6 +17,7 @@ import com.sportstalk.app.demo.presentation.BaseFragment
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import org.koin.android.ext.android.getKoin
+import org.koin.androidx.viewmodel.ViewModelOwner
 import org.koin.androidx.viewmodel.koin.getViewModel
 import reactivecircus.flowbinding.android.view.clicks
 import java.util.concurrent.TimeUnit
@@ -25,7 +26,7 @@ class InAppSettingsFragment : BaseFragment() {
 
     private lateinit var binding: FragmentInappSettingsBinding
     private val viewModel: InAppSettingsViewModel by lazy {
-        getKoin().getViewModel<InAppSettingsViewModel>(owner = requireParentFragment())
+        getKoin().getViewModel<InAppSettingsViewModel>(owner = { ViewModelOwner(requireParentFragment().viewModelStore) })
     }
 
     override fun onCreateView(
