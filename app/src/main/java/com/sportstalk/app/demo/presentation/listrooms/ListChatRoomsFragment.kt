@@ -17,7 +17,7 @@ import com.sportstalk.app.demo.presentation.chatroom.ChatRoomFragment
 import com.sportstalk.app.demo.presentation.listrooms.adapters.ItemListChatRoomAdapter
 import com.sportstalk.app.demo.presentation.users.CreateAccountFragment
 import com.sportstalk.app.demo.presentation.utils.EndlessRecyclerViewScrollListener
-import com.sportstalk.datamodels.chat.ChatRoom
+/*import com.sportstalk.datamodels.chat.ChatRoom*/import com.sportstalk.sdk.model.chat.ChatRoom
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach

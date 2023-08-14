@@ -13,7 +13,7 @@ import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.FragmentAccountSettingsBinding
 import com.sportstalk.app.demo.extensions.throttleFirst
 import com.sportstalk.app.demo.presentation.BaseFragment
-import com.sportstalk.datamodels.users.User
+/*import com.sportstalk.datamodels.users.User*/import com.sportstalk.sdk.model.user.User
 import kotlinx.coroutines.flow.*
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import reactivecircus.flowbinding.android.view.clicks

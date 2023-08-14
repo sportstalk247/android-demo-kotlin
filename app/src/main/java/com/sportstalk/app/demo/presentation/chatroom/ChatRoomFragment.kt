@@ -13,8 +13,8 @@ import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.FragmentChatroomBinding
 import com.sportstalk.app.demo.extensions.throttleFirst
 import com.sportstalk.app.demo.presentation.BaseFragment
-import com.sportstalk.datamodels.chat.ChatRoom
-import com.sportstalk.datamodels.users.User
+/*import com.sportstalk.datamodels.chat.ChatRoom*/import com.sportstalk.sdk.model.chat.ChatRoom
+/*import com.sportstalk.datamodels.users.User*/import com.sportstalk.sdk.model.user.User
 import kotlinx.coroutines.flow.*
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf

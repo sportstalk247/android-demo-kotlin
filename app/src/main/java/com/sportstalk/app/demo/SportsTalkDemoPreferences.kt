@@ -3,7 +3,7 @@ package com.sportstalk.app.demo
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
-import com.sportstalk.datamodels.users.User
+/*import com.sportstalk.datamodels.users.User*/import com.sportstalk.sdk.model.user.User
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.sendBlocking
 import kotlinx.coroutines.channels.trySendBlocking

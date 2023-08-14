@@ -16,7 +16,7 @@ import com.sportstalk.app.demo.presentation.BaseFragment
 import com.sportstalk.app.demo.presentation.listrooms.adapters.ItemAdminListChatRoomAdapter
 import com.sportstalk.app.demo.presentation.rooms.UpdateChatroomFragment
 import com.sportstalk.app.demo.presentation.utils.EndlessRecyclerViewScrollListener
-import com.sportstalk.datamodels.chat.ChatRoom
+/*import com.sportstalk.datamodels.chat.ChatRoom*/import com.sportstalk.sdk.model.chat.ChatRoom
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import org.koin.androidx.viewmodel.ext.android.viewModel

@@ -10,10 +10,10 @@ import com.sportstalk.app.demo.presentation.rooms.CreateChatroomViewModel
 import com.sportstalk.app.demo.presentation.rooms.UpdateChatroomViewModel
 import com.sportstalk.app.demo.presentation.users.AccountSettingsViewModel
 import com.sportstalk.app.demo.presentation.users.CreateAccountViewModel
-import com.sportstalk.coroutine.SportsTalk247
-import com.sportstalk.datamodels.ClientConfig
-import com.sportstalk.datamodels.chat.ChatRoom
-import com.sportstalk.datamodels.users.User
+/*import com.sportstalk.coroutine.SportsTalk247*/import com.sportstalk.sdk.core.SportsTalk247
+/*import com.sportstalk.datamodels.ClientConfig*/import com.sportstalk.sdk.model.ClientConfig
+/*import com.sportstalk.datamodels.chat.ChatRoom*/import com.sportstalk.sdk.model.chat.ChatRoom
+/*import com.sportstalk.datamodels.users.User*/import com.sportstalk.sdk.model.user.User
 import kotlinx.serialization.json.Json
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel

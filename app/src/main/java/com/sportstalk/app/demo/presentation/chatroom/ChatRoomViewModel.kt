@@ -3,13 +3,13 @@ package com.sportstalk.app.demo.presentation.chatroom
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sportstalk.coroutine.api.ChatClient
+/*import com.sportstalk.coroutine.api.ChatClient*/import com.sportstalk.sdk.core.api.ChatClient
 import com.sportstalk.app.demo.SportsTalkDemoPreferences
-import com.sportstalk.coroutine.api.polling.allEventUpdates
-import com.sportstalk.datamodels.SportsTalkException
-import com.sportstalk.datamodels.chat.*
-import com.sportstalk.datamodels.reactions.ReactionType
-import com.sportstalk.datamodels.users.User
+/*import com.sportstalk.coroutine.api.polling.allEventUpdates*/
+/*import com.sportstalk.datamodels.SportsTalkException*/import com.sportstalk.sdk.model.SportsTalkException
+/*import com.sportstalk.datamodels.chat.**/import com.sportstalk.sdk.model.chat.*
+/*import com.sportstalk.datamodels.reactions.ReactionType*/import com.sportstalk.sdk.model.reactions.ReactionType
+/*import com.sportstalk.datamodels.users.User*/import com.sportstalk.sdk.model.user.User
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.BroadcastChannel

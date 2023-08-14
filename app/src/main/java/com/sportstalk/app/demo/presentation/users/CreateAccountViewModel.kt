@@ -2,11 +2,11 @@ package com.sportstalk.app.demo.presentation.users
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sportstalk.coroutine.api.UserClient
+/*import com.sportstalk.coroutine.api.UserClient*/import com.sportstalk.sdk.core.api.UserClient
 import com.sportstalk.app.demo.SportsTalkDemoPreferences
-import com.sportstalk.datamodels.SportsTalkException
-import com.sportstalk.datamodels.users.CreateUpdateUserRequest
-import com.sportstalk.datamodels.users.User
+/*import com.sportstalk.datamodels.SportsTalkException*/import com.sportstalk.sdk.model.SportsTalkException
+/*import com.sportstalk.datamodels.users.CreateUpdateUserRequest*/import com.sportstalk.sdk.model.user.CreateUpdateUserRequest
+/*import com.sportstalk.datamodels.users.User*/import com.sportstalk.sdk.model.user.User
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel

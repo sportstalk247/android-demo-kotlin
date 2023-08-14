@@ -14,10 +14,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.sportstalk.app.demo.R
 import com.sportstalk.app.demo.databinding.*
-import com.sportstalk.datamodels.chat.ChatEvent
-import com.sportstalk.datamodels.chat.EventType
-import com.sportstalk.datamodels.reactions.ReactionType
-import com.sportstalk.datamodels.users.User
+/*import com.sportstalk.datamodels.chat.ChatEvent*/import com.sportstalk.sdk.model.chat.ChatEvent
+/*import com.sportstalk.datamodels.chat.EventType*/import com.sportstalk.sdk.model.chat.EventType
+/*import com.sportstalk.datamodels.reactions.ReactionType*/import com.sportstalk.sdk.model.reactions.ReactionType
+/*import com.sportstalk.datamodels.users.User*/import com.sportstalk.sdk.model.user.User
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.*

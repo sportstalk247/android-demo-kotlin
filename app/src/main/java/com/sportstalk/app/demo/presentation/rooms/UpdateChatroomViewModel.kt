@@ -2,12 +2,12 @@ package com.sportstalk.app.demo.presentation.rooms
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sportstalk.coroutine.api.ChatClient
+/*import com.sportstalk.coroutine.api.ChatClient*/import com.sportstalk.sdk.core.api.ChatClient
 import com.sportstalk.app.demo.SportsTalkDemoPreferences
 import com.sportstalk.app.demo.presentation.listrooms.AdminListChatRoomsViewModel
-import com.sportstalk.datamodels.SportsTalkException
-import com.sportstalk.datamodels.chat.*
-import com.sportstalk.datamodels.users.User
+/*import com.sportstalk.datamodels.SportsTalkException*/import com.sportstalk.sdk.model.SportsTalkException
+/*import com.sportstalk.datamodels.chat.**/import com.sportstalk.sdk.model.chat.*
+/*import com.sportstalk.datamodels.users.User*/import com.sportstalk.sdk.model.user.User
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel

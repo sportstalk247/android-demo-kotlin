@@ -20,11 +20,11 @@ import com.sportstalk.app.demo.extensions.throttleFirst
 import com.sportstalk.app.demo.presentation.BaseFragment
 import com.sportstalk.app.demo.presentation.chatroom.adapters.ItemChatEventAdapter
 import com.sportstalk.app.demo.presentation.utils.EndlessRecyclerViewScrollListener
-import com.sportstalk.datamodels.chat.ChatEvent
-import com.sportstalk.datamodels.chat.ChatRoom
-import com.sportstalk.datamodels.chat.EventType
-import com.sportstalk.datamodels.reports.ReportType
-import com.sportstalk.datamodels.users.User
+/*import com.sportstalk.datamodels.chat.ChatEvent*/import com.sportstalk.sdk.model.chat.ChatEvent
+/*import com.sportstalk.datamodels.chat.ChatRoom*/import com.sportstalk.sdk.model.chat.ChatRoom
+/*import com.sportstalk.datamodels.chat.EventType*/import com.sportstalk.sdk.model.chat.EventType
+/*import com.sportstalk.datamodels.reports.ReportType*/import com.sportstalk.sdk.model.reports.ReportType
+/*import com.sportstalk.datamodels.users.User*/import com.sportstalk.sdk.model.user.User
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import org.koin.android.ext.android.getKoin
