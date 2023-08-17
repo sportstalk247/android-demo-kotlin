@@ -92,9 +92,10 @@ buildscript {
 
 allprojects {
     repositories {
-        mavenLocal()
+//        mavenLocal()
         google()
         mavenCentral()
+        maven { url "https://s01.oss.sonatype.org/content/repositories/staging" }
         maven { url "https://maven.google.com" }
         /*maven { url "https://jitpack.io" }*/
     }
