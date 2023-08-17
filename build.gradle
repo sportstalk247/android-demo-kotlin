@@ -7,7 +7,7 @@ ext {
     buildToolsVersion = '30.0.3'/*'29.0.3'*/
 
     // SportsTalk247 SDK Version
-    sportstalk247SdkVersion = '1.2.10'/*'1.2.0'*/
+    sportstalk247SdkVersion = '1.3.0'/*'1.2.0'*/
 
     multidex_version = "2.0.1"
 
@@ -91,10 +91,14 @@ buildscript {
 
 allprojects {
     repositories {
-        mavenLocal()
+//        mavenLocal()
         google()
         mavenCentral()
-        maven { url "https://maven.google.com" }
+        maven { url "https://s01.oss.sonatype.org/content/repositories/staging/" }
+//        maven { url "https://s01.oss.sonatype.org/content/repositories/snapshots/" }
+//        jcenter()
+//        maven { url "https://jitpack.io" }
+//        maven { url "https://maven.google.com" }
     }
 }
 
