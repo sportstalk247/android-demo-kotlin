@@ -72,7 +72,7 @@ buildscript {
     ext.kotlinx_serialization_version = '1.4.1'/*'1.0.1'*/
 
     repositories {
-        mavenLocal()
+        /*mavenLocal()*/
         google()
         gradlePluginPortal()
         /*jcenter()*/
@@ -94,8 +94,8 @@ allprojects {
 //        mavenLocal()
         google()
         mavenCentral()
-        maven { url "https://s01.oss.sonatype.org/content/repositories/staging/" }
-//        maven { url "https://s01.oss.sonatype.org/content/repositories/snapshots/" }
+//        maven { url "https://s01.oss.sonatype.org/content/repositories/staging/" }
+        maven { url "https://s01.oss.sonatype.org/content/repositories/snapshots/" }
 //        jcenter()
 //        maven { url "https://jitpack.io" }
 //        maven { url "https://maven.google.com" }
