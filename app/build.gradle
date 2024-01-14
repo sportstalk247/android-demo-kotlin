@@ -91,11 +91,6 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
     implementation("io.github.sportstalk247.sdk-android-kotlin:sdk-coroutine:$sportstalk247SdkVersion")
-//    implementation("io.github.sportstalk247:sdk-coroutine:1.3.0")
-//    implementation("com.github.sportstalk247.sdk-android-kotlin:datamodels:$sportstalk247SdkVersion")
-    
-//    implementation("com.github.sportstalk247.sdk-kmm:core:main-b4996b19c6-1")
-//    implementation("com.github.sportstalk247.sdk-kmm:model:main-b4996b19c6-1")
 
     // Jetbrains Kotlin Dependencies
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
