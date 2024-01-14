@@ -91,6 +91,7 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
     implementation("io.github.sportstalk247.sdk-android-kotlin:sdk-coroutine:$sportstalk247SdkVersion")
+    /*implementation("com.gitlab.sportstalk247.sdk-android-kotlin:sdk-coroutine:1.2.9")*/
 
     // Jetbrains Kotlin Dependencies
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
