@@ -8,7 +8,7 @@ ext {
 
     // SportsTalk247 SDK Version
     sportstalk247SdkVersion = '1.3.0'/*'1.2.10'*//*'1.2.0'*/
-    sportstalk247SdkMultiplatformVersion = '2.0.0-beta03'/*'1.2.10'*//*'1.2.0'*/
+    sportstalk247SdkMultiplatformVersion = '2.0.0-beta05'/*'2.0.0-beta03'*//*'1.2.10'*//*'1.2.0'*/
 
     multidex_version = "2.0.1"
 
@@ -96,6 +96,7 @@ allprojects {
         google()
         mavenCentral()
         maven { url "https://s01.oss.sonatype.org/content/repositories/staging" }
+        /*maven { url "https://s01.oss.sonatype.org/content/repositories/snapshots/" }*/
         maven { url "https://maven.google.com" }
         /*maven { url "https://jitpack.io" }*/
     }
