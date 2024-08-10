@@ -16,18 +16,15 @@ import com.sportstalk.app.demo.extensions.throttleFirst
 import com.sportstalk.app.demo.presentation.BaseFragment
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import org.koin.android.ext.android.getKoin
-import org.koin.androidx.viewmodel.ViewModelOwner
-import org.koin.androidx.viewmodel.koin.getViewModel
+import org.koin.androidx.viewmodel.ext.android.viewModel
 import reactivecircus.flowbinding.android.view.clicks
-import java.util.concurrent.TimeUnit
 
 class InAppSettingsFragment : BaseFragment() {
 
     private lateinit var binding: FragmentInappSettingsBinding
-    private val viewModel: InAppSettingsViewModel by lazy {
-        getKoin().getViewModel<InAppSettingsViewModel>(owner = { ViewModelOwner(requireParentFragment().viewModelStore) })
-    }
+    private val viewModel: InAppSettingsViewModel by viewModel<InAppSettingsViewModel>(
+        ownerProducer = { requireParentFragment() }
+    )
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -179,6 +176,7 @@ class InAppSettingsFragment : BaseFragment() {
 
                     true
                 }
+
                 else -> false
             }
         }

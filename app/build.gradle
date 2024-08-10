@@ -12,6 +12,8 @@ android {
     compileSdkVersion rootProject.ext.compileSdkVersion
 
     defaultConfig {
+        namespace 'com.sportstalk.app.demo'
+
         applicationId "com.sportstalk.app.demo"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
@@ -63,6 +65,7 @@ android {
     }
 
     buildFeatures {
+        buildConfig true
         viewBinding true
     }
 
@@ -125,21 +128,15 @@ dependencies {
     implementation "io.insert-koin:koin-core:$koinVersion"
     // Koin for Android
     implementation "io.insert-koin:koin-android:$koinVersion"
-    // Koin AndroidX Scope feature
-    implementation "io.insert-koin:koin-androidx-scope:$koinVersion"
-    // Koin AndroidX ViewModel feature
-    implementation "io.insert-koin:koin-androidx-viewmodel:$koinVersion"
     // Koin Test
     testImplementation("io.insert-koin:koin-test:$koinVersion") {
         exclude group: 'org.mockito'
     }
 
     // AndroidX
-    implementation "androidx.core:core:$androidXCoreVersion"
     implementation "androidx.core:core-ktx:$androidXCoreVersion"
     implementation "androidx.annotation:annotation:$androidXAnnotationVersion"
     // AndroidX Activity
-    implementation "androidx.activity:activity:$androidXActivity"
     implementation "androidx.activity:activity-ktx:$androidXActivity"
     // AndroidX Fragment
     implementation "androidx.fragment:fragment-ktx:$androidXFragmentVersion"
@@ -163,8 +160,8 @@ dependencies {
     implementation "androidx.navigation:navigation-ui-ktx:$rootProject.androidXNavigationVersion"
 
     // AndroidX Lifecycle
-    implementation "androidx.lifecycle:lifecycle-extensions:$androidXLifecycleVersion"
-    kapt "androidx.lifecycle:lifecycle-common-java8:$androidXLifecycleVersion"
+    implementation "androidx.lifecycle:lifecycle-process:$androidXLifecycleVersion"
+    //kapt "androidx.lifecycle:lifecycle-common-java8:$androidXLifecycleVersion"
     /*kapt "androidx.lifecycle:lifecycle-compiler:$androidXLifecycleVersion"*/
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$androidXLifecycleVersion"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:$androidXLifecycleVersion"
