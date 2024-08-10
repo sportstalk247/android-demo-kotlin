@@ -12,8 +12,6 @@ import com.sportstalk.app.demo.SportsTalkDemoPreferences
 /*import com.sportstalk.datamodels.users.User*/import com.sportstalk.sdk.model.user.User
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.channels.BroadcastChannel
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -443,6 +441,42 @@ class ChatRoomViewModel(
         }
     }
 
+    /**
+     * Perform `Purge User Messages` SDK Operation
+     */
+    fun purgeUserMessages(which: ChatEvent) {
+        val chatRoomId = which.roomid ?: return
+        val userId = which.userid ?: return
+        val byUserId = preferences.currentUser?.userid ?: return
+
+        viewModelScope.launch {
+            try {
+                chatClient.purgeUserMessages(
+                    chatRoomId = chatRoomId,
+                    userId = userId,
+                    byUserId = byUserId,
+                )
+
+                _effect.emit(
+                    ViewEffect.SuccessPurgeUserMessages
+                ).also {
+                    // Update List
+                    chatEvents.update { events ->
+                        events?.filterNot { event ->
+                            event.userid == userId
+                        } ?: listOf()
+                    }
+                }
+            } catch (err: SportsTalkException) {
+                err.printStackTrace()
+                _effect.emit(
+                    ViewEffect.ErrorPurgeUserMessages(err)
+                )
+            }
+
+        }
+    }
+
     fun reactToAMessage(event: ChatEvent/*, hasAlreadyReacted: Boolean*/) {
         viewModelScope.launch {
 
@@ -667,6 +701,9 @@ class ChatRoomViewModel(
         data class ErrorSendQuotedReply(val err: SportsTalkException) : ViewEffect()
         data class ThreadedReplySent(val response: ChatEvent) : ViewEffect()
         data class ErrorSendThreadedReply(val err: SportsTalkException) : ViewEffect()
+
+        data object SuccessPurgeUserMessages : ViewEffect()
+        data class ErrorPurgeUserMessages(val err: SportsTalkException) : ViewEffect()
 
         data class SuccessReactToAMessage(val response: ChatEvent) : ViewEffect()
         data class ErrorReactToAMessage(val err: SportsTalkException) : ViewEffect()

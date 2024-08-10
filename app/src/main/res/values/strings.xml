@@ -78,6 +78,7 @@
     <string name="chat_message_tap_option_like">Like</string>
     <string name="chat_message_tap_option_reply">Reply</string>
     <string name="chat_message_tap_option_report">Report</string>
+    <string name="chat_message_tap_option_purge_user_messages">Purge User Messages</string>
     <string name="chat_message_tap_option_flag_as_deleted">Flag as Deleted</string>
     <string name="chat_message_tap_option_delete_permanently">Delete Permanently</string>
     <string name="chat_message_tap_option_bounce">Bounce</string>
@@ -86,6 +87,7 @@
         <item>@string/chat_message_tap_option_like</item>
         <item>@string/chat_message_tap_option_reply</item>
         <item>@string/chat_message_tap_option_report</item>
+        <item>@string/chat_message_tap_option_purge_user_messages</item>
         <item>@string/chat_message_tap_option_flag_as_deleted</item>
         <item>@string/chat_message_tap_option_delete_permanently</item>
     </string-array>
@@ -96,6 +98,7 @@
     <string name="message_successfully_removed">Message successfully removed…</string>
     <string name="permanent_if_no_replies">Do you want this message to get permanently deleted if no replies were received?</string>
     <string name="message_successfully_reported">Message successfully reported…</string>
+    <string name="success_purge_user_messages">Successfully purged user messages…</string>
 
     <string name="chatroom_participants">Chatroom Participants</string>
     <string name="banned">Banned</string>

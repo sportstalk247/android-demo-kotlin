@@ -2,48 +2,48 @@
 
 ext {
     minSdkVersion = 21
-    targetSdkVersion = 33/*29*/
-    compileSdkVersion = 33/*29*/
+    targetSdkVersion = 34/*29*/
+    compileSdkVersion = 34/*29*/
     buildToolsVersion = '30.0.3'/*'29.0.3'*/
 
     // SportsTalk247 SDK Version
-    sportstalk247SdkVersion = '1.3.0'/*'1.2.10'*//*'1.2.0'*/
-    sportstalk247SdkMultiplatformVersion = '2.0.0-beta05'/*'2.0.0-beta03'*//*'1.2.10'*//*'1.2.0'*/
+    sportstalk247SdkVersion = '1.3.3'/*'1.2.10'*//*'1.2.0'*/
+    sportstalk247SdkMultiplatformVersion = '2.0.0-beta06'/*'2.0.0-beta03'*//*'1.2.10'*//*'1.2.0'*/
 
     multidex_version = "2.0.1"
 
     junitVersion = '4.13.2'/*'4.12'*/
-    mockitoVersion = '3.1.0'
-    androidXCoreTesting = '2.0.0'
-    androidXTest = '1.4.0'/*'1.1.1'*/
-    androidXTestExt = '1.0.0'
+    mockitoVersion = '5.7.0'
+    androidXCoreTesting = '2.2.0'
+    androidXTest = '1.6.1'/*'1.1.1'*/
+    androidXTestExt = '1.2.1'
     mockKVersion = '1.9.3'
     // Roboelectric
     roboelectricVersion = '4.5.1'/*'4.3'*/
 
     // Coroutines
-    coroutinesVersion = '1.6.4'/*'1.4.0-M1'*/
+    coroutinesVersion = '1.8.1'//'1.6.4'/*'1.4.0-M1'*/
 
     // AndroidX Framework
-    androidXAppCompatVersion = '1.1.0'
+    androidXAppCompatVersion = '1.7.0'
     // AndroidX Core
-    androidXCoreVersion = '1.2.0'
+    androidXCoreVersion = '1.13.1'
     androidXAnnotationVersion = '1.1.0'
     // AndroidX UI Components
-    androidXRecyclerViewVersion = '1.1.0'
+    androidXRecyclerViewVersion = '1.3.2'
     googleFlexBoxVersion = '3.0.0'/*'2.0.1'*/
     androidXCardViewVersion = '1.0.0'
-    constraintLayoutVersion = '2.0.0-beta4'
+    constraintLayoutVersion = '2.1.4'
     androidXSwipeRefreshLayout = "1.1.0"
-    viewPager2Version = '1.0.0-rc01'
+    viewPager2Version = '1.1.0'
     // Material Components
-    androidMaterialComponentsVersion = '1.1.0'
+    androidMaterialComponentsVersion = '1.12.0'
     // AndroidX Activity
-    androidXActivity = '1.1.0'
+    androidXActivity = '1.9.1'
     // AndroidX Fragment
-    androidXFragmentVersion = '1.2.4'
+    androidXFragmentVersion = '1.8.2'
     // AndroidX Navigation
-    androidXNavigationVersion = '2.3.0'
+    androidXNavigationVersion = '2.7.7'
 
     // Rx3Java
     rxAndroidVersion = '2.1.1'/*'3.0.3'*/
@@ -55,10 +55,10 @@ ext {
     flowBindingVersion = '1.2.0'
 
     // Android X - Jetpack Components
-    androidXLifecycleVersion = /*'2.5.0'*/'2.2.0'
+    androidXLifecycleVersion = '2.8.4'///*'2.5.0'*/'2.2.0'
 
     // Dependency Injection Framework
-    koinVersion = '2.2.3'/*'2.1.5'*/
+    koinVersion = '3.5.3'/*'2.1.5'*/
     
     hdodenhofcircleimageview = '3.1.0'
 
@@ -68,9 +68,9 @@ ext {
 }
 
 buildscript {
-    ext.kotlin_version = '1.8.10'/*'1.7.20'*//*'1.4.20'*/
-    ext.buildGradleToolVersion = '7.4.1'/*'7.2.2'*//*'4.1.0'*/
-    ext.kotlinx_serialization_version = '1.4.1'/*'1.0.1'*/
+    ext.kotlin_version = '2.0.0'//'1.8.10'/*'1.7.20'*//*'1.4.20'*/
+    ext.buildGradleToolVersion = '8.5.1'//'7.4.1'/*'7.2.2'*//*'4.1.0'*/
+    ext.kotlinx_serialization_version = '1.6.3'//'1.4.1'/*'1.0.1'*/
 
     repositories {
         /*mavenLocal()*/

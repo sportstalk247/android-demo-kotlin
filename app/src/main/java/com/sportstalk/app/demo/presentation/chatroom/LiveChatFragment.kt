@@ -27,17 +27,15 @@ import com.sportstalk.app.demo.presentation.utils.EndlessRecyclerViewScrollListe
 /*import com.sportstalk.datamodels.users.User*/import com.sportstalk.sdk.model.user.User
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import org.koin.android.ext.android.getKoin
-import org.koin.androidx.viewmodel.ViewModelOwner
-import org.koin.androidx.viewmodel.koin.getViewModel
+import org.koin.androidx.viewmodel.ext.android.viewModel
 import reactivecircus.flowbinding.android.view.clicks
 
 class LiveChatFragment : BaseFragment() {
 
     private lateinit var binding: FragmentChatroomLiveChatBinding
-    private val viewModel: ChatRoomViewModel by lazy {
-        getKoin().getViewModel<ChatRoomViewModel>(owner = { ViewModelOwner(requireParentFragment().viewModelStore) })
-    }
+    private val viewModel: ChatRoomViewModel by viewModel<ChatRoomViewModel>(
+        ownerProducer = { requireParentFragment() }
+    )
 
     private lateinit var scrollListener: RecyclerView.OnScrollListener
 
@@ -73,7 +71,7 @@ class LiveChatFragment : BaseFragment() {
                 val options = ArrayList(
                     resources.getStringArray(R.array.chat_message_tap_options).toList()
                 ).run {
-                    // User's sent chat message(Prompt "Like", "Reply", "Report", "Flag as Deleted", or "Delete Permanently" options)
+                    // User's sent chat message(Prompt "Like", "Reply", "Report", "Purge User Messages", "Flag as Deleted", or "Delete Permanently" options)
                     if(chatEvent.userid == user.userid)
                         slice(0 until size)
                     // Other's chat message(Prompt "Like", "Reply" and "Report" options ONLY)
@@ -109,6 +107,11 @@ class LiveChatFragment : BaseFragment() {
                             getString(R.string.chat_message_tap_option_report) -> {
                                 // Perform Report Message
                                 viewModel.reportMessage(which = chatEvent, reporttype = ReportType.ABUSE)
+                            }
+                            // Purge User Messages
+                            getString(R.string.chat_message_tap_option_purge_user_messages) -> {
+                                // Perform Purge User Messages
+                                viewModel.purgeUserMessages(which = chatEvent)
                             }
                             // Flag as Deleted
                             getString(R.string.chat_message_tap_option_flag_as_deleted) -> {
@@ -404,6 +407,20 @@ class LiveChatFragment : BaseFragment() {
             is ChatRoomViewModel.ViewEffect.SuccessUnbounceUser -> {
                 Log.d(TAG, "ChatRoomViewModel.ViewEffect.SuccessUnbounceUser -> this.room = effect.response.room!!")
                 this.room = effect.response.room!!
+            }
+            is ChatRoomViewModel.ViewEffect.SuccessPurgeUserMessages -> {
+                Toast.makeText(
+                    requireContext(),
+                    getString(R.string.success_purge_user_messages),
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+            is ChatRoomViewModel.ViewEffect.ErrorPurgeUserMessages -> {
+                Toast.makeText(
+                    requireContext(),
+                    effect.err.message ?: getString(R.string.something_went_wrong_please_try_again),
+                    Toast.LENGTH_LONG
+                ).show()
             }
             else -> {}
         }

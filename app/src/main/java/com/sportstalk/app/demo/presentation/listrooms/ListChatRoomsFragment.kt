@@ -21,9 +21,7 @@ import com.sportstalk.app.demo.presentation.utils.EndlessRecyclerViewScrollListe
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import org.koin.android.ext.android.getKoin
 import org.koin.androidx.viewmodel.ext.android.viewModel
-import org.koin.androidx.viewmodel.koin.getViewModel
 import reactivecircus.flowbinding.swiperefreshlayout.refreshes
 
 class ListChatRoomsFragment : BaseFragment() {
